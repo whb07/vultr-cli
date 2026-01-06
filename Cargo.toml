@@ -1,0 +1,52 @@
+[package]
+name = "vultr-cli"
+version = "0.1.0"
+edition = "2021"
+description = "A production-ready CLI for managing Vultr cloud resources"
+license = "MIT"
+authors = ["Vultr CLI Contributors"]
+repository = "https://github.com/vultr/vultr-cli"
+keywords = ["vultr", "cloud", "cli", "api"]
+categories = ["command-line-utilities", "api-bindings"]
+rust-version = "1.75"
+
+[dependencies]
+# CLI framework
+clap = { version = "4.4", features = ["derive", "env", "string"] }
+clap_complete = "4.4"
+
+# Async runtime and HTTP
+tokio = { version = "1.35", features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Output formatting
+tabled = "0.14"
+colored = "2.1"
+
+# Config and security
+directories = "5.0"
+
+# Utilities
+chrono = { version = "0.4.31", default-features = false, features = ["std", "serde"] }
+url = "2.4"
+base64 = "0.21"
+dialoguer = "0.11"
+keyring = { version = "3.6.3", features = ["apple-native","windows-native","linux-native-sync-persistent","crypto-rust","vendored"] }
+indicatif = "0.17"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rand = "0.8"
+httpdate = "1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
