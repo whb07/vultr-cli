@@ -191,3 +191,151 @@ pub struct FirewallRuleResponse {
 pub struct FirewallRulesResponse {
     pub firewall_rules: Vec<FirewallRule>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ip_type_display() {
+        assert_eq!(format!("{}", IpType::V4), "v4");
+        assert_eq!(format!("{}", IpType::V6), "v6");
+        assert_eq!(format!("{}", IpType::Unknown), "unknown");
+    }
+
+    #[test]
+    fn test_ip_type_from_str() {
+        assert_eq!("v4".parse::<IpType>().unwrap(), IpType::V4);
+        assert_eq!("ipv4".parse::<IpType>().unwrap(), IpType::V4);
+        assert_eq!("v6".parse::<IpType>().unwrap(), IpType::V6);
+        assert_eq!("ipv6".parse::<IpType>().unwrap(), IpType::V6);
+    }
+
+    #[test]
+    fn test_ip_type_from_str_invalid() {
+        let result = "invalid".parse::<IpType>();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_protocol_display() {
+        assert_eq!(format!("{}", Protocol::Tcp), "TCP");
+        assert_eq!(format!("{}", Protocol::Udp), "UDP");
+        assert_eq!(format!("{}", Protocol::Icmp), "ICMP");
+        assert_eq!(format!("{}", Protocol::Gre), "GRE");
+        assert_eq!(format!("{}", Protocol::Esp), "ESP");
+        assert_eq!(format!("{}", Protocol::Ah), "AH");
+        assert_eq!(format!("{}", Protocol::Unknown), "unknown");
+    }
+
+    #[test]
+    fn test_protocol_from_str() {
+        assert_eq!("TCP".parse::<Protocol>().unwrap(), Protocol::Tcp);
+        assert_eq!("tcp".parse::<Protocol>().unwrap(), Protocol::Tcp);
+        assert_eq!("UDP".parse::<Protocol>().unwrap(), Protocol::Udp);
+        assert_eq!("ICMP".parse::<Protocol>().unwrap(), Protocol::Icmp);
+    }
+
+    #[test]
+    fn test_protocol_from_str_invalid() {
+        let result = "INVALID".parse::<Protocol>();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_firewall_rule_cidr() {
+        let rule = FirewallRule {
+            id: 1,
+            ip_type: Some(IpType::V4),
+            action: Some("accept".to_string()),
+            protocol: Some(Protocol::Tcp),
+            port: Some("22".to_string()),
+            subnet: Some("10.0.0.0".to_string()),
+            subnet_size: Some(8),
+            source: None,
+            notes: None,
+        };
+        assert_eq!(rule.cidr().unwrap(), "10.0.0.0/8");
+    }
+
+    #[test]
+    fn test_firewall_rule_cidr_none() {
+        let rule = FirewallRule {
+            id: 1,
+            ip_type: None,
+            action: None,
+            protocol: None,
+            port: None,
+            subnet: None,
+            subnet_size: None,
+            source: None,
+            notes: None,
+        };
+        assert!(rule.cidr().is_none());
+    }
+
+    #[test]
+    fn test_firewall_rule_cidr_partial() {
+        let rule = FirewallRule {
+            id: 1,
+            ip_type: None,
+            action: None,
+            protocol: None,
+            port: None,
+            subnet: Some("192.168.0.0".to_string()),
+            subnet_size: None,
+            source: None,
+            notes: None,
+        };
+        assert!(rule.cidr().is_none());
+    }
+
+    #[test]
+    fn test_firewall_group_deserialize() {
+        let json =
+            r#"{"id":"fw-123","description":"Web servers","rule_count":5,"instance_count":3}"#;
+        let group: FirewallGroup = serde_json::from_str(json).unwrap();
+        assert_eq!(group.id, "fw-123");
+        assert_eq!(group.description.unwrap(), "Web servers");
+        assert_eq!(group.rule_count.unwrap(), 5);
+    }
+
+    #[test]
+    fn test_firewall_rule_deserialize() {
+        let json = r#"{"id":1,"ip_type":"v4","action":"accept","protocol":"TCP","port":"443","subnet":"0.0.0.0","subnet_size":0}"#;
+        let rule: FirewallRule = serde_json::from_str(json).unwrap();
+        assert_eq!(rule.id, 1);
+        assert_eq!(rule.ip_type.unwrap(), IpType::V4);
+        assert_eq!(rule.protocol.unwrap(), Protocol::Tcp);
+    }
+
+    #[test]
+    fn test_create_firewall_rule_request_serialize() {
+        let req = CreateFirewallRuleRequest {
+            ip_type: "v4".to_string(),
+            protocol: "TCP".to_string(),
+            subnet: "0.0.0.0".to_string(),
+            subnet_size: 0,
+            port: Some("80".to_string()),
+            source: None,
+            notes: Some("HTTP".to_string()),
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("TCP"));
+        assert!(json.contains("HTTP"));
+    }
+
+    #[test]
+    fn test_ip_type_unknown_variant() {
+        let json = r#""ipv8""#;
+        let ip_type: IpType = serde_json::from_str(json).unwrap();
+        assert_eq!(ip_type, IpType::Unknown);
+    }
+
+    #[test]
+    fn test_protocol_unknown_variant() {
+        let json = r#""QUIC""#;
+        let protocol: Protocol = serde_json::from_str(json).unwrap();
+        assert_eq!(protocol, Protocol::Unknown);
+    }
+}

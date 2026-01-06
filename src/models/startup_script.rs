@@ -130,3 +130,140 @@ pub struct StartupScriptResponse {
 pub struct StartupScriptsResponse {
     pub startup_scripts: Vec<StartupScript>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use base64::Engine;
+
+    #[test]
+    fn test_script_type_display() {
+        assert_eq!(format!("{}", ScriptType::Boot), "boot");
+        assert_eq!(format!("{}", ScriptType::Pxe), "pxe");
+        assert_eq!(format!("{}", ScriptType::Unknown), "unknown");
+    }
+
+    #[test]
+    fn test_script_type_from_str() {
+        assert_eq!("boot".parse::<ScriptType>().unwrap(), ScriptType::Boot);
+        assert_eq!("pxe".parse::<ScriptType>().unwrap(), ScriptType::Pxe);
+    }
+
+    #[test]
+    fn test_script_type_from_str_invalid() {
+        let result = "invalid".parse::<ScriptType>();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_script_type_default() {
+        assert_eq!(ScriptType::default(), ScriptType::Boot);
+    }
+
+    #[test]
+    fn test_startup_script_decode_script() {
+        let script_content = "#!/bin/bash\necho Hello";
+        let encoded = base64::engine::general_purpose::STANDARD.encode(script_content);
+        let script = StartupScript {
+            id: "script-123".to_string(),
+            name: Some("Test Script".to_string()),
+            script_type: Some(ScriptType::Boot),
+            script: Some(encoded),
+            date_created: None,
+            date_modified: None,
+        };
+        assert_eq!(script.decode_script().unwrap(), script_content);
+    }
+
+    #[test]
+    fn test_startup_script_decode_script_none() {
+        let script = StartupScript {
+            id: "script-123".to_string(),
+            name: None,
+            script_type: None,
+            script: None,
+            date_created: None,
+            date_modified: None,
+        };
+        assert!(script.decode_script().is_none());
+    }
+
+    #[test]
+    fn test_startup_script_decode_script_invalid_base64() {
+        let script = StartupScript {
+            id: "script-123".to_string(),
+            name: None,
+            script_type: None,
+            script: Some("not valid base64!!!".to_string()),
+            date_created: None,
+            date_modified: None,
+        };
+        assert!(script.decode_script().is_none());
+    }
+
+    #[test]
+    fn test_startup_script_deserialize() {
+        let json = r#"{"id":"script-abc","name":"Setup Script","type":"boot","date_modified":"2024-01-01"}"#;
+        let script: StartupScript = serde_json::from_str(json).unwrap();
+        assert_eq!(script.id, "script-abc");
+        assert_eq!(script.name.unwrap(), "Setup Script");
+        assert_eq!(script.script_type.unwrap(), ScriptType::Boot);
+    }
+
+    #[test]
+    fn test_create_startup_script_request_new() {
+        let req = CreateStartupScriptRequest::new(
+            "Boot Script".to_string(),
+            "#!/bin/bash",
+            Some(ScriptType::Boot),
+        );
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(&req.script)
+            .unwrap();
+        assert_eq!(String::from_utf8(decoded).unwrap(), "#!/bin/bash");
+    }
+
+    #[test]
+    fn test_create_startup_script_request_serialize() {
+        let req = CreateStartupScriptRequest {
+            name: "Boot Script".to_string(),
+            script: "IyEvYmluL2Jhc2g=".to_string(),
+            script_type: Some("boot".to_string()),
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("Boot Script"));
+        assert!(json.contains("IyEvYmluL2Jhc2g="));
+    }
+
+    #[test]
+    fn test_update_startup_script_request_default() {
+        let req = UpdateStartupScriptRequest::default();
+        assert!(req.name.is_none());
+        assert!(req.script.is_none());
+        assert!(req.script_type.is_none());
+    }
+
+    #[test]
+    fn test_update_startup_script_request_with_raw_script() {
+        let req = UpdateStartupScriptRequest::default().with_raw_script("#!/bin/bash");
+        assert!(req.script.is_some());
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(&req.script.unwrap())
+            .unwrap();
+        assert_eq!(String::from_utf8(decoded).unwrap(), "#!/bin/bash");
+    }
+
+    #[test]
+    fn test_script_type_unknown_variant() {
+        let json = r#""cloud-init""#;
+        let script_type: ScriptType = serde_json::from_str(json).unwrap();
+        assert_eq!(script_type, ScriptType::Unknown);
+    }
+
+    #[test]
+    fn test_startup_scripts_response_deserialize() {
+        let json = r#"{"startup_scripts":[{"id":"s1"},{"id":"s2"}]}"#;
+        let response: StartupScriptsResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(response.startup_scripts.len(), 2);
+    }
+}

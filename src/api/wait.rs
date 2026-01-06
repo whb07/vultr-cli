@@ -45,7 +45,10 @@ pub async fn wait_for_instance_ready(
                 .template("{spinner:.green} {msg}")
                 .unwrap(),
         );
-        pb.set_message(format!("Waiting for instance {} to be ready...", instance_id));
+        pb.set_message(format!(
+            "Waiting for instance {} to be ready...",
+            instance_id
+        ));
         pb.enable_steady_tick(Duration::from_millis(100));
         Some(pb)
     } else {
@@ -60,10 +63,7 @@ pub async fn wait_for_instance_ready(
         if let Some(ref pb) = pb {
             pb.set_message(format!(
                 "Instance {} - status: {:?}, power: {:?}, server: {:?}",
-                instance_id,
-                instance.status,
-                instance.power_status,
-                instance.server_status
+                instance_id, instance.status, instance.power_status, instance.server_status
             ));
         }
 
@@ -152,7 +152,10 @@ pub async fn wait_for_snapshot_complete(
                 .template("{spinner:.blue} {msg}")
                 .unwrap(),
         );
-        pb.set_message(format!("Waiting for snapshot {} to complete...", snapshot_id));
+        pb.set_message(format!(
+            "Waiting for snapshot {} to complete...",
+            snapshot_id
+        ));
         pb.enable_steady_tick(Duration::from_millis(100));
         Some(pb)
     } else {
@@ -211,7 +214,10 @@ pub async fn wait_for_block_storage_active(
                 .template("{spinner:.cyan} {msg}")
                 .unwrap(),
         );
-        pb.set_message(format!("Waiting for block storage {} to be active...", block_id));
+        pb.set_message(format!(
+            "Waiting for block storage {} to be active...",
+            block_id
+        ));
         pb.enable_steady_tick(Duration::from_millis(100));
         Some(pb)
     } else {
@@ -296,7 +302,10 @@ pub async fn verify_instance_deleted(
 
         if start.elapsed().as_secs() > options.timeout {
             if let Some(pb) = pb {
-                pb.finish_with_message(format!("Timeout verifying deletion of instance {}", instance_id));
+                pb.finish_with_message(format!(
+                    "Timeout verifying deletion of instance {}",
+                    instance_id
+                ));
             }
             return Err(VultrError::Timeout {
                 seconds: options.timeout,
@@ -334,7 +343,10 @@ pub async fn verify_snapshot_deleted(
             Ok(snapshot) => {
                 if snapshot.status == Some(SnapshotStatus::Deleted) {
                     if let Some(pb) = pb {
-                        pb.finish_with_message(format!("✓ Snapshot {} has been deleted", snapshot_id));
+                        pb.finish_with_message(format!(
+                            "✓ Snapshot {} has been deleted",
+                            snapshot_id
+                        ));
                     }
                     return Ok(());
                 }
@@ -358,7 +370,10 @@ pub async fn verify_snapshot_deleted(
 
         if start.elapsed().as_secs() > options.timeout {
             if let Some(pb) = pb {
-                pb.finish_with_message(format!("Timeout verifying deletion of snapshot {}", snapshot_id));
+                pb.finish_with_message(format!(
+                    "Timeout verifying deletion of snapshot {}",
+                    snapshot_id
+                ));
             }
             return Err(VultrError::Timeout {
                 seconds: options.timeout,
@@ -382,7 +397,10 @@ pub async fn verify_block_storage_deleted(
                 .template("{spinner:.red} {msg}")
                 .unwrap(),
         );
-        pb.set_message(format!("Verifying block storage {} was deleted...", block_id));
+        pb.set_message(format!(
+            "Verifying block storage {} was deleted...",
+            block_id
+        ));
         pb.enable_steady_tick(Duration::from_millis(100));
         Some(pb)
     } else {
@@ -395,12 +413,18 @@ pub async fn verify_block_storage_deleted(
         match client.get_block_storage(block_id).await {
             Ok(_) => {
                 if let Some(ref pb) = pb {
-                    pb.set_message(format!("Block storage {} still exists, waiting...", block_id));
+                    pb.set_message(format!(
+                        "Block storage {} still exists, waiting...",
+                        block_id
+                    ));
                 }
             }
             Err(VultrError::ApiError { status: 404, .. }) | Err(VultrError::NotFound { .. }) => {
                 if let Some(pb) = pb {
-                    pb.finish_with_message(format!("✓ Block storage {} has been deleted", block_id));
+                    pb.finish_with_message(format!(
+                        "✓ Block storage {} has been deleted",
+                        block_id
+                    ));
                 }
                 return Ok(());
             }
@@ -414,7 +438,10 @@ pub async fn verify_block_storage_deleted(
 
         if start.elapsed().as_secs() > options.timeout {
             if let Some(pb) = pb {
-                pb.finish_with_message(format!("Timeout verifying deletion of block storage {}", block_id));
+                pb.finish_with_message(format!(
+                    "Timeout verifying deletion of block storage {}",
+                    block_id
+                ));
             }
             return Err(VultrError::Timeout {
                 seconds: options.timeout,
@@ -479,9 +506,20 @@ pub async fn verify_firewall_rule_deleted(
 ) -> VultrResult<()> {
     verify_deleted_generic(
         options,
-        format!("Verifying firewall rule {} in group {} was deleted...", rule_id, group_id),
-        format!("✓ Firewall rule {} has been deleted from group {}", rule_id, group_id),
-        || async { client.get_firewall_rule(group_id, rule_id).await.map(|_| ()) },
+        format!(
+            "Verifying firewall rule {} in group {} was deleted...",
+            rule_id, group_id
+        ),
+        format!(
+            "✓ Firewall rule {} has been deleted from group {}",
+            rule_id, group_id
+        ),
+        || async {
+            client
+                .get_firewall_rule(group_id, rule_id)
+                .await
+                .map(|_| ())
+        },
     )
     .await
 }
@@ -543,5 +581,60 @@ where
         }
 
         tokio::time::sleep(Duration::from_secs(options.poll_interval)).await;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_wait_options_default() {
+        let opts = WaitOptions::default();
+        assert_eq!(opts.timeout, DEFAULT_TIMEOUT);
+        assert_eq!(opts.poll_interval, DEFAULT_POLL_INTERVAL);
+        assert!(opts.show_progress);
+    }
+
+    #[test]
+    fn test_wait_options_custom() {
+        let opts = WaitOptions {
+            timeout: 300,
+            poll_interval: 10,
+            show_progress: false,
+        };
+        assert_eq!(opts.timeout, 300);
+        assert_eq!(opts.poll_interval, 10);
+        assert!(!opts.show_progress);
+    }
+
+    #[test]
+    fn test_default_timeout_value() {
+        assert_eq!(DEFAULT_TIMEOUT, 600);
+    }
+
+    #[test]
+    fn test_default_poll_interval_value() {
+        assert_eq!(DEFAULT_POLL_INTERVAL, 5);
+    }
+
+    #[test]
+    fn test_wait_options_clone() {
+        let opts = WaitOptions {
+            timeout: 120,
+            poll_interval: 3,
+            show_progress: true,
+        };
+        let cloned = opts.clone();
+        assert_eq!(cloned.timeout, 120);
+        assert_eq!(cloned.poll_interval, 3);
+    }
+
+    #[test]
+    fn test_wait_options_debug() {
+        let opts = WaitOptions::default();
+        let debug_str = format!("{:?}", opts);
+        assert!(debug_str.contains("timeout"));
+        assert!(debug_str.contains("poll_interval"));
     }
 }

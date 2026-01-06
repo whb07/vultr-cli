@@ -23,13 +23,25 @@ pub struct VultrClient {
 
 impl VultrClient {
     /// Create a new Vultr API client
-    pub fn new(api_key: String, http_timeout_seconds: u64, max_retries: u32, backoff_initial_ms: u64, backoff_max_ms: u64) -> VultrResult<Self> {
+    pub fn new(
+        api_key: String,
+        http_timeout_seconds: u64,
+        max_retries: u32,
+        backoff_initial_ms: u64,
+        backoff_max_ms: u64,
+    ) -> VultrResult<Self> {
         let client = Client::builder()
             .timeout(Duration::from_secs(http_timeout_seconds.max(1)))
             .user_agent(format!("vultr-cli/{}", env!("CARGO_PKG_VERSION")))
             .build()?;
 
-        Ok(Self { client, api_key, max_retries, backoff_initial_ms, backoff_max_ms })
+        Ok(Self {
+            client,
+            api_key,
+            max_retries,
+            backoff_initial_ms,
+            backoff_max_ms,
+        })
     }
 
     /// Make an authenticated request to the Vultr API
@@ -63,17 +75,20 @@ impl VultrClient {
 
     /// Make a POST request
     async fn post<T: DeserializeOwned>(&self, path: &str, body: impl Serialize) -> VultrResult<T> {
-        self.request(Method::POST, path, Some(serde_json::to_value(body)?)).await
+        self.request(Method::POST, path, Some(serde_json::to_value(body)?))
+            .await
     }
 
     /// Make a PATCH request
     async fn patch<T: DeserializeOwned>(&self, path: &str, body: impl Serialize) -> VultrResult<T> {
-        self.request(Method::PATCH, path, Some(serde_json::to_value(body)?)).await
+        self.request(Method::PATCH, path, Some(serde_json::to_value(body)?))
+            .await
     }
 
     /// Make a PUT request
     async fn put<T: DeserializeOwned>(&self, path: &str, body: impl Serialize) -> VultrResult<T> {
-        self.request(Method::PUT, path, Some(serde_json::to_value(body)?)).await
+        self.request(Method::PUT, path, Some(serde_json::to_value(body)?))
+            .await
     }
 
     /// Make a DELETE request
@@ -87,7 +102,11 @@ impl VultrClient {
         };
 
         let response = self.send_with_retry(make_request).await?;
-        if response.status().is_success() { Ok(()) } else { self.handle_error(response).await }
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            self.handle_error(response).await
+        }
     }
 
     /// Make a DELETE request with a body
@@ -103,7 +122,11 @@ impl VultrClient {
         };
 
         let response = self.send_with_retry(make_request).await?;
-        if response.status().is_success() { Ok(()) } else { self.handle_error(response).await }
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            self.handle_error(response).await
+        }
     }
 
     /// Make a POST request that returns no content
@@ -119,7 +142,11 @@ impl VultrClient {
         };
 
         let response = self.send_with_retry(make_request).await?;
-        if response.status().is_success() { Ok(()) } else { self.handle_error(response).await }
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            self.handle_error(response).await
+        }
     }
 
     /// Send a request with retries for transient failures.
@@ -275,7 +302,11 @@ impl VultrClient {
     // =====================
 
     /// List all instances
-    pub async fn list_instances(&self, per_page: Option<u32>, cursor: Option<&str>) -> VultrResult<(Vec<Instance>, Meta)> {
+    pub async fn list_instances(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Instance>, Meta)> {
         let mut path = "/instances".to_string();
         let mut params = vec![];
         if let Some(pp) = per_page {
@@ -287,7 +318,7 @@ impl VultrClient {
         if !params.is_empty() {
             path = format!("{}?{}", path, params.join("&"));
         }
-        
+
         let response: ListResponse<InstancesResponse> = self.get(&path).await?;
         Ok((response.data.instances, response.meta))
     }
@@ -305,8 +336,14 @@ impl VultrClient {
     }
 
     /// Update an instance
-    pub async fn update_instance(&self, instance_id: &str, request: UpdateInstanceRequest) -> VultrResult<Instance> {
-        let response: InstanceResponse = self.patch(&format!("/instances/{}", instance_id), request).await?;
+    pub async fn update_instance(
+        &self,
+        instance_id: &str,
+        request: UpdateInstanceRequest,
+    ) -> VultrResult<Instance> {
+        let response: InstanceResponse = self
+            .patch(&format!("/instances/{}", instance_id), request)
+            .await?;
         Ok(response.instance)
     }
 
@@ -317,22 +354,40 @@ impl VultrClient {
 
     /// Start an instance
     pub async fn start_instance(&self, instance_id: &str) -> VultrResult<()> {
-        self.post_no_content(&format!("/instances/{}/start", instance_id), serde_json::json!({})).await
+        self.post_no_content(
+            &format!("/instances/{}/start", instance_id),
+            serde_json::json!({}),
+        )
+        .await
     }
 
     /// Stop/halt an instance
     pub async fn halt_instance(&self, instance_id: &str) -> VultrResult<()> {
-        self.post_no_content(&format!("/instances/{}/halt", instance_id), serde_json::json!({})).await
+        self.post_no_content(
+            &format!("/instances/{}/halt", instance_id),
+            serde_json::json!({}),
+        )
+        .await
     }
 
     /// Reboot an instance
     pub async fn reboot_instance(&self, instance_id: &str) -> VultrResult<()> {
-        self.post_no_content(&format!("/instances/{}/reboot", instance_id), serde_json::json!({})).await
+        self.post_no_content(
+            &format!("/instances/{}/reboot", instance_id),
+            serde_json::json!({}),
+        )
+        .await
     }
 
     /// Reinstall an instance
-    pub async fn reinstall_instance(&self, instance_id: &str, request: ReinstallInstanceRequest) -> VultrResult<Instance> {
-        let response: InstanceResponse = self.post(&format!("/instances/{}/reinstall", instance_id), request).await?;
+    pub async fn reinstall_instance(
+        &self,
+        instance_id: &str,
+        request: ReinstallInstanceRequest,
+    ) -> VultrResult<Instance> {
+        let response: InstanceResponse = self
+            .post(&format!("/instances/{}/reinstall", instance_id), request)
+            .await?;
         Ok(response.instance)
     }
 
@@ -341,7 +396,11 @@ impl VultrClient {
     // =====================
 
     /// List all SSH keys
-    pub async fn list_ssh_keys(&self, per_page: Option<u32>, cursor: Option<&str>) -> VultrResult<(Vec<SshKey>, Meta)> {
+    pub async fn list_ssh_keys(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<SshKey>, Meta)> {
         let mut path = "/ssh-keys".to_string();
         let mut params = vec![];
         if let Some(pp) = per_page {
@@ -353,7 +412,7 @@ impl VultrClient {
         if !params.is_empty() {
             path = format!("{}?{}", path, params.join("&"));
         }
-        
+
         let response: ListResponse<SshKeysResponse> = self.get(&path).await?;
         Ok((response.data.ssh_keys, response.meta))
     }
@@ -371,8 +430,13 @@ impl VultrClient {
     }
 
     /// Update an SSH key
-    pub async fn update_ssh_key(&self, ssh_key_id: &str, request: UpdateSshKeyRequest) -> VultrResult<()> {
-        self.patch::<serde_json::Value>(&format!("/ssh-keys/{}", ssh_key_id), request).await?;
+    pub async fn update_ssh_key(
+        &self,
+        ssh_key_id: &str,
+        request: UpdateSshKeyRequest,
+    ) -> VultrResult<()> {
+        self.patch::<serde_json::Value>(&format!("/ssh-keys/{}", ssh_key_id), request)
+            .await?;
         Ok(())
     }
 
@@ -386,7 +450,11 @@ impl VultrClient {
     // =====================
 
     /// List all startup scripts
-    pub async fn list_startup_scripts(&self, per_page: Option<u32>, cursor: Option<&str>) -> VultrResult<(Vec<StartupScript>, Meta)> {
+    pub async fn list_startup_scripts(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<StartupScript>, Meta)> {
         let mut path = "/startup-scripts".to_string();
         let mut params = vec![];
         if let Some(pp) = per_page {
@@ -398,32 +466,42 @@ impl VultrClient {
         if !params.is_empty() {
             path = format!("{}?{}", path, params.join("&"));
         }
-        
+
         let response: ListResponse<StartupScriptsResponse> = self.get(&path).await?;
         Ok((response.data.startup_scripts, response.meta))
     }
 
     /// Get a single startup script
     pub async fn get_startup_script(&self, script_id: &str) -> VultrResult<StartupScript> {
-        let response: StartupScriptResponse = self.get(&format!("/startup-scripts/{}", script_id)).await?;
+        let response: StartupScriptResponse =
+            self.get(&format!("/startup-scripts/{}", script_id)).await?;
         Ok(response.startup_script)
     }
 
     /// Create a new startup script
-    pub async fn create_startup_script(&self, request: CreateStartupScriptRequest) -> VultrResult<StartupScript> {
+    pub async fn create_startup_script(
+        &self,
+        request: CreateStartupScriptRequest,
+    ) -> VultrResult<StartupScript> {
         let response: StartupScriptResponse = self.post("/startup-scripts", request).await?;
         Ok(response.startup_script)
     }
 
     /// Update a startup script
-    pub async fn update_startup_script(&self, script_id: &str, request: UpdateStartupScriptRequest) -> VultrResult<()> {
-        self.patch::<serde_json::Value>(&format!("/startup-scripts/{}", script_id), request).await?;
+    pub async fn update_startup_script(
+        &self,
+        script_id: &str,
+        request: UpdateStartupScriptRequest,
+    ) -> VultrResult<()> {
+        self.patch::<serde_json::Value>(&format!("/startup-scripts/{}", script_id), request)
+            .await?;
         Ok(())
     }
 
     /// Delete a startup script
     pub async fn delete_startup_script(&self, script_id: &str) -> VultrResult<()> {
-        self.delete(&format!("/startup-scripts/{}", script_id)).await
+        self.delete(&format!("/startup-scripts/{}", script_id))
+            .await
     }
 
     // =====================
@@ -431,7 +509,11 @@ impl VultrClient {
     // =====================
 
     /// List all snapshots
-    pub async fn list_snapshots(&self, per_page: Option<u32>, cursor: Option<&str>) -> VultrResult<(Vec<Snapshot>, Meta)> {
+    pub async fn list_snapshots(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Snapshot>, Meta)> {
         let mut path = "/snapshots".to_string();
         let mut params = vec![];
         if let Some(pp) = per_page {
@@ -443,7 +525,7 @@ impl VultrClient {
         if !params.is_empty() {
             path = format!("{}?{}", path, params.join("&"));
         }
-        
+
         let response: ListResponse<SnapshotsResponse> = self.get(&path).await?;
         Ok((response.data.snapshots, response.meta))
     }
@@ -461,14 +543,22 @@ impl VultrClient {
     }
 
     /// Create a snapshot from URL
-    pub async fn create_snapshot_from_url(&self, request: CreateSnapshotFromUrlRequest) -> VultrResult<Snapshot> {
+    pub async fn create_snapshot_from_url(
+        &self,
+        request: CreateSnapshotFromUrlRequest,
+    ) -> VultrResult<Snapshot> {
         let response: SnapshotResponse = self.post("/snapshots/create-from-url", request).await?;
         Ok(response.snapshot)
     }
 
     /// Update a snapshot
-    pub async fn update_snapshot(&self, snapshot_id: &str, request: UpdateSnapshotRequest) -> VultrResult<()> {
-        self.put::<serde_json::Value>(&format!("/snapshots/{}", snapshot_id), request).await?;
+    pub async fn update_snapshot(
+        &self,
+        snapshot_id: &str,
+        request: UpdateSnapshotRequest,
+    ) -> VultrResult<()> {
+        self.put::<serde_json::Value>(&format!("/snapshots/{}", snapshot_id), request)
+            .await?;
         Ok(())
     }
 
@@ -482,7 +572,11 @@ impl VultrClient {
     // =====================
 
     /// List all block storage volumes
-    pub async fn list_block_storage(&self, per_page: Option<u32>, cursor: Option<&str>) -> VultrResult<(Vec<BlockStorage>, Meta)> {
+    pub async fn list_block_storage(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<BlockStorage>, Meta)> {
         let mut path = "/blocks".to_string();
         let mut params = vec![];
         if let Some(pp) = per_page {
@@ -494,7 +588,7 @@ impl VultrClient {
         if !params.is_empty() {
             path = format!("{}?{}", path, params.join("&"));
         }
-        
+
         let response: ListResponse<BlockStoragesResponse> = self.get(&path).await?;
         Ok((response.data.blocks, response.meta))
     }
@@ -506,14 +600,22 @@ impl VultrClient {
     }
 
     /// Create a new block storage volume
-    pub async fn create_block_storage(&self, request: CreateBlockStorageRequest) -> VultrResult<BlockStorage> {
+    pub async fn create_block_storage(
+        &self,
+        request: CreateBlockStorageRequest,
+    ) -> VultrResult<BlockStorage> {
         let response: BlockStorageResponse = self.post("/blocks", request).await?;
         Ok(response.block)
     }
 
     /// Update a block storage volume
-    pub async fn update_block_storage(&self, block_id: &str, request: UpdateBlockStorageRequest) -> VultrResult<()> {
-        self.patch::<serde_json::Value>(&format!("/blocks/{}", block_id), request).await?;
+    pub async fn update_block_storage(
+        &self,
+        block_id: &str,
+        request: UpdateBlockStorageRequest,
+    ) -> VultrResult<()> {
+        self.patch::<serde_json::Value>(&format!("/blocks/{}", block_id), request)
+            .await?;
         Ok(())
     }
 
@@ -523,13 +625,23 @@ impl VultrClient {
     }
 
     /// Attach block storage to an instance
-    pub async fn attach_block_storage(&self, block_id: &str, request: AttachBlockStorageRequest) -> VultrResult<()> {
-        self.post_no_content(&format!("/blocks/{}/attach", block_id), request).await
+    pub async fn attach_block_storage(
+        &self,
+        block_id: &str,
+        request: AttachBlockStorageRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/blocks/{}/attach", block_id), request)
+            .await
     }
 
     /// Detach block storage from an instance
-    pub async fn detach_block_storage(&self, block_id: &str, request: DetachBlockStorageRequest) -> VultrResult<()> {
-        self.post_no_content(&format!("/blocks/{}/detach", block_id), request).await
+    pub async fn detach_block_storage(
+        &self,
+        block_id: &str,
+        request: DetachBlockStorageRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/blocks/{}/detach", block_id), request)
+            .await
     }
 
     // =====================
@@ -537,7 +649,11 @@ impl VultrClient {
     // =====================
 
     /// List all firewall groups
-    pub async fn list_firewall_groups(&self, per_page: Option<u32>, cursor: Option<&str>) -> VultrResult<(Vec<FirewallGroup>, Meta)> {
+    pub async fn list_firewall_groups(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<FirewallGroup>, Meta)> {
         let mut path = "/firewalls".to_string();
         let mut params = vec![];
         if let Some(pp) = per_page {
@@ -549,7 +665,7 @@ impl VultrClient {
         if !params.is_empty() {
             path = format!("{}?{}", path, params.join("&"));
         }
-        
+
         let response: ListResponse<FirewallGroupsResponse> = self.get(&path).await?;
         Ok((response.data.firewall_groups, response.meta))
     }
@@ -561,14 +677,22 @@ impl VultrClient {
     }
 
     /// Create a new firewall group
-    pub async fn create_firewall_group(&self, request: CreateFirewallGroupRequest) -> VultrResult<FirewallGroup> {
+    pub async fn create_firewall_group(
+        &self,
+        request: CreateFirewallGroupRequest,
+    ) -> VultrResult<FirewallGroup> {
         let response: FirewallGroupResponse = self.post("/firewalls", request).await?;
         Ok(response.firewall_group)
     }
 
     /// Update a firewall group
-    pub async fn update_firewall_group(&self, group_id: &str, request: UpdateFirewallGroupRequest) -> VultrResult<()> {
-        self.put::<serde_json::Value>(&format!("/firewalls/{}", group_id), request).await?;
+    pub async fn update_firewall_group(
+        &self,
+        group_id: &str,
+        request: UpdateFirewallGroupRequest,
+    ) -> VultrResult<()> {
+        self.put::<serde_json::Value>(&format!("/firewalls/{}", group_id), request)
+            .await?;
         Ok(())
     }
 
@@ -578,7 +702,12 @@ impl VultrClient {
     }
 
     /// List rules in a firewall group
-    pub async fn list_firewall_rules(&self, group_id: &str, per_page: Option<u32>, cursor: Option<&str>) -> VultrResult<(Vec<FirewallRule>, Meta)> {
+    pub async fn list_firewall_rules(
+        &self,
+        group_id: &str,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<FirewallRule>, Meta)> {
         let mut path = format!("/firewalls/{}/rules", group_id);
         let mut params = vec![];
         if let Some(pp) = per_page {
@@ -590,26 +719,39 @@ impl VultrClient {
         if !params.is_empty() {
             path = format!("{}?{}", path, params.join("&"));
         }
-        
+
         let response: ListResponse<FirewallRulesResponse> = self.get(&path).await?;
         Ok((response.data.firewall_rules, response.meta))
     }
 
     /// Get a single firewall rule
-    pub async fn get_firewall_rule(&self, group_id: &str, rule_id: i32) -> VultrResult<FirewallRule> {
-        let response: FirewallRuleResponse = self.get(&format!("/firewalls/{}/rules/{}", group_id, rule_id)).await?;
+    pub async fn get_firewall_rule(
+        &self,
+        group_id: &str,
+        rule_id: i32,
+    ) -> VultrResult<FirewallRule> {
+        let response: FirewallRuleResponse = self
+            .get(&format!("/firewalls/{}/rules/{}", group_id, rule_id))
+            .await?;
         Ok(response.firewall_rule)
     }
 
     /// Create a new firewall rule
-    pub async fn create_firewall_rule(&self, group_id: &str, request: CreateFirewallRuleRequest) -> VultrResult<FirewallRule> {
-        let response: FirewallRuleResponse = self.post(&format!("/firewalls/{}/rules", group_id), request).await?;
+    pub async fn create_firewall_rule(
+        &self,
+        group_id: &str,
+        request: CreateFirewallRuleRequest,
+    ) -> VultrResult<FirewallRule> {
+        let response: FirewallRuleResponse = self
+            .post(&format!("/firewalls/{}/rules", group_id), request)
+            .await?;
         Ok(response.firewall_rule)
     }
 
     /// Delete a firewall rule
     pub async fn delete_firewall_rule(&self, group_id: &str, rule_id: i32) -> VultrResult<()> {
-        self.delete(&format!("/firewalls/{}/rules/{}", group_id, rule_id)).await
+        self.delete(&format!("/firewalls/{}/rules/{}", group_id, rule_id))
+            .await
     }
 
     // =====================
@@ -617,7 +759,11 @@ impl VultrClient {
     // =====================
 
     /// List all VPCs
-    pub async fn list_vpcs(&self, per_page: Option<u32>, cursor: Option<&str>) -> VultrResult<(Vec<Vpc>, Meta)> {
+    pub async fn list_vpcs(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Vpc>, Meta)> {
         let mut path = "/vpcs".to_string();
         let mut params = vec![];
         if let Some(pp) = per_page {
@@ -629,7 +775,7 @@ impl VultrClient {
         if !params.is_empty() {
             path = format!("{}?{}", path, params.join("&"));
         }
-        
+
         let response: ListResponse<VpcsResponse> = self.get(&path).await?;
         Ok((response.data.vpcs, response.meta))
     }
@@ -648,7 +794,8 @@ impl VultrClient {
 
     /// Update a VPC
     pub async fn update_vpc(&self, vpc_id: &str, request: UpdateVpcRequest) -> VultrResult<()> {
-        self.put::<serde_json::Value>(&format!("/vpcs/{}", vpc_id), request).await?;
+        self.put::<serde_json::Value>(&format!("/vpcs/{}", vpc_id), request)
+            .await?;
         Ok(())
     }
 
@@ -681,5 +828,116 @@ impl VultrClient {
         };
         let response: ListResponse<PlansResponse> = self.get(&path).await?;
         Ok(response.data.plans)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_api_base_url() {
+        assert_eq!(API_BASE_URL, "https://api.vultr.com/v2");
+    }
+
+    #[test]
+    fn test_vultr_client_new() {
+        let client = VultrClient::new("test-api-key".to_string(), 30, 3, 100, 10000);
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn test_vultr_client_new_with_min_timeout() {
+        let client = VultrClient::new(
+            "test-api-key".to_string(),
+            0, // Will be clamped to 1
+            3,
+            100,
+            10000,
+        );
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn test_vultr_client_clone() {
+        let client = VultrClient::new("test-key".to_string(), 30, 3, 100, 10000).unwrap();
+        let cloned = client.clone();
+        assert_eq!(cloned.max_retries, 3);
+    }
+
+    #[test]
+    fn test_vultr_client_debug() {
+        let client = VultrClient::new("test-key".to_string(), 30, 3, 100, 10000).unwrap();
+        let debug_str = format!("{:?}", client);
+        assert!(debug_str.contains("VultrClient"));
+    }
+
+    #[test]
+    fn test_should_retry_status_429() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        assert!(client.should_retry_status(StatusCode::TOO_MANY_REQUESTS));
+    }
+
+    #[test]
+    fn test_should_retry_status_408() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        assert!(client.should_retry_status(StatusCode::REQUEST_TIMEOUT));
+    }
+
+    #[test]
+    fn test_should_retry_status_500() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        assert!(client.should_retry_status(StatusCode::INTERNAL_SERVER_ERROR));
+    }
+
+    #[test]
+    fn test_should_retry_status_502() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        assert!(client.should_retry_status(StatusCode::BAD_GATEWAY));
+    }
+
+    #[test]
+    fn test_should_not_retry_status_200() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        assert!(!client.should_retry_status(StatusCode::OK));
+    }
+
+    #[test]
+    fn test_should_not_retry_status_400() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        assert!(!client.should_retry_status(StatusCode::BAD_REQUEST));
+    }
+
+    #[test]
+    fn test_should_not_retry_status_401() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        assert!(!client.should_retry_status(StatusCode::UNAUTHORIZED));
+    }
+
+    #[test]
+    fn test_should_not_retry_status_404() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        assert!(!client.should_retry_status(StatusCode::NOT_FOUND));
+    }
+
+    #[test]
+    fn test_compute_backoff_attempt_0() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        let delay = client.compute_backoff(0);
+        assert!(delay.as_millis() <= 100);
+    }
+
+    #[test]
+    fn test_compute_backoff_attempt_1() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 10000).unwrap();
+        let delay = client.compute_backoff(1);
+        assert!(delay.as_millis() <= 200);
+    }
+
+    #[test]
+    fn test_compute_backoff_capped_at_max() {
+        let client = VultrClient::new("key".to_string(), 30, 3, 100, 5000).unwrap();
+        let delay = client.compute_backoff(10);
+        assert!(delay.as_millis() <= 5000);
     }
 }

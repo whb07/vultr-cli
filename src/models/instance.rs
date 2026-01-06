@@ -148,7 +148,7 @@ pub struct Instance {
 impl Instance {
     /// Check if the instance is ready (active and running)
     pub fn is_ready(&self) -> bool {
-        self.status == Some(InstanceStatus::Active) 
+        self.status == Some(InstanceStatus::Active)
             && self.power_status == Some(PowerStatus::Running)
             && self.server_status == Some(ServerStatus::Ok)
     }
@@ -314,4 +314,177 @@ pub struct Ipv4Info {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Ipv4Response {
     pub ipv4s: Vec<Ipv4Info>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_instance_status_display() {
+        assert_eq!(format!("{}", InstanceStatus::Active), "active");
+        assert_eq!(format!("{}", InstanceStatus::Pending), "pending");
+        assert_eq!(format!("{}", InstanceStatus::Suspended), "suspended");
+        assert_eq!(format!("{}", InstanceStatus::Resizing), "resizing");
+        assert_eq!(format!("{}", InstanceStatus::Unknown), "unknown");
+    }
+
+    #[test]
+    fn test_power_status_display() {
+        assert_eq!(format!("{}", PowerStatus::Running), "running");
+        assert_eq!(format!("{}", PowerStatus::Stopped), "stopped");
+        assert_eq!(format!("{}", PowerStatus::Unknown), "unknown");
+    }
+
+    #[test]
+    fn test_server_status_display() {
+        assert_eq!(format!("{}", ServerStatus::None), "none");
+        assert_eq!(format!("{}", ServerStatus::Locked), "locked");
+        assert_eq!(
+            format!("{}", ServerStatus::Installingbooting),
+            "installing/booting"
+        );
+        assert_eq!(format!("{}", ServerStatus::Ok), "ok");
+        assert_eq!(format!("{}", ServerStatus::Unknown), "unknown");
+    }
+
+    #[test]
+    fn test_instance_is_ready_true() {
+        let instance = Instance {
+            id: "test-123".to_string(),
+            status: Some(InstanceStatus::Active),
+            power_status: Some(PowerStatus::Running),
+            server_status: Some(ServerStatus::Ok),
+            os: None,
+            ram: None,
+            disk: None,
+            main_ip: None,
+            vcpu_count: None,
+            region: None,
+            default_password: None,
+            date_created: None,
+            allowed_bandwidth: None,
+            netmask_v4: None,
+            gateway_v4: None,
+            v6_networks: vec![],
+            hostname: None,
+            label: None,
+            internal_ip: None,
+            kvm: None,
+            os_id: None,
+            app_id: None,
+            image_id: None,
+            firewall_group_id: None,
+            features: vec![],
+            plan: None,
+            tags: vec![],
+            user_scheme: None,
+        };
+        assert!(instance.is_ready());
+    }
+
+    #[test]
+    fn test_instance_is_ready_false_pending() {
+        let instance = Instance {
+            id: "test-123".to_string(),
+            status: Some(InstanceStatus::Pending),
+            power_status: Some(PowerStatus::Running),
+            server_status: Some(ServerStatus::Ok),
+            os: None,
+            ram: None,
+            disk: None,
+            main_ip: None,
+            vcpu_count: None,
+            region: None,
+            default_password: None,
+            date_created: None,
+            allowed_bandwidth: None,
+            netmask_v4: None,
+            gateway_v4: None,
+            v6_networks: vec![],
+            hostname: None,
+            label: None,
+            internal_ip: None,
+            kvm: None,
+            os_id: None,
+            app_id: None,
+            image_id: None,
+            firewall_group_id: None,
+            features: vec![],
+            plan: None,
+            tags: vec![],
+            user_scheme: None,
+        };
+        assert!(!instance.is_ready());
+    }
+
+    #[test]
+    fn test_instance_is_ready_false_stopped() {
+        let instance = Instance {
+            id: "test-123".to_string(),
+            status: Some(InstanceStatus::Active),
+            power_status: Some(PowerStatus::Stopped),
+            server_status: Some(ServerStatus::Ok),
+            os: None,
+            ram: None,
+            disk: None,
+            main_ip: None,
+            vcpu_count: None,
+            region: None,
+            default_password: None,
+            date_created: None,
+            allowed_bandwidth: None,
+            netmask_v4: None,
+            gateway_v4: None,
+            v6_networks: vec![],
+            hostname: None,
+            label: None,
+            internal_ip: None,
+            kvm: None,
+            os_id: None,
+            app_id: None,
+            image_id: None,
+            firewall_group_id: None,
+            features: vec![],
+            plan: None,
+            tags: vec![],
+            user_scheme: None,
+        };
+        assert!(!instance.is_ready());
+    }
+
+    #[test]
+    fn test_instance_status_deserialize_unknown() {
+        let json = r#""some_new_status""#;
+        let status: InstanceStatus = serde_json::from_str(json).unwrap();
+        assert_eq!(status, InstanceStatus::Unknown);
+    }
+
+    #[test]
+    fn test_create_instance_request_default() {
+        let req = CreateInstanceRequest::default();
+        assert!(req.region.is_empty());
+        assert!(req.plan.is_empty());
+        assert!(req.os_id.is_none());
+    }
+
+    #[test]
+    fn test_instance_deserialize() {
+        let json = r#"{"id":"abc-123","os":"Ubuntu 22.04","ram":1024,"disk":25,"main_ip":"192.168.1.1","vcpu_count":1,"region":"ewr","status":"active","power_status":"running","server_status":"ok"}"#;
+        let instance: Instance = serde_json::from_str(json).unwrap();
+        assert_eq!(instance.id, "abc-123");
+        assert_eq!(instance.os.unwrap(), "Ubuntu 22.04");
+        assert_eq!(instance.ram.unwrap(), 1024);
+        assert_eq!(instance.status.unwrap(), InstanceStatus::Active);
+        assert_eq!(instance.power_status.unwrap(), PowerStatus::Running);
+    }
+
+    #[test]
+    fn test_ipv6_network_deserialize() {
+        let json = r#"{"network":"2001:db8::","main_ip":"2001:db8::1","network_size":64}"#;
+        let network: Ipv6Network = serde_json::from_str(json).unwrap();
+        assert_eq!(network.network.unwrap(), "2001:db8::");
+        assert_eq!(network.main_ip.unwrap(), "2001:db8::1");
+        assert_eq!(network.network_size.unwrap(), 64);
+    }
 }
