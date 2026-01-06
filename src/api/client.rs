@@ -391,6 +391,270 @@ impl VultrClient {
         Ok(response.instance)
     }
 
+    /// Get instance bandwidth
+    pub async fn get_instance_bandwidth(
+        &self,
+        instance_id: &str,
+    ) -> VultrResult<std::collections::HashMap<String, BandwidthData>> {
+        let response: BandwidthResponse = self
+            .get(&format!("/instances/{}/bandwidth", instance_id))
+            .await?;
+        Ok(response.bandwidth)
+    }
+
+    /// Get instance neighbors (instances on the same host)
+    pub async fn get_instance_neighbors(&self, instance_id: &str) -> VultrResult<Vec<String>> {
+        let response: NeighborsResponse = self
+            .get(&format!("/instances/{}/neighbors", instance_id))
+            .await?;
+        Ok(response.neighbors)
+    }
+
+    /// List instance IPv4 addresses
+    pub async fn list_instance_ipv4(&self, instance_id: &str) -> VultrResult<Vec<Ipv4Info>> {
+        let response: Ipv4Response = self
+            .get(&format!("/instances/{}/ipv4", instance_id))
+            .await?;
+        Ok(response.ipv4s)
+    }
+
+    /// Create an additional IPv4 address for an instance
+    pub async fn create_instance_ipv4(
+        &self,
+        instance_id: &str,
+        request: CreateIpv4Request,
+    ) -> VultrResult<Ipv4Info> {
+        #[derive(serde::Deserialize)]
+        struct Resp {
+            ipv4: Ipv4Info,
+        }
+        let response: Resp = self
+            .post(&format!("/instances/{}/ipv4", instance_id), request)
+            .await?;
+        Ok(response.ipv4)
+    }
+
+    /// Delete an IPv4 address from an instance
+    pub async fn delete_instance_ipv4(&self, instance_id: &str, ipv4: &str) -> VultrResult<()> {
+        self.delete(&format!("/instances/{}/ipv4/{}", instance_id, ipv4))
+            .await
+    }
+
+    /// Set reverse DNS for IPv4
+    pub async fn set_instance_reverse_ipv4(
+        &self,
+        instance_id: &str,
+        request: SetReverseIpv4Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/instances/{}/ipv4/reverse", instance_id), request)
+            .await
+    }
+
+    /// Set default reverse DNS for IPv4
+    pub async fn set_instance_default_reverse_ipv4(
+        &self,
+        instance_id: &str,
+        request: SetDefaultReverseIpv4Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/instances/{}/ipv4/reverse/default", instance_id),
+            request,
+        )
+        .await
+    }
+
+    /// List instance IPv6 addresses
+    pub async fn list_instance_ipv6(&self, instance_id: &str) -> VultrResult<Vec<Ipv6Info>> {
+        let response: Ipv6Response = self
+            .get(&format!("/instances/{}/ipv6", instance_id))
+            .await?;
+        Ok(response.ipv6s)
+    }
+
+    /// List instance IPv6 reverse DNS entries
+    pub async fn list_instance_reverse_ipv6(
+        &self,
+        instance_id: &str,
+    ) -> VultrResult<Vec<ReverseIpv6>> {
+        let response: ReverseIpv6Response = self
+            .get(&format!("/instances/{}/ipv6/reverse", instance_id))
+            .await?;
+        Ok(response.reverse_ipv6s)
+    }
+
+    /// Set reverse DNS for IPv6
+    pub async fn set_instance_reverse_ipv6(
+        &self,
+        instance_id: &str,
+        request: SetReverseIpv6Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/instances/{}/ipv6/reverse", instance_id), request)
+            .await
+    }
+
+    /// Delete reverse DNS for IPv6
+    pub async fn delete_instance_reverse_ipv6(
+        &self,
+        instance_id: &str,
+        ipv6: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!("/instances/{}/ipv6/reverse/{}", instance_id, ipv6))
+            .await
+    }
+
+    /// Get instance ISO status
+    pub async fn get_instance_iso_status(&self, instance_id: &str) -> VultrResult<IsoStatus> {
+        let response: IsoStatusResponse =
+            self.get(&format!("/instances/{}/iso", instance_id)).await?;
+        Ok(response.iso_status)
+    }
+
+    /// Attach ISO to an instance
+    pub async fn attach_instance_iso(
+        &self,
+        instance_id: &str,
+        request: AttachIsoRequest,
+    ) -> VultrResult<IsoStatus> {
+        let response: IsoStatusResponse = self
+            .post(&format!("/instances/{}/iso/attach", instance_id), request)
+            .await?;
+        Ok(response.iso_status)
+    }
+
+    /// Detach ISO from an instance
+    pub async fn detach_instance_iso(&self, instance_id: &str) -> VultrResult<IsoStatus> {
+        let response: IsoStatusResponse = self
+            .post(
+                &format!("/instances/{}/iso/detach", instance_id),
+                serde_json::json!({}),
+            )
+            .await?;
+        Ok(response.iso_status)
+    }
+
+    /// Get instance backup schedule
+    pub async fn get_instance_backup_schedule(
+        &self,
+        instance_id: &str,
+    ) -> VultrResult<BackupSchedule> {
+        let response: BackupScheduleResponse = self
+            .get(&format!("/instances/{}/backup-schedule", instance_id))
+            .await?;
+        Ok(response.backup_schedule)
+    }
+
+    /// Set instance backup schedule
+    pub async fn set_instance_backup_schedule(
+        &self,
+        instance_id: &str,
+        request: SetBackupScheduleRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/instances/{}/backup-schedule", instance_id),
+            request,
+        )
+        .await
+    }
+
+    /// Get available upgrades for an instance
+    pub async fn get_instance_upgrades(&self, instance_id: &str) -> VultrResult<AvailableUpgrades> {
+        let response: AvailableUpgradesResponse = self
+            .get(&format!("/instances/{}/upgrades", instance_id))
+            .await?;
+        Ok(response.upgrades)
+    }
+
+    /// Get instance user data
+    pub async fn get_instance_user_data(&self, instance_id: &str) -> VultrResult<UserData> {
+        let response: UserDataResponse = self
+            .get(&format!("/instances/{}/user-data", instance_id))
+            .await?;
+        Ok(response.user_data)
+    }
+
+    /// Restore an instance from backup or snapshot
+    pub async fn restore_instance(
+        &self,
+        instance_id: &str,
+        request: RestoreInstanceRequest,
+    ) -> VultrResult<RestoreStatus> {
+        let response: RestoreStatusResponse = self
+            .post(&format!("/instances/{}/restore", instance_id), request)
+            .await?;
+        Ok(response.status)
+    }
+
+    /// List VPCs attached to an instance
+    pub async fn list_instance_vpcs(&self, instance_id: &str) -> VultrResult<Vec<InstanceVpc>> {
+        let response: InstanceVpcsResponse = self
+            .get(&format!("/instances/{}/vpcs", instance_id))
+            .await?;
+        Ok(response.vpcs)
+    }
+
+    /// Attach a VPC to an instance
+    pub async fn attach_instance_vpc(
+        &self,
+        instance_id: &str,
+        request: AttachVpcRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/instances/{}/vpcs/attach", instance_id), request)
+            .await
+    }
+
+    /// Detach a VPC from an instance
+    pub async fn detach_instance_vpc(
+        &self,
+        instance_id: &str,
+        request: DetachVpcRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/instances/{}/vpcs/detach", instance_id), request)
+            .await
+    }
+
+    /// List VPC2s attached to an instance
+    pub async fn list_instance_vpc2s(&self, instance_id: &str) -> VultrResult<Vec<InstanceVpc2>> {
+        let response: InstanceVpc2sResponse = self
+            .get(&format!("/instances/{}/vpc2", instance_id))
+            .await?;
+        Ok(response.vpcs)
+    }
+
+    /// Attach a VPC2 to an instance
+    pub async fn attach_instance_vpc2(
+        &self,
+        instance_id: &str,
+        request: AttachVpc2Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/instances/{}/vpc2/attach", instance_id), request)
+            .await
+    }
+
+    /// Detach a VPC2 from an instance
+    pub async fn detach_instance_vpc2(
+        &self,
+        instance_id: &str,
+        request: DetachVpc2Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/instances/{}/vpc2/detach", instance_id), request)
+            .await
+    }
+
+    /// Bulk halt instances
+    pub async fn bulk_halt_instances(&self, request: BulkInstancesRequest) -> VultrResult<()> {
+        self.post_no_content("/instances/halt", request).await
+    }
+
+    /// Bulk start instances
+    pub async fn bulk_start_instances(&self, request: BulkInstancesRequest) -> VultrResult<()> {
+        self.post_no_content("/instances/start", request).await
+    }
+
+    /// Bulk reboot instances
+    pub async fn bulk_reboot_instances(&self, request: BulkInstancesRequest) -> VultrResult<()> {
+        self.post_no_content("/instances/reboot", request).await
+    }
+
     // =====================
     // SSH Key Operations
     // =====================

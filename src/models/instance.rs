@@ -316,6 +316,277 @@ pub struct Ipv4Response {
     pub ipv4s: Vec<Ipv4Info>,
 }
 
+/// Instance IPv6 information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Ipv6Info {
+    pub ip: String,
+    pub network: Option<String>,
+    pub network_size: Option<i32>,
+    #[serde(rename = "type")]
+    pub ip_type: Option<String>,
+}
+
+/// Response for instance IPv6 list
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Ipv6Response {
+    pub ipv6s: Vec<Ipv6Info>,
+}
+
+/// Reverse DNS entry for IPv6
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReverseIpv6 {
+    pub ip: String,
+    pub reverse: String,
+}
+
+/// Response for instance IPv6 reverse DNS list
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReverseIpv6Response {
+    pub reverse_ipv6s: Vec<ReverseIpv6>,
+}
+
+/// Backup schedule type
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum BackupScheduleType {
+    Daily,
+    Weekly,
+    Monthly,
+    DailyAltEven,
+    DailyAltOdd,
+    #[serde(other)]
+    Unknown,
+}
+
+impl std::fmt::Display for BackupScheduleType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BackupScheduleType::Daily => write!(f, "daily"),
+            BackupScheduleType::Weekly => write!(f, "weekly"),
+            BackupScheduleType::Monthly => write!(f, "monthly"),
+            BackupScheduleType::DailyAltEven => write!(f, "daily_alt_even"),
+            BackupScheduleType::DailyAltOdd => write!(f, "daily_alt_odd"),
+            BackupScheduleType::Unknown => write!(f, "unknown"),
+        }
+    }
+}
+
+/// Backup schedule for an instance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BackupSchedule {
+    pub enabled: bool,
+    #[serde(rename = "type")]
+    pub schedule_type: Option<BackupScheduleType>,
+    /// When to take backup (0-23)
+    pub hour: Option<i32>,
+    /// Day of week (1-7, Sunday = 1)
+    pub dow: Option<i32>,
+    /// Day of month (1-28)
+    pub dom: Option<i32>,
+    pub next_scheduled_time_utc: Option<String>,
+}
+
+/// Response for backup schedule
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BackupScheduleResponse {
+    pub backup_schedule: BackupSchedule,
+}
+
+/// Request to set backup schedule
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SetBackupScheduleRequest {
+    #[serde(rename = "type")]
+    pub schedule_type: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hour: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dow: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dom: Option<i32>,
+}
+
+/// ISO attachment status
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IsoStatus {
+    pub iso_id: Option<String>,
+    pub state: Option<String>,
+}
+
+/// Response for ISO status
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IsoStatusResponse {
+    pub iso_status: IsoStatus,
+}
+
+/// Request to attach ISO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AttachIsoRequest {
+    pub iso_id: String,
+}
+
+/// Available upgrades for an instance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AvailableUpgrades {
+    #[serde(default)]
+    pub applications: Vec<UpgradeApplication>,
+    #[serde(default)]
+    pub os: Vec<UpgradeOs>,
+    #[serde(default)]
+    pub plans: Vec<String>,
+}
+
+/// Application upgrade option
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpgradeApplication {
+    pub id: i32,
+    pub name: String,
+    pub short_name: String,
+    pub deploy_name: String,
+}
+
+/// OS upgrade option
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpgradeOs {
+    pub id: i32,
+    pub name: String,
+    pub arch: String,
+    pub family: String,
+}
+
+/// Response for available upgrades
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AvailableUpgradesResponse {
+    pub upgrades: AvailableUpgrades,
+}
+
+/// User data response
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UserDataResponse {
+    pub user_data: UserData,
+}
+
+/// User data
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UserData {
+    pub data: String,
+}
+
+/// Instance neighbors (instances sharing the same host)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NeighborsResponse {
+    pub neighbors: Vec<String>,
+}
+
+/// VPC attached to an instance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InstanceVpc {
+    pub id: String,
+    pub mac_address: Option<String>,
+    pub ip_address: Option<String>,
+}
+
+/// Response for instance VPCs list
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InstanceVpcsResponse {
+    pub vpcs: Vec<InstanceVpc>,
+}
+
+/// VPC2 attached to an instance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InstanceVpc2 {
+    pub id: String,
+    pub mac_address: Option<String>,
+    pub ip_address: Option<String>,
+}
+
+/// Response for instance VPC2s list
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InstanceVpc2sResponse {
+    pub vpcs: Vec<InstanceVpc2>,
+}
+
+/// Request to create an additional IPv4 address
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CreateIpv4Request {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reboot: Option<bool>,
+}
+
+/// Request to set reverse DNS for IPv4
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SetReverseIpv4Request {
+    pub ip: String,
+    pub reverse: String,
+}
+
+/// Request to set reverse DNS for IPv6
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SetReverseIpv6Request {
+    pub ip: String,
+    pub reverse: String,
+}
+
+/// Request to set default reverse DNS for IPv4
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SetDefaultReverseIpv4Request {
+    pub ip: String,
+}
+
+/// Request to restore an instance from backup or snapshot
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct RestoreInstanceRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub backup_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub snapshot_id: Option<String>,
+}
+
+/// Restore status response
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RestoreStatusResponse {
+    pub status: RestoreStatus,
+}
+
+/// Restore status
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RestoreStatus {
+    pub restore_type: Option<String>,
+    pub restore_id: Option<String>,
+    pub status: Option<String>,
+}
+
+/// Request to attach a VPC to an instance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AttachVpcRequest {
+    pub vpc_id: String,
+}
+
+/// Request to detach a VPC from an instance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DetachVpcRequest {
+    pub vpc_id: String,
+}
+
+/// Request to attach a VPC2 to an instance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AttachVpc2Request {
+    pub vpc_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ip_address: Option<String>,
+}
+
+/// Request to detach a VPC2 from an instance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DetachVpc2Request {
+    pub vpc_id: String,
+}
+
+/// Request for bulk instance operations
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BulkInstancesRequest {
+    pub instance_ids: Vec<String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -486,5 +757,145 @@ mod tests {
         assert_eq!(network.network.unwrap(), "2001:db8::");
         assert_eq!(network.main_ip.unwrap(), "2001:db8::1");
         assert_eq!(network.network_size.unwrap(), 64);
+    }
+
+    #[test]
+    fn test_backup_schedule_type_display() {
+        assert_eq!(format!("{}", BackupScheduleType::Daily), "daily");
+        assert_eq!(format!("{}", BackupScheduleType::Weekly), "weekly");
+        assert_eq!(format!("{}", BackupScheduleType::Monthly), "monthly");
+        assert_eq!(
+            format!("{}", BackupScheduleType::DailyAltEven),
+            "daily_alt_even"
+        );
+        assert_eq!(
+            format!("{}", BackupScheduleType::DailyAltOdd),
+            "daily_alt_odd"
+        );
+        assert_eq!(format!("{}", BackupScheduleType::Unknown), "unknown");
+    }
+
+    #[test]
+    fn test_backup_schedule_deserialize() {
+        let json = r#"{"enabled":true,"type":"daily","hour":10,"dow":1,"dom":1,"next_scheduled_time_utc":"2024-01-01T10:00:00Z"}"#;
+        let schedule: BackupSchedule = serde_json::from_str(json).unwrap();
+        assert!(schedule.enabled);
+        assert_eq!(schedule.schedule_type.unwrap(), BackupScheduleType::Daily);
+        assert_eq!(schedule.hour.unwrap(), 10);
+    }
+
+    #[test]
+    fn test_iso_status_deserialize() {
+        let json = r#"{"iso_id":"iso-123","state":"ready"}"#;
+        let status: IsoStatus = serde_json::from_str(json).unwrap();
+        assert_eq!(status.iso_id.unwrap(), "iso-123");
+        assert_eq!(status.state.unwrap(), "ready");
+    }
+
+    #[test]
+    fn test_ipv4_info_deserialize() {
+        let json = r#"{"ip":"192.168.1.1","netmask":"255.255.255.0","gateway":"192.168.1.254","type":"main_ip","reverse":"host.example.com"}"#;
+        let info: Ipv4Info = serde_json::from_str(json).unwrap();
+        assert_eq!(info.ip, "192.168.1.1");
+        assert_eq!(info.netmask.unwrap(), "255.255.255.0");
+        assert_eq!(info.reverse.unwrap(), "host.example.com");
+    }
+
+    #[test]
+    fn test_ipv6_info_deserialize() {
+        let json =
+            r#"{"ip":"2001:db8::1","network":"2001:db8::","network_size":64,"type":"main_ip"}"#;
+        let info: Ipv6Info = serde_json::from_str(json).unwrap();
+        assert_eq!(info.ip, "2001:db8::1");
+        assert_eq!(info.network.unwrap(), "2001:db8::");
+        assert_eq!(info.network_size.unwrap(), 64);
+    }
+
+    #[test]
+    fn test_reverse_ipv6_deserialize() {
+        let json = r#"{"ip":"2001:db8::1","reverse":"host.example.com"}"#;
+        let rev: ReverseIpv6 = serde_json::from_str(json).unwrap();
+        assert_eq!(rev.ip, "2001:db8::1");
+        assert_eq!(rev.reverse, "host.example.com");
+    }
+
+    #[test]
+    fn test_available_upgrades_deserialize() {
+        let json = r#"{"applications":[],"os":[],"plans":["vc2-2c-4gb","vc2-4c-8gb"]}"#;
+        let upgrades: AvailableUpgrades = serde_json::from_str(json).unwrap();
+        assert_eq!(upgrades.plans.len(), 2);
+        assert!(upgrades.applications.is_empty());
+    }
+
+    #[test]
+    fn test_user_data_deserialize() {
+        let json = r#"{"data":"IyEvYmluL2Jhc2g="}"#;
+        let user_data: UserData = serde_json::from_str(json).unwrap();
+        assert_eq!(user_data.data, "IyEvYmluL2Jhc2g=");
+    }
+
+    #[test]
+    fn test_instance_vpc_deserialize() {
+        let json = r#"{"id":"vpc-123","mac_address":"00:11:22:33:44:55","ip_address":"10.0.0.5"}"#;
+        let vpc: InstanceVpc = serde_json::from_str(json).unwrap();
+        assert_eq!(vpc.id, "vpc-123");
+        assert_eq!(vpc.mac_address.unwrap(), "00:11:22:33:44:55");
+        assert_eq!(vpc.ip_address.unwrap(), "10.0.0.5");
+    }
+
+    #[test]
+    fn test_instance_vpc2_deserialize() {
+        let json =
+            r#"{"id":"vpc2-456","mac_address":"AA:BB:CC:DD:EE:FF","ip_address":"10.1.0.10"}"#;
+        let vpc2: InstanceVpc2 = serde_json::from_str(json).unwrap();
+        assert_eq!(vpc2.id, "vpc2-456");
+        assert_eq!(vpc2.mac_address.unwrap(), "AA:BB:CC:DD:EE:FF");
+    }
+
+    #[test]
+    fn test_set_backup_schedule_request_serialize() {
+        let req = SetBackupScheduleRequest {
+            schedule_type: "daily".to_string(),
+            hour: Some(10),
+            dow: None,
+            dom: None,
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("\"type\":\"daily\""));
+        assert!(json.contains("\"hour\":10"));
+        assert!(!json.contains("dow"));
+    }
+
+    #[test]
+    fn test_restore_instance_request_serialize() {
+        let req = RestoreInstanceRequest {
+            backup_id: Some("backup-123".to_string()),
+            snapshot_id: None,
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("backup_id"));
+        assert!(!json.contains("snapshot_id"));
+    }
+
+    #[test]
+    fn test_attach_vpc2_request_serialize() {
+        let req = AttachVpc2Request {
+            vpc_id: "vpc2-123".to_string(),
+            ip_address: Some("10.1.0.5".to_string()),
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("vpc_id"));
+        assert!(json.contains("ip_address"));
+    }
+
+    #[test]
+    fn test_bulk_instances_request_serialize() {
+        let req = BulkInstancesRequest {
+            instance_ids: vec!["id1".to_string(), "id2".to_string()],
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("instance_ids"));
+        assert!(json.contains("id1"));
+        assert!(json.contains("id2"));
     }
 }

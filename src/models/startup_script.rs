@@ -3,19 +3,14 @@
 use serde::{Deserialize, Serialize};
 
 /// Startup script type
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ScriptType {
+    #[default]
     Boot,
     Pxe,
     #[serde(other)]
     Unknown,
-}
-
-impl Default for ScriptType {
-    fn default() -> Self {
-        ScriptType::Boot
-    }
 }
 
 impl std::fmt::Display for ScriptType {

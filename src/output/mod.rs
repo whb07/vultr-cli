@@ -558,6 +558,331 @@ impl TableDisplay for Vec<Os> {
     }
 }
 
+// =====================
+// Instance Advanced Types
+// =====================
+
+/// Wrapper for displaying IPv4 info in a table
+#[derive(Tabled)]
+struct Ipv4InfoRow {
+    #[tabled(rename = "IP")]
+    ip: String,
+    #[tabled(rename = "Netmask")]
+    netmask: String,
+    #[tabled(rename = "Gateway")]
+    gateway: String,
+    #[tabled(rename = "Type")]
+    ip_type: String,
+    #[tabled(rename = "Reverse")]
+    reverse: String,
+}
+
+impl From<&Ipv4Info> for Ipv4InfoRow {
+    fn from(i: &Ipv4Info) -> Self {
+        Self {
+            ip: i.ip.clone(),
+            netmask: i.netmask.clone().unwrap_or_default(),
+            gateway: i.gateway.clone().unwrap_or_default(),
+            ip_type: i.ip_type.clone().unwrap_or_default(),
+            reverse: i.reverse.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Ipv4Info {
+    fn print_table(&self) {
+        let rows = vec![Ipv4InfoRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<Ipv4Info> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No IPv4 addresses found.".yellow());
+            return;
+        }
+        let rows: Vec<Ipv4InfoRow> = self.iter().map(Ipv4InfoRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying IPv6 info in a table
+#[derive(Tabled)]
+struct Ipv6InfoRow {
+    #[tabled(rename = "IP")]
+    ip: String,
+    #[tabled(rename = "Network")]
+    network: String,
+    #[tabled(rename = "Size")]
+    network_size: String,
+    #[tabled(rename = "Type")]
+    ip_type: String,
+}
+
+impl From<&Ipv6Info> for Ipv6InfoRow {
+    fn from(i: &Ipv6Info) -> Self {
+        Self {
+            ip: i.ip.clone(),
+            network: i.network.clone().unwrap_or_default(),
+            network_size: i
+                .network_size
+                .map(|s| format!("/{}", s))
+                .unwrap_or_default(),
+            ip_type: i.ip_type.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<Ipv6Info> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No IPv6 addresses found.".yellow());
+            return;
+        }
+        let rows: Vec<Ipv6InfoRow> = self.iter().map(Ipv6InfoRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying reverse IPv6 in a table
+#[derive(Tabled)]
+struct ReverseIpv6Row {
+    #[tabled(rename = "IP")]
+    ip: String,
+    #[tabled(rename = "Reverse DNS")]
+    reverse: String,
+}
+
+impl From<&ReverseIpv6> for ReverseIpv6Row {
+    fn from(r: &ReverseIpv6) -> Self {
+        Self {
+            ip: r.ip.clone(),
+            reverse: r.reverse.clone(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<ReverseIpv6> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No reverse DNS entries found.".yellow());
+            return;
+        }
+        let rows: Vec<ReverseIpv6Row> = self.iter().map(ReverseIpv6Row::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for BackupSchedule {
+    fn print_table(&self) {
+        println!("{}: {}", "Enabled".cyan(), self.enabled);
+        if let Some(ref t) = self.schedule_type {
+            println!("{}: {}", "Type".cyan(), t);
+        }
+        if let Some(h) = self.hour {
+            println!("{}: {}", "Hour".cyan(), h);
+        }
+        if let Some(d) = self.dow {
+            println!("{}: {}", "Day of Week".cyan(), d);
+        }
+        if let Some(d) = self.dom {
+            println!("{}: {}", "Day of Month".cyan(), d);
+        }
+        if let Some(ref next) = self.next_scheduled_time_utc {
+            println!("{}: {}", "Next Scheduled".cyan(), next);
+        }
+    }
+}
+
+impl TableDisplay for IsoStatus {
+    fn print_table(&self) {
+        println!(
+            "{}: {}",
+            "ISO ID".cyan(),
+            self.iso_id.as_deref().unwrap_or("None")
+        );
+        println!(
+            "{}: {}",
+            "State".cyan(),
+            self.state.as_deref().unwrap_or("None")
+        );
+    }
+}
+
+impl TableDisplay for AvailableUpgrades {
+    fn print_table(&self) {
+        if !self.plans.is_empty() {
+            println!("{}:", "Available Plans".cyan());
+            for plan in &self.plans {
+                println!("  - {}", plan);
+            }
+        }
+        if !self.os.is_empty() {
+            println!("{}:", "Available OS".cyan());
+            for os in &self.os {
+                println!("  - {} (ID: {})", os.name, os.id);
+            }
+        }
+        if !self.applications.is_empty() {
+            println!("{}:", "Available Applications".cyan());
+            for app in &self.applications {
+                println!("  - {} (ID: {})", app.name, app.id);
+            }
+        }
+        if self.plans.is_empty() && self.os.is_empty() && self.applications.is_empty() {
+            println!("{}", "No upgrades available.".yellow());
+        }
+    }
+}
+
+impl TableDisplay for UserData {
+    fn print_table(&self) {
+        println!("{}:", "User Data (base64)".cyan());
+        println!("{}", self.data);
+    }
+}
+
+impl TableDisplay for RestoreStatus {
+    fn print_table(&self) {
+        if let Some(ref t) = self.restore_type {
+            println!("{}: {}", "Restore Type".cyan(), t);
+        }
+        if let Some(ref id) = self.restore_id {
+            println!("{}: {}", "Restore ID".cyan(), id);
+        }
+        if let Some(ref s) = self.status {
+            println!("{}: {}", "Status".cyan(), s);
+        }
+    }
+}
+
+/// Wrapper for displaying instance VPCs in a table
+#[derive(Tabled)]
+struct InstanceVpcRow {
+    #[tabled(rename = "VPC ID")]
+    id: String,
+    #[tabled(rename = "MAC Address")]
+    mac_address: String,
+    #[tabled(rename = "IP Address")]
+    ip_address: String,
+}
+
+impl From<&InstanceVpc> for InstanceVpcRow {
+    fn from(v: &InstanceVpc) -> Self {
+        Self {
+            id: v.id.clone(),
+            mac_address: v.mac_address.clone().unwrap_or_default(),
+            ip_address: v.ip_address.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<InstanceVpc> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VPCs attached.".yellow());
+            return;
+        }
+        let rows: Vec<InstanceVpcRow> = self.iter().map(InstanceVpcRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying instance VPC2s in a table
+#[derive(Tabled)]
+struct InstanceVpc2Row {
+    #[tabled(rename = "VPC2 ID")]
+    id: String,
+    #[tabled(rename = "MAC Address")]
+    mac_address: String,
+    #[tabled(rename = "IP Address")]
+    ip_address: String,
+}
+
+impl From<&InstanceVpc2> for InstanceVpc2Row {
+    fn from(v: &InstanceVpc2) -> Self {
+        Self {
+            id: v.id.clone(),
+            mac_address: v.mac_address.clone().unwrap_or_default(),
+            ip_address: v.ip_address.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<InstanceVpc2> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VPC2s attached.".yellow());
+            return;
+        }
+        let rows: Vec<InstanceVpc2Row> = self.iter().map(InstanceVpc2Row::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Bandwidth data table display
+impl TableDisplay for std::collections::HashMap<String, BandwidthData> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No bandwidth data available.".yellow());
+            return;
+        }
+        println!("{}", "Bandwidth Usage (by date):".cyan());
+        for (date, data) in self {
+            let incoming = data
+                .incoming_bytes
+                .map(format_bytes)
+                .unwrap_or_else(|| "N/A".to_string());
+            let outgoing = data
+                .outgoing_bytes
+                .map(format_bytes)
+                .unwrap_or_else(|| "N/A".to_string());
+            println!("  {}: In: {}, Out: {}", date, incoming, outgoing);
+        }
+    }
+}
+
+/// Format bytes into human-readable format
+fn format_bytes(bytes: i64) -> String {
+    const KB: i64 = 1024;
+    const MB: i64 = KB * 1024;
+    const GB: i64 = MB * 1024;
+    const TB: i64 = GB * 1024;
+
+    if bytes >= TB {
+        format!("{:.2} TB", bytes as f64 / TB as f64)
+    } else if bytes >= GB {
+        format!("{:.2} GB", bytes as f64 / GB as f64)
+    } else if bytes >= MB {
+        format!("{:.2} MB", bytes as f64 / MB as f64)
+    } else if bytes >= KB {
+        format!("{:.2} KB", bytes as f64 / KB as f64)
+    } else {
+        format!("{} B", bytes)
+    }
+}
+
+/// Neighbors display
+impl TableDisplay for Vec<String> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No neighbors found (dedicated host).".green());
+            return;
+        }
+        println!("{}:", "Neighbor Instance IDs".cyan());
+        for neighbor in self {
+            println!("  - {}", neighbor);
+        }
+    }
+}
+
 /// Print a success message
 pub fn print_success(message: &str) {
     println!("{} {}", "✓".green(), message);

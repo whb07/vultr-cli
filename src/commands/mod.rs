@@ -172,6 +172,350 @@ pub enum InstanceCommands {
         #[arg(long)]
         hostname: Option<String>,
     },
+
+    /// Get instance bandwidth usage
+    Bandwidth {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Get instances sharing the same host
+    Neighbors {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Get available upgrades for an instance
+    Upgrades {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Get instance user data
+    UserData {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Restore instance from backup or snapshot
+    Restore {
+        /// Instance ID
+        id: String,
+        /// Backup ID to restore from
+        #[arg(long, conflicts_with = "snapshot_id")]
+        backup_id: Option<String>,
+        /// Snapshot ID to restore from
+        #[arg(long, conflicts_with = "backup_id")]
+        snapshot_id: Option<String>,
+    },
+
+    /// Manage instance IPv4 addresses
+    Ipv4(InstanceIpv4Args),
+
+    /// Manage instance IPv6 addresses
+    Ipv6(InstanceIpv6Args),
+
+    /// Manage ISO attachments
+    Iso(InstanceIsoArgs),
+
+    /// Manage backup schedule
+    Backup(InstanceBackupArgs),
+
+    /// Manage instance VPC attachments
+    Vpc(InstanceVpcArgs),
+
+    /// Manage instance VPC2 attachments
+    Vpc2(InstanceVpc2Args),
+
+    /// Bulk operations on multiple instances
+    Bulk(InstanceBulkArgs),
+}
+
+// ==================
+// Instance IPv4 Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct InstanceIpv4Args {
+    #[command(subcommand)]
+    pub command: InstanceIpv4Commands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum InstanceIpv4Commands {
+    /// List IPv4 addresses
+    List {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Create an additional IPv4 address
+    Create {
+        /// Instance ID
+        id: String,
+        /// Reboot instance after adding IP
+        #[arg(long)]
+        reboot: bool,
+    },
+
+    /// Delete an IPv4 address
+    Delete {
+        /// Instance ID
+        id: String,
+        /// IPv4 address to delete
+        #[arg(long)]
+        ipv4: String,
+    },
+
+    /// Set reverse DNS for IPv4
+    Reverse {
+        /// Instance ID
+        id: String,
+        /// IPv4 address
+        #[arg(long)]
+        ip: String,
+        /// Reverse DNS hostname
+        #[arg(long)]
+        reverse: String,
+    },
+
+    /// Set default reverse DNS for IPv4
+    DefaultReverse {
+        /// Instance ID
+        id: String,
+        /// IPv4 address
+        #[arg(long)]
+        ip: String,
+    },
+}
+
+// ==================
+// Instance IPv6 Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct InstanceIpv6Args {
+    #[command(subcommand)]
+    pub command: InstanceIpv6Commands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum InstanceIpv6Commands {
+    /// List IPv6 addresses
+    List {
+        /// Instance ID
+        id: String,
+    },
+
+    /// List IPv6 reverse DNS entries
+    ReverseList {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Set reverse DNS for IPv6
+    Reverse {
+        /// Instance ID
+        id: String,
+        /// IPv6 address
+        #[arg(long)]
+        ip: String,
+        /// Reverse DNS hostname
+        #[arg(long)]
+        reverse: String,
+    },
+
+    /// Delete reverse DNS for IPv6
+    DeleteReverse {
+        /// Instance ID
+        id: String,
+        /// IPv6 address
+        #[arg(long)]
+        ip: String,
+    },
+}
+
+// ==================
+// Instance ISO Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct InstanceIsoArgs {
+    #[command(subcommand)]
+    pub command: InstanceIsoCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum InstanceIsoCommands {
+    /// Get ISO attachment status
+    Status {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Attach an ISO to instance
+    Attach {
+        /// Instance ID
+        id: String,
+        /// ISO ID
+        #[arg(long)]
+        iso_id: String,
+    },
+
+    /// Detach ISO from instance
+    Detach {
+        /// Instance ID
+        id: String,
+    },
+}
+
+// ==================
+// Instance Backup Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct InstanceBackupArgs {
+    #[command(subcommand)]
+    pub command: InstanceBackupCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum InstanceBackupCommands {
+    /// Get backup schedule
+    Get {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Set backup schedule
+    Set {
+        /// Instance ID
+        id: String,
+        /// Schedule type (daily, weekly, monthly, daily_alt_even, daily_alt_odd)
+        #[arg(long)]
+        schedule_type: String,
+        /// Hour of day (0-23)
+        #[arg(long)]
+        hour: Option<i32>,
+        /// Day of week (1-7, Sunday = 1) for weekly
+        #[arg(long)]
+        dow: Option<i32>,
+        /// Day of month (1-28) for monthly
+        #[arg(long)]
+        dom: Option<i32>,
+    },
+}
+
+// ==================
+// Instance VPC Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct InstanceVpcArgs {
+    #[command(subcommand)]
+    pub command: InstanceVpcCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum InstanceVpcCommands {
+    /// List attached VPCs
+    List {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Attach a VPC
+    Attach {
+        /// Instance ID
+        id: String,
+        /// VPC ID
+        #[arg(long)]
+        vpc_id: String,
+    },
+
+    /// Detach a VPC
+    Detach {
+        /// Instance ID
+        id: String,
+        /// VPC ID
+        #[arg(long)]
+        vpc_id: String,
+    },
+}
+
+// ==================
+// Instance VPC2 Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct InstanceVpc2Args {
+    #[command(subcommand)]
+    pub command: InstanceVpc2Commands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum InstanceVpc2Commands {
+    /// List attached VPC2s
+    List {
+        /// Instance ID
+        id: String,
+    },
+
+    /// Attach a VPC2
+    Attach {
+        /// Instance ID
+        id: String,
+        /// VPC2 ID
+        #[arg(long)]
+        vpc_id: String,
+        /// IP address to assign
+        #[arg(long)]
+        ip_address: Option<String>,
+    },
+
+    /// Detach a VPC2
+    Detach {
+        /// Instance ID
+        id: String,
+        /// VPC2 ID
+        #[arg(long)]
+        vpc_id: String,
+    },
+}
+
+// ==================
+// Instance Bulk Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct InstanceBulkArgs {
+    #[command(subcommand)]
+    pub command: InstanceBulkCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum InstanceBulkCommands {
+    /// Start multiple instances
+    Start {
+        /// Instance IDs (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        ids: Vec<String>,
+    },
+
+    /// Stop/halt multiple instances
+    #[command(alias = "halt")]
+    Stop {
+        /// Instance IDs (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        ids: Vec<String>,
+    },
+
+    /// Reboot multiple instances
+    Reboot {
+        /// Instance IDs (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        ids: Vec<String>,
+    },
 }
 
 #[derive(Parser, Debug, Clone)]
