@@ -102,6 +102,9 @@ async fn run(cli: Cli) -> VultrResult<()> {
                     handle_firewall(args, &client, output, skip_confirm, &wait_opts).await
                 }
                 Commands::Vpc(args) => handle_vpc(args, &client, output, skip_confirm).await,
+                Commands::Kubernetes(args) => {
+                    handle_kubernetes(args, &client, output, skip_confirm).await
+                }
                 Commands::Regions => handle_regions(&client, output).await,
                 Commands::Plans(args) => {
                     handle_plans(&client, output, args.plan_type.as_deref()).await

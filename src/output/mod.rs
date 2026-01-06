@@ -903,6 +903,302 @@ pub fn print_info(message: &str) {
     println!("{} {}", "ℹ".cyan(), message);
 }
 
+// =====================
+// Kubernetes Display Types
+// =====================
+
+/// Table row for Kubernetes clusters
+#[derive(Tabled)]
+pub struct KubernetesClusterRow {
+    #[tabled(rename = "ID")]
+    pub id: String,
+    #[tabled(rename = "LABEL")]
+    pub label: String,
+    #[tabled(rename = "REGION")]
+    pub region: String,
+    #[tabled(rename = "VERSION")]
+    pub version: String,
+    #[tabled(rename = "STATUS")]
+    pub status: String,
+    #[tabled(rename = "HA")]
+    pub ha: String,
+    #[tabled(rename = "POOLS")]
+    pub pools: String,
+}
+
+impl From<&KubernetesCluster> for KubernetesClusterRow {
+    fn from(cluster: &KubernetesCluster) -> Self {
+        Self {
+            id: cluster.id.clone(),
+            label: cluster.label.clone().unwrap_or_default(),
+            region: cluster.region.clone().unwrap_or_default(),
+            version: cluster.version.clone().unwrap_or_default(),
+            status: cluster.status.clone().unwrap_or_default(),
+            ha: if cluster.ha_controlplanes {
+                "Yes"
+            } else {
+                "No"
+            }
+            .to_string(),
+            pools: cluster.node_pools.len().to_string(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<KubernetesCluster> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No Kubernetes clusters found.".yellow());
+            return;
+        }
+        let rows: Vec<KubernetesClusterRow> = self.iter().map(KubernetesClusterRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for KubernetesCluster {
+    fn print_table(&self) {
+        println!("{}", "Kubernetes Cluster:".cyan());
+        println!("  {}: {}", "ID".green(), self.id);
+        if let Some(label) = &self.label {
+            println!("  {}: {}", "Label".green(), label);
+        }
+        if let Some(region) = &self.region {
+            println!("  {}: {}", "Region".green(), region);
+        }
+        if let Some(version) = &self.version {
+            println!("  {}: {}", "Version".green(), version);
+        }
+        if let Some(status) = &self.status {
+            println!("  {}: {}", "Status".green(), status);
+        }
+        println!(
+            "  {}: {}",
+            "HA Control Planes".green(),
+            if self.ha_controlplanes { "Yes" } else { "No" }
+        );
+        if let Some(ip) = &self.ip {
+            println!("  {}: {}", "IP".green(), ip);
+        }
+        if let Some(endpoint) = &self.endpoint {
+            println!("  {}: {}", "Endpoint".green(), endpoint);
+        }
+        if let Some(cluster_subnet) = &self.cluster_subnet {
+            println!("  {}: {}", "Cluster Subnet".green(), cluster_subnet);
+        }
+        if let Some(service_subnet) = &self.service_subnet {
+            println!("  {}: {}", "Service Subnet".green(), service_subnet);
+        }
+        if let Some(created) = &self.date_created {
+            println!("  {}: {}", "Created".green(), created);
+        }
+        if !self.node_pools.is_empty() {
+            println!("\n  {}:", "Node Pools".cyan());
+            for pool in &self.node_pools {
+                println!(
+                    "    - {} ({}): {} nodes, plan: {}",
+                    pool.id,
+                    pool.label.as_deref().unwrap_or("no-label"),
+                    pool.node_quantity.unwrap_or(0),
+                    pool.plan.as_deref().unwrap_or("unknown")
+                );
+            }
+        }
+    }
+}
+
+/// Table row for node pools
+#[derive(Tabled)]
+pub struct NodePoolRow {
+    #[tabled(rename = "ID")]
+    pub id: String,
+    #[tabled(rename = "LABEL")]
+    pub label: String,
+    #[tabled(rename = "PLAN")]
+    pub plan: String,
+    #[tabled(rename = "NODES")]
+    pub nodes: String,
+    #[tabled(rename = "STATUS")]
+    pub status: String,
+    #[tabled(rename = "AUTO-SCALER")]
+    pub auto_scaler: String,
+}
+
+impl From<&NodePool> for NodePoolRow {
+    fn from(pool: &NodePool) -> Self {
+        let scaler = if pool.auto_scaler {
+            format!(
+                "{}-{}",
+                pool.min_nodes.unwrap_or(0),
+                pool.max_nodes.unwrap_or(0)
+            )
+        } else {
+            "Off".to_string()
+        };
+
+        Self {
+            id: pool.id.clone(),
+            label: pool.label.clone().unwrap_or_default(),
+            plan: pool.plan.clone().unwrap_or_default(),
+            nodes: pool.node_quantity.unwrap_or(0).to_string(),
+            status: pool.status.clone().unwrap_or_default(),
+            auto_scaler: scaler,
+        }
+    }
+}
+
+impl TableDisplay for Vec<NodePool> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No node pools found.".yellow());
+            return;
+        }
+        let rows: Vec<NodePoolRow> = self.iter().map(NodePoolRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for NodePool {
+    fn print_table(&self) {
+        println!("{}", "Node Pool:".cyan());
+        println!("  {}: {}", "ID".green(), self.id);
+        if let Some(label) = &self.label {
+            println!("  {}: {}", "Label".green(), label);
+        }
+        if let Some(plan) = &self.plan {
+            println!("  {}: {}", "Plan".green(), plan);
+        }
+        if let Some(quantity) = &self.node_quantity {
+            println!("  {}: {}", "Node Quantity".green(), quantity);
+        }
+        if let Some(status) = &self.status {
+            println!("  {}: {}", "Status".green(), status);
+        }
+        println!(
+            "  {}: {}",
+            "Auto Scaler".green(),
+            if self.auto_scaler {
+                "Enabled"
+            } else {
+                "Disabled"
+            }
+        );
+        if self.auto_scaler {
+            if let Some(min) = self.min_nodes {
+                println!("  {}: {}", "Min Nodes".green(), min);
+            }
+            if let Some(max) = self.max_nodes {
+                println!("  {}: {}", "Max Nodes".green(), max);
+            }
+        }
+        if let Some(tag) = &self.tag {
+            println!("  {}: {}", "Tag".green(), tag);
+        }
+        if let Some(created) = &self.date_created {
+            println!("  {}: {}", "Created".green(), created);
+        }
+        if !self.nodes.is_empty() {
+            println!("\n  {}:", "Nodes".cyan());
+            for node in &self.nodes {
+                println!(
+                    "    - {} ({}): {}",
+                    node.id,
+                    node.label.as_deref().unwrap_or("no-label"),
+                    node.status.as_deref().unwrap_or("unknown")
+                );
+            }
+        }
+    }
+}
+
+/// Table row for nodes
+#[derive(Tabled)]
+pub struct KubeNodeRow {
+    #[tabled(rename = "ID")]
+    pub id: String,
+    #[tabled(rename = "LABEL")]
+    pub label: String,
+    #[tabled(rename = "STATUS")]
+    pub status: String,
+    #[tabled(rename = "CREATED")]
+    pub created: String,
+}
+
+impl From<&KubeNode> for KubeNodeRow {
+    fn from(node: &KubeNode) -> Self {
+        Self {
+            id: node.id.clone(),
+            label: node.label.clone().unwrap_or_default(),
+            status: node.status.clone().unwrap_or_default(),
+            created: node.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<KubeNode> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No nodes found.".yellow());
+            return;
+        }
+        let rows: Vec<KubeNodeRow> = self.iter().map(KubeNodeRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for KubeNode {
+    fn print_table(&self) {
+        println!("{}", "Node:".cyan());
+        println!("  {}: {}", "ID".green(), self.id);
+        if let Some(label) = &self.label {
+            println!("  {}: {}", "Label".green(), label);
+        }
+        if let Some(status) = &self.status {
+            println!("  {}: {}", "Status".green(), status);
+        }
+        if let Some(created) = &self.date_created {
+            println!("  {}: {}", "Created".green(), created);
+        }
+    }
+}
+
+impl TableDisplay for ClusterResources {
+    fn print_table(&self) {
+        println!("{}", "Cluster Resources:".cyan());
+
+        if !self.resources.block_storage.is_empty() {
+            println!("\n  {}:", "Block Storage".green());
+            for bs in &self.resources.block_storage {
+                println!(
+                    "    - {} ({}): {}",
+                    bs.id.as_deref().unwrap_or("unknown"),
+                    bs.label.as_deref().unwrap_or("no-label"),
+                    bs.status.as_deref().unwrap_or("unknown")
+                );
+            }
+        } else {
+            println!("\n  {}: None", "Block Storage".green());
+        }
+
+        if !self.resources.load_balancer.is_empty() {
+            println!("\n  {}:", "Load Balancers".green());
+            for lb in &self.resources.load_balancer {
+                println!(
+                    "    - {} ({}): {}",
+                    lb.id.as_deref().unwrap_or("unknown"),
+                    lb.label.as_deref().unwrap_or("no-label"),
+                    lb.status.as_deref().unwrap_or("unknown")
+                );
+            }
+        } else {
+            println!("\n  {}: None", "Load Balancers".green());
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

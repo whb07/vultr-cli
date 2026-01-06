@@ -72,6 +72,10 @@ pub enum Commands {
     /// Manage VPCs (Virtual Private Clouds)
     Vpc(VpcArgs),
 
+    /// Manage Kubernetes clusters (VKE)
+    #[command(alias = "k8s", alias = "vke")]
+    Kubernetes(KubernetesArgs),
+
     /// List available regions
     Regions,
 
@@ -1043,6 +1047,281 @@ pub enum VpcCommands {
     /// Delete a VPC
     Delete {
         /// VPC ID
+        id: String,
+    },
+}
+
+// ==================
+// Kubernetes Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct KubernetesArgs {
+    #[command(subcommand)]
+    pub command: KubernetesCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum KubernetesCommands {
+    /// List all Kubernetes clusters
+    List,
+
+    /// Get cluster details
+    Get {
+        /// Cluster ID (VKE ID)
+        id: String,
+    },
+
+    /// Create a new Kubernetes cluster
+    Create(KubernetesCreateArgs),
+
+    /// Update a Kubernetes cluster
+    Update {
+        /// Cluster ID (VKE ID)
+        id: String,
+        /// New label
+        #[arg(long)]
+        label: Option<String>,
+    },
+
+    /// Delete a Kubernetes cluster
+    Delete {
+        /// Cluster ID (VKE ID)
+        id: String,
+        /// Also delete all linked resources (block storage, load balancers)
+        #[arg(long)]
+        with_resources: bool,
+    },
+
+    /// Get kubeconfig for a cluster
+    Config {
+        /// Cluster ID (VKE ID)
+        id: String,
+        /// Decode and output raw kubeconfig (default: base64 encoded)
+        #[arg(long)]
+        decode: bool,
+    },
+
+    /// Get available upgrades for a cluster
+    Upgrades {
+        /// Cluster ID (VKE ID)
+        id: String,
+    },
+
+    /// Upgrade a cluster to a new version
+    Upgrade {
+        /// Cluster ID (VKE ID)
+        id: String,
+        /// Target Kubernetes version
+        #[arg(long)]
+        version: String,
+    },
+
+    /// Get resources deployed by a cluster
+    Resources {
+        /// Cluster ID (VKE ID)
+        id: String,
+    },
+
+    /// List available Kubernetes versions
+    Versions,
+
+    /// Manage node pools
+    #[command(alias = "pool")]
+    NodePool(KubernetesNodePoolArgs),
+
+    /// Manage nodes
+    Node(KubernetesNodeArgs),
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct KubernetesCreateArgs {
+    /// Region ID
+    #[arg(long)]
+    pub region: String,
+
+    /// Kubernetes version
+    #[arg(long)]
+    pub version: String,
+
+    /// Cluster label
+    #[arg(long)]
+    pub label: Option<String>,
+
+    /// Enable HA control planes
+    #[arg(long)]
+    pub ha_controlplanes: bool,
+
+    /// Enable managed firewall
+    #[arg(long)]
+    pub enable_firewall: bool,
+
+    /// Node pool label (required if creating initial node pool)
+    #[arg(long)]
+    pub pool_label: Option<String>,
+
+    /// Node pool plan (required if creating initial node pool)
+    #[arg(long)]
+    pub pool_plan: Option<String>,
+
+    /// Number of nodes in pool
+    #[arg(long, default_value = "3")]
+    pub pool_quantity: i32,
+
+    /// Enable auto-scaler for pool
+    #[arg(long)]
+    pub pool_auto_scaler: bool,
+
+    /// Minimum nodes for auto-scaler
+    #[arg(long)]
+    pub pool_min_nodes: Option<i32>,
+
+    /// Maximum nodes for auto-scaler
+    #[arg(long)]
+    pub pool_max_nodes: Option<i32>,
+}
+
+// Node Pool subcommands
+
+#[derive(Parser, Debug, Clone)]
+pub struct KubernetesNodePoolArgs {
+    #[command(subcommand)]
+    pub command: KubernetesNodePoolCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum KubernetesNodePoolCommands {
+    /// List node pools in a cluster
+    List {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+    },
+
+    /// Get node pool details
+    Get {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        id: String,
+    },
+
+    /// Create a new node pool
+    Create {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool label
+        #[arg(long)]
+        label: String,
+        /// Plan ID for nodes
+        #[arg(long)]
+        plan: String,
+        /// Number of nodes
+        #[arg(long)]
+        quantity: i32,
+        /// Tag for nodes
+        #[arg(long)]
+        tag: Option<String>,
+        /// Enable auto-scaler
+        #[arg(long)]
+        auto_scaler: bool,
+        /// Minimum nodes for auto-scaler
+        #[arg(long)]
+        min_nodes: Option<i32>,
+        /// Maximum nodes for auto-scaler
+        #[arg(long)]
+        max_nodes: Option<i32>,
+    },
+
+    /// Update a node pool
+    Update {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        id: String,
+        /// New node quantity
+        #[arg(long)]
+        quantity: Option<i32>,
+        /// New tag
+        #[arg(long)]
+        tag: Option<String>,
+        /// Enable/disable auto-scaler
+        #[arg(long)]
+        auto_scaler: Option<bool>,
+        /// New minimum nodes
+        #[arg(long)]
+        min_nodes: Option<i32>,
+        /// New maximum nodes
+        #[arg(long)]
+        max_nodes: Option<i32>,
+    },
+
+    /// Delete a node pool
+    Delete {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        id: String,
+    },
+}
+
+// Node subcommands
+
+#[derive(Parser, Debug, Clone)]
+pub struct KubernetesNodeArgs {
+    #[command(subcommand)]
+    pub command: KubernetesNodeCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum KubernetesNodeCommands {
+    /// List nodes in a node pool
+    List {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        #[arg(long)]
+        nodepool_id: String,
+    },
+
+    /// Get node details
+    Get {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        #[arg(long)]
+        nodepool_id: String,
+        /// Node ID
+        id: String,
+    },
+
+    /// Delete a node
+    Delete {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        #[arg(long)]
+        nodepool_id: String,
+        /// Node ID
+        id: String,
+    },
+
+    /// Recycle a node (delete and recreate)
+    Recycle {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        #[arg(long)]
+        nodepool_id: String,
+        /// Node ID
         id: String,
     },
 }

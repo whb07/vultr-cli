@@ -1093,6 +1093,228 @@ impl VultrClient {
         let response: ListResponse<PlansResponse> = self.get(&path).await?;
         Ok(response.data.plans)
     }
+
+    // =====================
+    // Kubernetes Operations
+    // =====================
+
+    /// List all Kubernetes clusters
+    pub async fn list_kubernetes_clusters(&self) -> VultrResult<Vec<KubernetesCluster>> {
+        let response: ClustersResponse = self.get("/kubernetes/clusters").await?;
+        Ok(response.vke_clusters)
+    }
+
+    /// Get a single Kubernetes cluster
+    pub async fn get_kubernetes_cluster(&self, vke_id: &str) -> VultrResult<KubernetesCluster> {
+        let response: ClusterResponse = self
+            .get(&format!("/kubernetes/clusters/{}", vke_id))
+            .await?;
+        Ok(response.vke_cluster)
+    }
+
+    /// Create a new Kubernetes cluster
+    pub async fn create_kubernetes_cluster(
+        &self,
+        request: CreateClusterRequest,
+    ) -> VultrResult<KubernetesCluster> {
+        let response: ClusterResponse = self.post("/kubernetes/clusters", request).await?;
+        Ok(response.vke_cluster)
+    }
+
+    /// Update a Kubernetes cluster
+    pub async fn update_kubernetes_cluster(
+        &self,
+        vke_id: &str,
+        request: UpdateClusterRequest,
+    ) -> VultrResult<KubernetesCluster> {
+        let response: ClusterResponse = self
+            .put(&format!("/kubernetes/clusters/{}", vke_id), request)
+            .await?;
+        Ok(response.vke_cluster)
+    }
+
+    /// Delete a Kubernetes cluster
+    pub async fn delete_kubernetes_cluster(&self, vke_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/kubernetes/clusters/{}", vke_id))
+            .await
+    }
+
+    /// Delete a Kubernetes cluster with all linked resources
+    pub async fn delete_kubernetes_cluster_with_resources(&self, vke_id: &str) -> VultrResult<()> {
+        self.delete(&format!(
+            "/kubernetes/clusters/{}/delete-with-linked-resources",
+            vke_id
+        ))
+        .await
+    }
+
+    /// Get kubeconfig for a cluster
+    pub async fn get_kubernetes_config(&self, vke_id: &str) -> VultrResult<String> {
+        let response: KubeconfigResponse = self
+            .get(&format!("/kubernetes/clusters/{}/config", vke_id))
+            .await?;
+        Ok(response.kube_config)
+    }
+
+    /// Get available Kubernetes versions
+    pub async fn get_kubernetes_versions(&self) -> VultrResult<Vec<String>> {
+        let response: VersionsResponse = self.get("/kubernetes/versions").await?;
+        Ok(response.versions)
+    }
+
+    /// Get available upgrades for a cluster
+    pub async fn get_kubernetes_available_upgrades(
+        &self,
+        vke_id: &str,
+    ) -> VultrResult<Vec<String>> {
+        let response: KubernetesUpgradesResponse = self
+            .get(&format!(
+                "/kubernetes/clusters/{}/available-upgrades",
+                vke_id
+            ))
+            .await?;
+        Ok(response.available_upgrades)
+    }
+
+    /// Upgrade a Kubernetes cluster
+    pub async fn upgrade_kubernetes_cluster(
+        &self,
+        vke_id: &str,
+        request: UpgradeClusterRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/kubernetes/clusters/{}/upgrades", vke_id),
+            request,
+        )
+        .await
+    }
+
+    /// Get resources deployed by a cluster
+    pub async fn get_kubernetes_resources(&self, vke_id: &str) -> VultrResult<ClusterResources> {
+        self.get(&format!("/kubernetes/clusters/{}/resources", vke_id))
+            .await
+    }
+
+    // Node Pool Operations
+
+    /// List node pools in a cluster
+    pub async fn list_node_pools(&self, vke_id: &str) -> VultrResult<Vec<NodePool>> {
+        let response: NodePoolsResponse = self
+            .get(&format!("/kubernetes/clusters/{}/node-pools", vke_id))
+            .await?;
+        Ok(response.node_pools)
+    }
+
+    /// Get a single node pool
+    pub async fn get_node_pool(&self, vke_id: &str, nodepool_id: &str) -> VultrResult<NodePool> {
+        let response: NodePoolResponse = self
+            .get(&format!(
+                "/kubernetes/clusters/{}/node-pools/{}",
+                vke_id, nodepool_id
+            ))
+            .await?;
+        Ok(response.node_pool)
+    }
+
+    /// Create a node pool
+    pub async fn create_node_pool(
+        &self,
+        vke_id: &str,
+        request: CreateNodePoolRequest,
+    ) -> VultrResult<NodePool> {
+        let response: NodePoolResponse = self
+            .post(
+                &format!("/kubernetes/clusters/{}/node-pools", vke_id),
+                request,
+            )
+            .await?;
+        Ok(response.node_pool)
+    }
+
+    /// Update a node pool
+    pub async fn update_node_pool(
+        &self,
+        vke_id: &str,
+        nodepool_id: &str,
+        request: UpdateNodePoolRequest,
+    ) -> VultrResult<NodePool> {
+        let response: NodePoolResponse = self
+            .patch(
+                &format!("/kubernetes/clusters/{}/node-pools/{}", vke_id, nodepool_id),
+                request,
+            )
+            .await?;
+        Ok(response.node_pool)
+    }
+
+    /// Delete a node pool
+    pub async fn delete_node_pool(&self, vke_id: &str, nodepool_id: &str) -> VultrResult<()> {
+        self.delete(&format!(
+            "/kubernetes/clusters/{}/node-pools/{}",
+            vke_id, nodepool_id
+        ))
+        .await
+    }
+
+    // Node Operations
+
+    /// List nodes in a node pool
+    pub async fn list_nodes(&self, vke_id: &str, nodepool_id: &str) -> VultrResult<Vec<KubeNode>> {
+        let response: NodesResponse = self
+            .get(&format!(
+                "/kubernetes/clusters/{}/node-pools/{}/nodes",
+                vke_id, nodepool_id
+            ))
+            .await?;
+        Ok(response.nodes)
+    }
+
+    /// Get a single node
+    pub async fn get_node(
+        &self,
+        vke_id: &str,
+        nodepool_id: &str,
+        node_id: &str,
+    ) -> VultrResult<KubeNode> {
+        let response: NodeResponse = self
+            .get(&format!(
+                "/kubernetes/clusters/{}/node-pools/{}/nodes/{}",
+                vke_id, nodepool_id, node_id
+            ))
+            .await?;
+        Ok(response.node)
+    }
+
+    /// Delete a node
+    pub async fn delete_node(
+        &self,
+        vke_id: &str,
+        nodepool_id: &str,
+        node_id: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/kubernetes/clusters/{}/node-pools/{}/nodes/{}",
+            vke_id, nodepool_id, node_id
+        ))
+        .await
+    }
+
+    /// Recycle a node
+    pub async fn recycle_node(
+        &self,
+        vke_id: &str,
+        nodepool_id: &str,
+        node_id: &str,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!(
+                "/kubernetes/clusters/{}/node-pools/{}/nodes/{}/recycle",
+                vke_id, nodepool_id, node_id
+            ),
+            serde_json::json!({}),
+        )
+        .await
+    }
 }
 
 #[cfg(test)]
