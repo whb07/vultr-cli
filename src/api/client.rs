@@ -1315,6 +1315,677 @@ impl VultrClient {
         )
         .await
     }
+
+    // =========================================================================
+    // Managed Database Operations
+    // =========================================================================
+
+    /// List all managed databases
+    pub async fn list_databases(&self) -> VultrResult<Vec<Database>> {
+        let response: DatabasesResponse = self.get("/databases").await?;
+        Ok(response.databases)
+    }
+
+    /// Get a single managed database
+    pub async fn get_database(&self, database_id: &str) -> VultrResult<Database> {
+        let response: DatabaseResponse = self.get(&format!("/databases/{}", database_id)).await?;
+        Ok(response.database)
+    }
+
+    /// Create a managed database
+    pub async fn create_database(&self, request: CreateDatabaseRequest) -> VultrResult<Database> {
+        let response: DatabaseResponse = self.post("/databases", request).await?;
+        Ok(response.database)
+    }
+
+    /// Update a managed database
+    pub async fn update_database(
+        &self,
+        database_id: &str,
+        request: UpdateDatabaseRequest,
+    ) -> VultrResult<Database> {
+        let response: DatabaseResponse = self
+            .put(&format!("/databases/{}", database_id), request)
+            .await?;
+        Ok(response.database)
+    }
+
+    /// Delete a managed database
+    pub async fn delete_database(&self, database_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/databases/{}", database_id)).await
+    }
+
+    /// List database plans
+    pub async fn list_database_plans(
+        &self,
+        engine: Option<&str>,
+        nodes: Option<i32>,
+        region: Option<&str>,
+    ) -> VultrResult<Vec<DatabasePlan>> {
+        let mut params = Vec::new();
+        if let Some(e) = engine {
+            params.push(format!("engine={}", e));
+        }
+        if let Some(n) = nodes {
+            params.push(format!("nodes={}", n));
+        }
+        if let Some(r) = region {
+            params.push(format!("region={}", r));
+        }
+        let path = if params.is_empty() {
+            "/databases/plans".to_string()
+        } else {
+            format!("/databases/plans?{}", params.join("&"))
+        };
+        let response: DatabasePlansResponse = self.get(&path).await?;
+        Ok(response.plans)
+    }
+
+    /// Get database usage
+    pub async fn get_database_usage(&self, database_id: &str) -> VultrResult<DatabaseUsage> {
+        let response: DatabaseUsageResponse = self
+            .get(&format!("/databases/{}/usage", database_id))
+            .await?;
+        Ok(response.usage)
+    }
+
+    /// Get database alerts
+    pub async fn get_database_alerts(&self, database_id: &str) -> VultrResult<Vec<DatabaseAlert>> {
+        let response: DatabaseAlertsResponse = self
+            .get(&format!("/databases/{}/alerts", database_id))
+            .await?;
+        Ok(response.alerts)
+    }
+
+    /// Get database backups
+    pub async fn get_database_backups(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<DatabaseBackupsResponse> {
+        self.get(&format!("/databases/{}/backups", database_id))
+            .await
+    }
+
+    /// Restore database from backup
+    pub async fn restore_database(
+        &self,
+        database_id: &str,
+        request: RestoreDatabaseRequest,
+    ) -> VultrResult<Database> {
+        let response: DatabaseResponse = self
+            .post(&format!("/databases/{}/restore", database_id), request)
+            .await?;
+        Ok(response.database)
+    }
+
+    /// Fork a database
+    pub async fn fork_database(
+        &self,
+        database_id: &str,
+        request: ForkDatabaseRequest,
+    ) -> VultrResult<Database> {
+        let response: DatabaseResponse = self
+            .post(&format!("/databases/{}/fork", database_id), request)
+            .await?;
+        Ok(response.database)
+    }
+
+    /// Create a read replica
+    pub async fn create_read_replica(
+        &self,
+        database_id: &str,
+        request: CreateReadReplicaRequest,
+    ) -> VultrResult<Database> {
+        let response: DatabaseResponse = self
+            .post(&format!("/databases/{}/read-replica", database_id), request)
+            .await?;
+        Ok(response.database)
+    }
+
+    /// Promote a read replica to standalone
+    pub async fn promote_read_replica(&self, database_id: &str) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/databases/{}/promote-read-replica", database_id),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    /// Get maintenance schedule
+    pub async fn get_database_maintenance(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<MaintenanceSchedule> {
+        let response: MaintenanceResponse = self
+            .get(&format!("/databases/{}/maintenance", database_id))
+            .await?;
+        Ok(response.maintenance)
+    }
+
+    /// Update maintenance schedule
+    pub async fn update_database_maintenance(
+        &self,
+        database_id: &str,
+        request: UpdateMaintenanceRequest,
+    ) -> VultrResult<MaintenanceSchedule> {
+        let response: MaintenanceResponse = self
+            .post(&format!("/databases/{}/maintenance", database_id), request)
+            .await?;
+        Ok(response.maintenance)
+    }
+
+    /// Start database migration
+    pub async fn start_database_migration(
+        &self,
+        database_id: &str,
+        request: StartMigrationRequest,
+    ) -> VultrResult<DatabaseMigration> {
+        let response: DatabaseMigrationResponse = self
+            .post(&format!("/databases/{}/migration", database_id), request)
+            .await?;
+        Ok(response.migration)
+    }
+
+    /// Get database migration status
+    pub async fn get_database_migration(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<DatabaseMigration> {
+        let response: DatabaseMigrationResponse = self
+            .get(&format!("/databases/{}/migration", database_id))
+            .await?;
+        Ok(response.migration)
+    }
+
+    /// Detach database migration
+    pub async fn detach_database_migration(&self, database_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/databases/{}/migration", database_id))
+            .await
+    }
+
+    /// Get available version upgrades
+    pub async fn get_database_version_upgrades(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<Vec<String>> {
+        let response: DatabaseVersionsResponse = self
+            .get(&format!("/databases/{}/version-upgrade", database_id))
+            .await?;
+        Ok(response.available_versions)
+    }
+
+    /// Upgrade database version
+    pub async fn upgrade_database_version(
+        &self,
+        database_id: &str,
+        request: UpgradeDatabaseVersionRequest,
+    ) -> VultrResult<Database> {
+        let response: DatabaseResponse = self
+            .post(
+                &format!("/databases/{}/version-upgrade", database_id),
+                request,
+            )
+            .await?;
+        Ok(response.database)
+    }
+
+    // Database Users
+
+    /// List database users
+    pub async fn list_database_users(&self, database_id: &str) -> VultrResult<Vec<DatabaseUser>> {
+        let response: DatabaseUsersResponse = self
+            .get(&format!("/databases/{}/users", database_id))
+            .await?;
+        Ok(response.users)
+    }
+
+    /// Get a database user
+    pub async fn get_database_user(
+        &self,
+        database_id: &str,
+        username: &str,
+    ) -> VultrResult<DatabaseUser> {
+        let response: DatabaseUserResponse = self
+            .get(&format!("/databases/{}/users/{}", database_id, username))
+            .await?;
+        Ok(response.user)
+    }
+
+    /// Create a database user
+    pub async fn create_database_user(
+        &self,
+        database_id: &str,
+        request: CreateDatabaseUserRequest,
+    ) -> VultrResult<DatabaseUser> {
+        let response: DatabaseUserResponse = self
+            .post(&format!("/databases/{}/users", database_id), request)
+            .await?;
+        Ok(response.user)
+    }
+
+    /// Update a database user
+    pub async fn update_database_user(
+        &self,
+        database_id: &str,
+        username: &str,
+        request: UpdateDatabaseUserRequest,
+    ) -> VultrResult<DatabaseUser> {
+        let response: DatabaseUserResponse = self
+            .put(
+                &format!("/databases/{}/users/{}", database_id, username),
+                request,
+            )
+            .await?;
+        Ok(response.user)
+    }
+
+    /// Delete a database user
+    pub async fn delete_database_user(&self, database_id: &str, username: &str) -> VultrResult<()> {
+        self.delete(&format!("/databases/{}/users/{}", database_id, username))
+            .await
+    }
+
+    /// Update user access control (Valkey)
+    pub async fn update_user_access_control(
+        &self,
+        database_id: &str,
+        username: &str,
+        request: UpdateUserAccessControlRequest,
+    ) -> VultrResult<DatabaseUser> {
+        let response: DatabaseUserResponse = self
+            .put(
+                &format!(
+                    "/databases/{}/users/{}/access-control",
+                    database_id, username
+                ),
+                request,
+            )
+            .await?;
+        Ok(response.user)
+    }
+
+    // Logical Databases
+
+    /// List logical databases
+    pub async fn list_logical_databases(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<Vec<LogicalDatabase>> {
+        let response: LogicalDatabasesResponse =
+            self.get(&format!("/databases/{}/dbs", database_id)).await?;
+        Ok(response.dbs)
+    }
+
+    /// Get a logical database
+    pub async fn get_logical_database(
+        &self,
+        database_id: &str,
+        db_name: &str,
+    ) -> VultrResult<LogicalDatabase> {
+        let response: LogicalDatabaseResponse = self
+            .get(&format!("/databases/{}/dbs/{}", database_id, db_name))
+            .await?;
+        Ok(response.db)
+    }
+
+    /// Create a logical database
+    pub async fn create_logical_database(
+        &self,
+        database_id: &str,
+        request: CreateLogicalDatabaseRequest,
+    ) -> VultrResult<LogicalDatabase> {
+        let response: LogicalDatabaseResponse = self
+            .post(&format!("/databases/{}/dbs", database_id), request)
+            .await?;
+        Ok(response.db)
+    }
+
+    /// Delete a logical database
+    pub async fn delete_logical_database(
+        &self,
+        database_id: &str,
+        db_name: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!("/databases/{}/dbs/{}", database_id, db_name))
+            .await
+    }
+
+    // Connection Pools (PostgreSQL)
+
+    /// List connection pools
+    pub async fn list_connection_pools(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<Vec<ConnectionPool>> {
+        let response: ConnectionPoolsResponse = self
+            .get(&format!("/databases/{}/connection-pools", database_id))
+            .await?;
+        Ok(response.connection_pools)
+    }
+
+    /// Get a connection pool
+    pub async fn get_connection_pool(
+        &self,
+        database_id: &str,
+        pool_name: &str,
+    ) -> VultrResult<ConnectionPool> {
+        let response: ConnectionPoolResponse = self
+            .get(&format!(
+                "/databases/{}/connection-pools/{}",
+                database_id, pool_name
+            ))
+            .await?;
+        Ok(response.connection_pool)
+    }
+
+    /// Create a connection pool
+    pub async fn create_connection_pool(
+        &self,
+        database_id: &str,
+        request: CreateConnectionPoolRequest,
+    ) -> VultrResult<ConnectionPool> {
+        let response: ConnectionPoolResponse = self
+            .post(
+                &format!("/databases/{}/connection-pools", database_id),
+                request,
+            )
+            .await?;
+        Ok(response.connection_pool)
+    }
+
+    /// Update a connection pool
+    pub async fn update_connection_pool(
+        &self,
+        database_id: &str,
+        pool_name: &str,
+        request: UpdateConnectionPoolRequest,
+    ) -> VultrResult<ConnectionPool> {
+        let response: ConnectionPoolResponse = self
+            .put(
+                &format!("/databases/{}/connection-pools/{}", database_id, pool_name),
+                request,
+            )
+            .await?;
+        Ok(response.connection_pool)
+    }
+
+    /// Delete a connection pool
+    pub async fn delete_connection_pool(
+        &self,
+        database_id: &str,
+        pool_name: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/databases/{}/connection-pools/{}",
+            database_id, pool_name
+        ))
+        .await
+    }
+
+    // Kafka Topics
+
+    /// List Kafka topics
+    pub async fn list_kafka_topics(&self, database_id: &str) -> VultrResult<Vec<KafkaTopic>> {
+        let response: KafkaTopicsResponse = self
+            .get(&format!("/databases/{}/topics", database_id))
+            .await?;
+        Ok(response.topics)
+    }
+
+    /// Get a Kafka topic
+    pub async fn get_kafka_topic(
+        &self,
+        database_id: &str,
+        topic_name: &str,
+    ) -> VultrResult<KafkaTopic> {
+        let response: KafkaTopicResponse = self
+            .get(&format!("/databases/{}/topics/{}", database_id, topic_name))
+            .await?;
+        Ok(response.topic)
+    }
+
+    /// Create a Kafka topic
+    pub async fn create_kafka_topic(
+        &self,
+        database_id: &str,
+        request: CreateKafkaTopicRequest,
+    ) -> VultrResult<KafkaTopic> {
+        let response: KafkaTopicResponse = self
+            .post(&format!("/databases/{}/topics", database_id), request)
+            .await?;
+        Ok(response.topic)
+    }
+
+    /// Update a Kafka topic
+    pub async fn update_kafka_topic(
+        &self,
+        database_id: &str,
+        topic_name: &str,
+        request: UpdateKafkaTopicRequest,
+    ) -> VultrResult<KafkaTopic> {
+        let response: KafkaTopicResponse = self
+            .put(
+                &format!("/databases/{}/topics/{}", database_id, topic_name),
+                request,
+            )
+            .await?;
+        Ok(response.topic)
+    }
+
+    /// Delete a Kafka topic
+    pub async fn delete_kafka_topic(&self, database_id: &str, topic_name: &str) -> VultrResult<()> {
+        self.delete(&format!("/databases/{}/topics/{}", database_id, topic_name))
+            .await
+    }
+
+    // Kafka Connectors
+
+    /// List available connectors
+    pub async fn list_available_connectors(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<Vec<AvailableConnector>> {
+        let response: AvailableConnectorsResponse = self
+            .get(&format!("/databases/{}/available-connectors", database_id))
+            .await?;
+        Ok(response.available_connectors)
+    }
+
+    /// List Kafka connectors
+    pub async fn list_kafka_connectors(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<Vec<KafkaConnector>> {
+        let response: KafkaConnectorsResponse = self
+            .get(&format!("/databases/{}/connectors", database_id))
+            .await?;
+        Ok(response.connectors)
+    }
+
+    /// Get a Kafka connector
+    pub async fn get_kafka_connector(
+        &self,
+        database_id: &str,
+        connector_name: &str,
+    ) -> VultrResult<KafkaConnector> {
+        let response: KafkaConnectorResponse = self
+            .get(&format!(
+                "/databases/{}/connectors/{}",
+                database_id, connector_name
+            ))
+            .await?;
+        Ok(response.connector)
+    }
+
+    /// Create a Kafka connector
+    pub async fn create_kafka_connector(
+        &self,
+        database_id: &str,
+        request: CreateKafkaConnectorRequest,
+    ) -> VultrResult<KafkaConnector> {
+        let response: KafkaConnectorResponse = self
+            .post(&format!("/databases/{}/connectors", database_id), request)
+            .await?;
+        Ok(response.connector)
+    }
+
+    /// Delete a Kafka connector
+    pub async fn delete_kafka_connector(
+        &self,
+        database_id: &str,
+        connector_name: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/databases/{}/connectors/{}",
+            database_id, connector_name
+        ))
+        .await
+    }
+
+    /// Get connector status
+    pub async fn get_connector_status(
+        &self,
+        database_id: &str,
+        connector_name: &str,
+    ) -> VultrResult<ConnectorStatus> {
+        let response: ConnectorStatusResponse = self
+            .get(&format!(
+                "/databases/{}/connectors/{}/status",
+                database_id, connector_name
+            ))
+            .await?;
+        Ok(response.status)
+    }
+
+    /// Pause a connector
+    pub async fn pause_kafka_connector(
+        &self,
+        database_id: &str,
+        connector_name: &str,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!(
+                "/databases/{}/connectors/{}/pause",
+                database_id, connector_name
+            ),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    /// Resume a connector
+    pub async fn resume_kafka_connector(
+        &self,
+        database_id: &str,
+        connector_name: &str,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!(
+                "/databases/{}/connectors/{}/resume",
+                database_id, connector_name
+            ),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    /// Restart a connector
+    pub async fn restart_kafka_connector(
+        &self,
+        database_id: &str,
+        connector_name: &str,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!(
+                "/databases/{}/connectors/{}/restart",
+                database_id, connector_name
+            ),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    /// Restart a connector task
+    pub async fn restart_connector_task(
+        &self,
+        database_id: &str,
+        connector_name: &str,
+        task_id: &str,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!(
+                "/databases/{}/connectors/{}/tasks/{}/restart",
+                database_id, connector_name, task_id
+            ),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    // Kafka Quotas
+
+    /// List database quotas
+    pub async fn list_database_quotas(&self, database_id: &str) -> VultrResult<Vec<DatabaseQuota>> {
+        let response: DatabaseQuotasResponse = self
+            .get(&format!("/databases/{}/quotas", database_id))
+            .await?;
+        Ok(response.quotas)
+    }
+
+    /// Create a database quota
+    pub async fn create_database_quota(
+        &self,
+        database_id: &str,
+        username: &str,
+        request: CreateDatabaseQuotaRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!(
+                "/databases/{}/quotas/{}/{}",
+                database_id, request.client_id, username
+            ),
+            request,
+        )
+        .await
+    }
+
+    /// Delete a database quota
+    pub async fn delete_database_quota(
+        &self,
+        database_id: &str,
+        client_id: &str,
+        username: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/databases/{}/quotas/{}/{}",
+            database_id, client_id, username
+        ))
+        .await
+    }
+
+    // Advanced Options (Kafka)
+
+    /// Get advanced options
+    pub async fn get_database_advanced_options(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<serde_json::Value> {
+        self.get(&format!("/databases/{}/advanced-options", database_id))
+            .await
+    }
+
+    /// Update advanced options
+    pub async fn update_database_advanced_options(
+        &self,
+        database_id: &str,
+        options: serde_json::Value,
+    ) -> VultrResult<serde_json::Value> {
+        self.put(
+            &format!("/databases/{}/advanced-options", database_id),
+            options,
+        )
+        .await
+    }
 }
 
 #[cfg(test)]

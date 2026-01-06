@@ -2,6 +2,7 @@
 
 pub mod block_storage;
 pub mod common;
+pub mod database;
 pub mod firewall;
 pub mod instance;
 pub mod kubernetes;
@@ -13,6 +14,7 @@ pub mod vpc;
 // Re-export commonly used types
 pub use block_storage::*;
 pub use common::*;
+pub use database::*;
 pub use firewall::*;
 pub use instance::*;
 pub use kubernetes::*;

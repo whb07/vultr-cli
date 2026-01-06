@@ -105,6 +105,9 @@ async fn run(cli: Cli) -> VultrResult<()> {
                 Commands::Kubernetes(args) => {
                     handle_kubernetes(args, &client, output, skip_confirm).await
                 }
+                Commands::Database(args) => {
+                    handle_database(args, &client, output, skip_confirm).await
+                }
                 Commands::Regions => handle_regions(&client, output).await,
                 Commands::Plans(args) => {
                     handle_plans(&client, output, args.plan_type.as_deref()).await

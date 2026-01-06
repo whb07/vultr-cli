@@ -1199,6 +1199,615 @@ impl TableDisplay for ClusterResources {
     }
 }
 
+// =====================
+// Database Display Types
+// =====================
+
+/// Table row for databases
+#[derive(Tabled)]
+pub struct DatabaseRow {
+    #[tabled(rename = "ID")]
+    pub id: String,
+    #[tabled(rename = "LABEL")]
+    pub label: String,
+    #[tabled(rename = "ENGINE")]
+    pub engine: String,
+    #[tabled(rename = "VERSION")]
+    pub version: String,
+    #[tabled(rename = "REGION")]
+    pub region: String,
+    #[tabled(rename = "STATUS")]
+    pub status: String,
+    #[tabled(rename = "HOST")]
+    pub host: String,
+}
+
+impl From<&Database> for DatabaseRow {
+    fn from(db: &Database) -> Self {
+        Self {
+            id: db.id.clone(),
+            label: db.label.clone().unwrap_or_default(),
+            engine: db.database_engine.clone().unwrap_or_default(),
+            version: db.database_engine_version.clone().unwrap_or_default(),
+            region: db.region.clone().unwrap_or_default(),
+            status: db.status.clone().unwrap_or_default(),
+            host: db.host.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<Database> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No databases found.".yellow());
+            return;
+        }
+        let rows: Vec<DatabaseRow> = self.iter().map(DatabaseRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Database {
+    fn print_table(&self) {
+        println!("{}", "Database:".cyan());
+        println!("  {}: {}", "ID".green(), self.id);
+        if let Some(label) = &self.label {
+            println!("  {}: {}", "Label".green(), label);
+        }
+        if let Some(engine) = &self.database_engine {
+            println!("  {}: {}", "Engine".green(), engine);
+        }
+        if let Some(version) = &self.database_engine_version {
+            println!("  {}: {}", "Version".green(), version);
+        }
+        if let Some(region) = &self.region {
+            println!("  {}: {}", "Region".green(), region);
+        }
+        if let Some(status) = &self.status {
+            println!("  {}: {}", "Status".green(), status);
+        }
+        if let Some(plan) = &self.plan {
+            println!("  {}: {}", "Plan".green(), plan);
+        }
+        if let Some(host) = &self.host {
+            println!("  {}: {}", "Host".green(), host);
+        }
+        if let Some(port) = &self.port {
+            println!("  {}: {}", "Port".green(), port);
+        }
+        if let Some(user) = &self.user {
+            println!("  {}: {}", "Default User".green(), user);
+        }
+        if let Some(dbname) = &self.dbname {
+            println!("  {}: {}", "Default Database".green(), dbname);
+        }
+        if let Some(vcpus) = self.plan_vcpus {
+            println!("  {}: {}", "vCPUs".green(), vcpus);
+        }
+        if let Some(ram) = self.plan_ram {
+            println!("  {}: {} MB", "RAM".green(), ram);
+        }
+        if let Some(disk) = self.plan_disk {
+            println!("  {}: {} GB", "Disk".green(), disk);
+        }
+        if let Some(replicas) = self.plan_replicas {
+            println!("  {}: {}", "Replicas".green(), replicas);
+        }
+        if let Some(created) = &self.date_created {
+            println!("  {}: {}", "Created".green(), created);
+        }
+        if !self.trusted_ips.is_empty() {
+            println!(
+                "  {}: {}",
+                "Trusted IPs".green(),
+                self.trusted_ips.join(", ")
+            );
+        }
+    }
+}
+
+/// Table row for database plans
+#[derive(Tabled)]
+pub struct DatabasePlanRow {
+    #[tabled(rename = "ID")]
+    pub id: String,
+    #[tabled(rename = "TYPE")]
+    pub plan_type: String,
+    #[tabled(rename = "NODES")]
+    pub nodes: String,
+    #[tabled(rename = "VCPUS")]
+    pub vcpus: String,
+    #[tabled(rename = "RAM")]
+    pub ram: String,
+    #[tabled(rename = "DISK")]
+    pub disk: String,
+    #[tabled(rename = "MONTHLY")]
+    pub monthly: String,
+}
+
+impl From<&DatabasePlan> for DatabasePlanRow {
+    fn from(plan: &DatabasePlan) -> Self {
+        Self {
+            id: plan.id.clone().unwrap_or_default(),
+            plan_type: plan.plan_type.clone().unwrap_or_default(),
+            nodes: plan
+                .number_of_nodes
+                .map(|n| n.to_string())
+                .unwrap_or_default(),
+            vcpus: plan.vcpu_count.map(|n| n.to_string()).unwrap_or_default(),
+            ram: plan.ram.map(|n| n.to_string()).unwrap_or_default(),
+            disk: plan.disk.map(|n| n.to_string()).unwrap_or_default(),
+            monthly: plan
+                .monthly_cost
+                .map(|n| format!("${}", n))
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<DatabasePlan> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No database plans found.".yellow());
+            return;
+        }
+        let rows: Vec<DatabasePlanRow> = self.iter().map(DatabasePlanRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Table row for database users
+#[derive(Tabled)]
+pub struct DatabaseUserRow {
+    #[tabled(rename = "USERNAME")]
+    pub username: String,
+    #[tabled(rename = "ENCRYPTION")]
+    pub encryption: String,
+    #[tabled(rename = "PERMISSION")]
+    pub permission: String,
+}
+
+impl From<&DatabaseUser> for DatabaseUserRow {
+    fn from(user: &DatabaseUser) -> Self {
+        Self {
+            username: user.username.clone().unwrap_or_default(),
+            encryption: user.encryption.clone().unwrap_or_else(|| "-".to_string()),
+            permission: user.permission.clone().unwrap_or_else(|| "-".to_string()),
+        }
+    }
+}
+
+impl TableDisplay for Vec<DatabaseUser> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No database users found.".yellow());
+            return;
+        }
+        let rows: Vec<DatabaseUserRow> = self.iter().map(DatabaseUserRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for DatabaseUser {
+    fn print_table(&self) {
+        println!("{}", "Database User:".cyan());
+        if let Some(username) = &self.username {
+            println!("  {}: {}", "Username".green(), username);
+        }
+        if let Some(password) = &self.password {
+            println!("  {}: {}", "Password".green(), password);
+        }
+        if let Some(encryption) = &self.encryption {
+            println!("  {}: {}", "Encryption".green(), encryption);
+        }
+        if let Some(permission) = &self.permission {
+            println!("  {}: {}", "Permission".green(), permission);
+        }
+    }
+}
+
+/// Table row for logical databases
+#[derive(Tabled)]
+pub struct LogicalDatabaseRow {
+    #[tabled(rename = "NAME")]
+    pub name: String,
+}
+
+impl From<&LogicalDatabase> for LogicalDatabaseRow {
+    fn from(db: &LogicalDatabase) -> Self {
+        Self {
+            name: db.name.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<LogicalDatabase> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No logical databases found.".yellow());
+            return;
+        }
+        let rows: Vec<LogicalDatabaseRow> = self.iter().map(LogicalDatabaseRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for LogicalDatabase {
+    fn print_table(&self) {
+        println!("{}", "Logical Database:".cyan());
+        if let Some(name) = &self.name {
+            println!("  {}: {}", "Name".green(), name);
+        }
+    }
+}
+
+/// Table row for connection pools
+#[derive(Tabled)]
+pub struct ConnectionPoolRow {
+    #[tabled(rename = "NAME")]
+    pub name: String,
+    #[tabled(rename = "DATABASE")]
+    pub database: String,
+    #[tabled(rename = "USERNAME")]
+    pub username: String,
+    #[tabled(rename = "MODE")]
+    pub mode: String,
+    #[tabled(rename = "SIZE")]
+    pub size: String,
+}
+
+impl From<&ConnectionPool> for ConnectionPoolRow {
+    fn from(pool: &ConnectionPool) -> Self {
+        Self {
+            name: pool.name.clone().unwrap_or_default(),
+            database: pool.database.clone().unwrap_or_default(),
+            username: pool.username.clone().unwrap_or_default(),
+            mode: pool.mode.clone().unwrap_or_default(),
+            size: pool.size.map(|n| n.to_string()).unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<ConnectionPool> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No connection pools found.".yellow());
+            return;
+        }
+        let rows: Vec<ConnectionPoolRow> = self.iter().map(ConnectionPoolRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for ConnectionPool {
+    fn print_table(&self) {
+        println!("{}", "Connection Pool:".cyan());
+        if let Some(name) = &self.name {
+            println!("  {}: {}", "Name".green(), name);
+        }
+        if let Some(database) = &self.database {
+            println!("  {}: {}", "Database".green(), database);
+        }
+        if let Some(username) = &self.username {
+            println!("  {}: {}", "Username".green(), username);
+        }
+        if let Some(mode) = &self.mode {
+            println!("  {}: {}", "Mode".green(), mode);
+        }
+        if let Some(size) = &self.size {
+            println!("  {}: {}", "Size".green(), size);
+        }
+    }
+}
+
+/// Table row for Kafka topics
+#[derive(Tabled)]
+pub struct KafkaTopicRow {
+    #[tabled(rename = "NAME")]
+    pub name: String,
+    #[tabled(rename = "PARTITIONS")]
+    pub partitions: String,
+    #[tabled(rename = "REPLICATION")]
+    pub replication: String,
+    #[tabled(rename = "RETENTION HRS")]
+    pub retention_hours: String,
+}
+
+impl From<&KafkaTopic> for KafkaTopicRow {
+    fn from(topic: &KafkaTopic) -> Self {
+        Self {
+            name: topic.name.clone().unwrap_or_default(),
+            partitions: topic.partitions.map(|n| n.to_string()).unwrap_or_default(),
+            replication: topic.replication.map(|n| n.to_string()).unwrap_or_default(),
+            retention_hours: topic
+                .retention_hours
+                .map(|n| n.to_string())
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<KafkaTopic> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No Kafka topics found.".yellow());
+            return;
+        }
+        let rows: Vec<KafkaTopicRow> = self.iter().map(KafkaTopicRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for KafkaTopic {
+    fn print_table(&self) {
+        println!("{}", "Kafka Topic:".cyan());
+        if let Some(name) = &self.name {
+            println!("  {}: {}", "Name".green(), name);
+        }
+        if let Some(partitions) = &self.partitions {
+            println!("  {}: {}", "Partitions".green(), partitions);
+        }
+        if let Some(replication) = &self.replication {
+            println!("  {}: {}", "Replication".green(), replication);
+        }
+        if let Some(hours) = &self.retention_hours {
+            println!("  {}: {}", "Retention Hours".green(), hours);
+        }
+        if let Some(bytes) = &self.retention_bytes {
+            println!("  {}: {}", "Retention Bytes".green(), bytes);
+        }
+    }
+}
+
+/// Table row for Kafka connectors
+#[derive(Tabled)]
+pub struct KafkaConnectorRow {
+    #[tabled(rename = "NAME")]
+    pub name: String,
+    #[tabled(rename = "CLASS")]
+    pub class: String,
+    #[tabled(rename = "TOPICS")]
+    pub topics: String,
+}
+
+impl From<&KafkaConnector> for KafkaConnectorRow {
+    fn from(connector: &KafkaConnector) -> Self {
+        Self {
+            name: connector.name.clone().unwrap_or_default(),
+            class: connector.class.clone().unwrap_or_default(),
+            topics: connector.topics.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<KafkaConnector> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No Kafka connectors found.".yellow());
+            return;
+        }
+        let rows: Vec<KafkaConnectorRow> = self.iter().map(KafkaConnectorRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for KafkaConnector {
+    fn print_table(&self) {
+        println!("{}", "Kafka Connector:".cyan());
+        if let Some(name) = &self.name {
+            println!("  {}: {}", "Name".green(), name);
+        }
+        if let Some(class) = &self.class {
+            println!("  {}: {}", "Class".green(), class);
+        }
+        if let Some(topics) = &self.topics {
+            println!("  {}: {}", "Topics".green(), topics);
+        }
+    }
+}
+
+/// Table row for available connectors
+#[derive(Tabled)]
+pub struct AvailableConnectorRow {
+    #[tabled(rename = "CLASS")]
+    pub class: String,
+    #[tabled(rename = "TYPE")]
+    pub connector_type: String,
+    #[tabled(rename = "VERSION")]
+    pub version: String,
+}
+
+impl From<&AvailableConnector> for AvailableConnectorRow {
+    fn from(connector: &AvailableConnector) -> Self {
+        Self {
+            class: connector.class.clone().unwrap_or_default(),
+            connector_type: connector.connector_type.clone().unwrap_or_default(),
+            version: connector.version.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<AvailableConnector> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No available connectors found.".yellow());
+            return;
+        }
+        let rows: Vec<AvailableConnectorRow> =
+            self.iter().map(AvailableConnectorRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for ConnectorStatus {
+    fn print_table(&self) {
+        println!("{}", "Connector Status:".cyan());
+        if let Some(connector) = &self.connector {
+            if let Some(state) = &connector.state {
+                println!("  {}: {}", "State".green(), state);
+            }
+        }
+        if !self.tasks.is_empty() {
+            println!("\n  {}:", "Tasks".cyan());
+            for task in &self.tasks {
+                let id = task.id.map(|i| i.to_string()).unwrap_or_default();
+                let state = task.state.as_deref().unwrap_or("unknown");
+                println!("    - Task {}: {}", id, state);
+                if let Some(trace) = &task.trace {
+                    println!("      {}: {}", "Trace".yellow(), trace);
+                }
+            }
+        }
+    }
+}
+
+/// Table row for database alerts
+#[derive(Tabled)]
+pub struct DatabaseAlertRow {
+    #[tabled(rename = "TIMESTAMP")]
+    pub timestamp: String,
+    #[tabled(rename = "TYPE")]
+    pub message_type: String,
+    #[tabled(rename = "DESCRIPTION")]
+    pub description: String,
+}
+
+impl From<&DatabaseAlert> for DatabaseAlertRow {
+    fn from(alert: &DatabaseAlert) -> Self {
+        Self {
+            timestamp: alert.timestamp.clone().unwrap_or_default(),
+            message_type: alert.message_type.clone().unwrap_or_default(),
+            description: alert.description.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<DatabaseAlert> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No alerts found.".green());
+            return;
+        }
+        let rows: Vec<DatabaseAlertRow> = self.iter().map(DatabaseAlertRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for DatabaseUsage {
+    fn print_table(&self) {
+        println!("{}", "Database Usage:".cyan());
+        if let Some(disk) = &self.disk {
+            println!("\n  {}:", "Disk".green());
+            if let Some(current) = &disk.current_gb {
+                println!("    Current: {} GB", current);
+            }
+            if let Some(max) = &disk.max_gb {
+                println!("    Max: {} GB", max);
+            }
+            if let Some(pct) = &disk.percentage {
+                println!("    Usage: {}%", pct);
+            }
+        }
+        if let Some(memory) = &self.memory {
+            println!("\n  {}:", "Memory".green());
+            if let Some(current) = &memory.current_mb {
+                println!("    Current: {} MB", current);
+            }
+            if let Some(max) = &memory.max_mb {
+                println!("    Max: {} MB", max);
+            }
+            if let Some(pct) = &memory.percentage {
+                println!("    Usage: {}%", pct);
+            }
+        }
+        if let Some(cpu) = &self.cpu {
+            println!("\n  {}:", "CPU".green());
+            if let Some(pct) = &cpu.percentage {
+                println!("    Usage: {}%", pct);
+            }
+        }
+    }
+}
+
+impl TableDisplay for DatabaseBackupsResponse {
+    fn print_table(&self) {
+        println!("{}", "Database Backups:".cyan());
+        if let Some(latest) = &self.latest_backup {
+            println!("\n  {}:", "Latest Backup".green());
+            if let Some(date) = &latest.date {
+                println!("    Date: {}", date);
+            }
+            if let Some(time) = &latest.time {
+                println!("    Time: {}", time);
+            }
+        }
+        if let Some(oldest) = &self.oldest_backup {
+            println!("\n  {}:", "Oldest Backup".green());
+            if let Some(date) = &oldest.date {
+                println!("    Date: {}", date);
+            }
+            if let Some(time) = &oldest.time {
+                println!("    Time: {}", time);
+            }
+        }
+        if self.latest_backup.is_none() && self.oldest_backup.is_none() {
+            println!("{}", "  No backups available.".yellow());
+        }
+    }
+}
+
+impl TableDisplay for MaintenanceSchedule {
+    fn print_table(&self) {
+        println!("{}", "Maintenance Schedule:".cyan());
+        if let Some(day) = &self.day {
+            println!("  {}: {}", "Day".green(), day);
+        }
+        if let Some(hour) = &self.hour {
+            println!("  {}: {}:00", "Hour".green(), hour);
+        }
+    }
+}
+
+impl TableDisplay for DatabaseMigration {
+    fn print_table(&self) {
+        println!("{}", "Database Migration:".cyan());
+        if let Some(status) = &self.status {
+            println!("  {}: {}", "Status".green(), status);
+        }
+        if let Some(method) = &self.method {
+            println!("  {}: {}", "Method".green(), method);
+        }
+        if let Some(error) = &self.error {
+            println!("  {}: {}", "Error".red(), error);
+        }
+        if let Some(creds) = &self.credentials {
+            println!("\n  {}:", "Source".cyan());
+            if let Some(host) = &creds.host {
+                println!("    Host: {}", host);
+            }
+            if let Some(port) = &creds.port {
+                println!("    Port: {}", port);
+            }
+            if let Some(username) = &creds.username {
+                println!("    Username: {}", username);
+            }
+            if let Some(database) = &creds.database {
+                println!("    Database: {}", database);
+            }
+            println!("    SSL: {}", if creds.ssl { "Yes" } else { "No" });
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

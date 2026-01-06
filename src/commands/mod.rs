@@ -76,6 +76,10 @@ pub enum Commands {
     #[command(alias = "k8s", alias = "vke")]
     Kubernetes(KubernetesArgs),
 
+    /// Manage databases (MySQL, PostgreSQL, Valkey, Kafka)
+    #[command(alias = "db", alias = "dbaas")]
+    Database(DatabaseArgs),
+
     /// List available regions
     Regions,
 
@@ -1323,6 +1327,754 @@ pub enum KubernetesNodeCommands {
         nodepool_id: String,
         /// Node ID
         id: String,
+    },
+}
+
+// ==================
+// Database Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseArgs {
+    #[command(subcommand)]
+    pub command: DatabaseCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DatabaseCommands {
+    /// List all databases
+    List,
+
+    /// Get database details
+    Get {
+        /// Database ID
+        id: String,
+    },
+
+    /// Create a new database
+    Create(DatabaseCreateArgs),
+
+    /// Update a database
+    Update(DatabaseUpdateArgs),
+
+    /// Delete a database
+    Delete {
+        /// Database ID
+        id: String,
+    },
+
+    /// List available database plans
+    Plans {
+        /// Filter by engine (mysql, pg, valkey, kafka)
+        #[arg(long)]
+        engine: Option<String>,
+        /// Filter by number of nodes
+        #[arg(long)]
+        nodes: Option<i32>,
+        /// Filter by region
+        #[arg(long)]
+        region: Option<String>,
+    },
+
+    /// Get database usage metrics
+    Usage {
+        /// Database ID
+        id: String,
+    },
+
+    /// Get database alerts
+    Alerts {
+        /// Database ID
+        id: String,
+    },
+
+    /// Get database backups
+    Backups {
+        /// Database ID
+        id: String,
+    },
+
+    /// Restore database from backup
+    Restore(DatabaseRestoreArgs),
+
+    /// Fork a database
+    Fork(DatabaseForkArgs),
+
+    /// Create a read replica
+    ReadReplica {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Label for replica
+        #[arg(long)]
+        label: String,
+        /// Region (optional)
+        #[arg(long)]
+        region: Option<String>,
+    },
+
+    /// Promote read replica to standalone
+    Promote {
+        /// Database ID (read replica)
+        id: String,
+    },
+
+    /// Get maintenance schedule
+    Maintenance {
+        /// Database ID
+        id: String,
+    },
+
+    /// Update maintenance schedule
+    SetMaintenance {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Day of week (sunday, monday, etc.)
+        #[arg(long)]
+        day: String,
+        /// Hour (0-23)
+        #[arg(long)]
+        hour: i32,
+    },
+
+    /// Get available version upgrades
+    Upgrades {
+        /// Database ID
+        id: String,
+    },
+
+    /// Upgrade database version
+    Upgrade {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Target version
+        #[arg(long)]
+        version: String,
+    },
+
+    /// Database user management
+    User(DatabaseUserArgs),
+
+    /// Logical database management (MySQL/PostgreSQL)
+    Db(DatabaseDbArgs),
+
+    /// Connection pool management (PostgreSQL)
+    Pool(DatabasePoolArgs),
+
+    /// Kafka topic management
+    Topic(DatabaseTopicArgs),
+
+    /// Kafka connector management
+    Connector(DatabaseConnectorArgs),
+
+    /// Database migration
+    Migration(DatabaseMigrationArgs),
+
+    /// Get advanced options
+    AdvancedOptions {
+        /// Database ID
+        id: String,
+    },
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseCreateArgs {
+    /// Database engine (mysql, pg, valkey, kafka)
+    #[arg(long)]
+    pub engine: String,
+
+    /// Engine version
+    #[arg(long)]
+    pub version: String,
+
+    /// Region ID
+    #[arg(long)]
+    pub region: String,
+
+    /// Plan ID
+    #[arg(long)]
+    pub plan: String,
+
+    /// Label for the database
+    #[arg(long)]
+    pub label: Option<String>,
+
+    /// Tag
+    #[arg(long)]
+    pub tag: Option<String>,
+
+    /// VPC ID to attach
+    #[arg(long)]
+    pub vpc_id: Option<String>,
+
+    /// Maintenance day of week
+    #[arg(long)]
+    pub maintenance_dow: Option<String>,
+
+    /// Maintenance time (HH:MM)
+    #[arg(long)]
+    pub maintenance_time: Option<String>,
+
+    /// Backup hour (0-23)
+    #[arg(long)]
+    pub backup_hour: Option<i32>,
+
+    /// Backup minute (0-59)
+    #[arg(long)]
+    pub backup_minute: Option<i32>,
+
+    /// Trusted IPs (comma-separated CIDR notation)
+    #[arg(long, value_delimiter = ',')]
+    pub trusted_ips: Option<Vec<String>>,
+
+    /// MySQL SQL modes (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub mysql_sql_modes: Option<Vec<String>>,
+
+    /// MySQL require primary key
+    #[arg(long)]
+    pub mysql_require_primary_key: Option<bool>,
+
+    /// Valkey eviction policy
+    #[arg(long)]
+    pub eviction_policy: Option<String>,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseUpdateArgs {
+    /// Database ID
+    pub id: String,
+
+    /// New plan
+    #[arg(long)]
+    pub plan: Option<String>,
+
+    /// New label
+    #[arg(long)]
+    pub label: Option<String>,
+
+    /// New tag
+    #[arg(long)]
+    pub tag: Option<String>,
+
+    /// VPC ID
+    #[arg(long)]
+    pub vpc_id: Option<String>,
+
+    /// Maintenance day of week
+    #[arg(long)]
+    pub maintenance_dow: Option<String>,
+
+    /// Maintenance time (HH:MM)
+    #[arg(long)]
+    pub maintenance_time: Option<String>,
+
+    /// Backup hour
+    #[arg(long)]
+    pub backup_hour: Option<i32>,
+
+    /// Backup minute
+    #[arg(long)]
+    pub backup_minute: Option<i32>,
+
+    /// Trusted IPs (comma-separated CIDR notation)
+    #[arg(long, value_delimiter = ',')]
+    pub trusted_ips: Option<Vec<String>>,
+
+    /// Cluster time zone
+    #[arg(long)]
+    pub cluster_time_zone: Option<String>,
+
+    /// Valkey eviction policy
+    #[arg(long)]
+    pub eviction_policy: Option<String>,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseRestoreArgs {
+    /// Database ID to restore from
+    #[arg(long)]
+    pub database_id: String,
+
+    /// Label for restored database
+    #[arg(long)]
+    pub label: String,
+
+    /// Backup date (YYYY-MM-DD)
+    #[arg(long)]
+    pub date: Option<String>,
+
+    /// Backup time (HH:MM:SS)
+    #[arg(long)]
+    pub time: Option<String>,
+
+    /// Restoration type
+    #[arg(long)]
+    pub restore_type: Option<String>,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseForkArgs {
+    /// Database ID to fork from
+    #[arg(long)]
+    pub database_id: String,
+
+    /// Label for forked database
+    #[arg(long)]
+    pub label: String,
+
+    /// Region (defaults to source region)
+    #[arg(long)]
+    pub region: Option<String>,
+
+    /// Plan (defaults to source plan)
+    #[arg(long)]
+    pub plan: Option<String>,
+
+    /// VPC ID
+    #[arg(long)]
+    pub vpc_id: Option<String>,
+
+    /// Backup date
+    #[arg(long)]
+    pub date: Option<String>,
+
+    /// Backup time
+    #[arg(long)]
+    pub time: Option<String>,
+
+    /// Fork type
+    #[arg(long)]
+    pub fork_type: Option<String>,
+}
+
+// Database User Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseUserArgs {
+    #[command(subcommand)]
+    pub command: DatabaseUserCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DatabaseUserCommands {
+    /// List database users
+    List {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+    },
+
+    /// Get user details
+    Get {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Username
+        username: String,
+    },
+
+    /// Create a database user
+    Create {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Username
+        #[arg(long)]
+        username: String,
+        /// Password (auto-generated if not provided)
+        #[arg(long)]
+        password: Option<String>,
+        /// Encryption type (MySQL only: Default, Legacy)
+        #[arg(long)]
+        encryption: Option<String>,
+        /// Permission (Kafka only: admin, read, readwrite, write)
+        #[arg(long)]
+        permission: Option<String>,
+    },
+
+    /// Update a database user
+    Update {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Username
+        username: String,
+        /// New password
+        #[arg(long)]
+        password: String,
+    },
+
+    /// Delete a database user
+    Delete {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Username
+        username: String,
+    },
+}
+
+// Logical Database Commands (MySQL/PostgreSQL)
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseDbArgs {
+    #[command(subcommand)]
+    pub command: DatabaseDbCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DatabaseDbCommands {
+    /// List logical databases
+    List {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+    },
+
+    /// Get logical database details
+    Get {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Database name
+        name: String,
+    },
+
+    /// Create a logical database
+    Create {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Database name
+        #[arg(long)]
+        name: String,
+    },
+
+    /// Delete a logical database
+    Delete {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Database name
+        name: String,
+    },
+}
+
+// Connection Pool Commands (PostgreSQL)
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabasePoolArgs {
+    #[command(subcommand)]
+    pub command: DatabasePoolCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DatabasePoolCommands {
+    /// List connection pools
+    List {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+    },
+
+    /// Get connection pool details
+    Get {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Pool name
+        name: String,
+    },
+
+    /// Create a connection pool
+    Create {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Pool name
+        #[arg(long)]
+        name: String,
+        /// Database name
+        #[arg(long)]
+        database: String,
+        /// Username
+        #[arg(long)]
+        username: String,
+        /// Pool mode (session, transaction, statement)
+        #[arg(long)]
+        mode: String,
+        /// Pool size
+        #[arg(long)]
+        size: i32,
+    },
+
+    /// Update a connection pool
+    Update {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Pool name
+        name: String,
+        /// New database name
+        #[arg(long)]
+        database: Option<String>,
+        /// New username
+        #[arg(long)]
+        username: Option<String>,
+        /// New pool mode
+        #[arg(long)]
+        mode: Option<String>,
+        /// New pool size
+        #[arg(long)]
+        size: Option<i32>,
+    },
+
+    /// Delete a connection pool
+    Delete {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Pool name
+        name: String,
+    },
+}
+
+// Kafka Topic Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseTopicArgs {
+    #[command(subcommand)]
+    pub command: DatabaseTopicCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DatabaseTopicCommands {
+    /// List Kafka topics
+    List {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+    },
+
+    /// Get topic details
+    Get {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Topic name
+        name: String,
+    },
+
+    /// Create a Kafka topic
+    Create {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Topic name
+        #[arg(long)]
+        name: String,
+        /// Number of partitions
+        #[arg(long)]
+        partitions: i32,
+        /// Replication factor
+        #[arg(long)]
+        replication: i32,
+        /// Retention hours
+        #[arg(long)]
+        retention_hours: Option<i32>,
+        /// Retention bytes
+        #[arg(long)]
+        retention_bytes: Option<i64>,
+    },
+
+    /// Update a Kafka topic
+    Update {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Topic name
+        name: String,
+        /// New partition count
+        #[arg(long)]
+        partitions: Option<i32>,
+        /// New retention hours
+        #[arg(long)]
+        retention_hours: Option<i32>,
+        /// New retention bytes
+        #[arg(long)]
+        retention_bytes: Option<i64>,
+    },
+
+    /// Delete a Kafka topic
+    Delete {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Topic name
+        name: String,
+    },
+}
+
+// Kafka Connector Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseConnectorArgs {
+    #[command(subcommand)]
+    pub command: DatabaseConnectorCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DatabaseConnectorCommands {
+    /// List available connector classes
+    Available {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+    },
+
+    /// List connectors
+    List {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+    },
+
+    /// Get connector details
+    Get {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Connector name
+        name: String,
+    },
+
+    /// Create a connector
+    Create {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Connector name
+        #[arg(long)]
+        name: String,
+        /// Connector class
+        #[arg(long)]
+        class: String,
+        /// Topics (comma-separated)
+        #[arg(long)]
+        topics: Option<String>,
+    },
+
+    /// Delete a connector
+    Delete {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Connector name
+        name: String,
+    },
+
+    /// Get connector status
+    Status {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Connector name
+        name: String,
+    },
+
+    /// Pause a connector
+    Pause {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Connector name
+        name: String,
+    },
+
+    /// Resume a connector
+    Resume {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Connector name
+        name: String,
+    },
+
+    /// Restart a connector
+    Restart {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Connector name
+        name: String,
+    },
+
+    /// Restart a connector task
+    RestartTask {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Connector name
+        #[arg(long)]
+        connector_name: String,
+        /// Task ID
+        task_id: String,
+    },
+}
+
+// Database Migration Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseMigrationArgs {
+    #[command(subcommand)]
+    pub command: DatabaseMigrationCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DatabaseMigrationCommands {
+    /// Get migration status
+    Status {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+    },
+
+    /// Start migration from external source
+    Start {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Source host
+        #[arg(long)]
+        host: String,
+        /// Source port
+        #[arg(long)]
+        port: i32,
+        /// Source username
+        #[arg(long)]
+        username: String,
+        /// Source password
+        #[arg(long)]
+        password: String,
+        /// Source database (optional for Valkey)
+        #[arg(long)]
+        database: Option<String>,
+        /// Ignored databases (comma-separated)
+        #[arg(long)]
+        ignored_databases: Option<String>,
+        /// Use SSL
+        #[arg(long)]
+        ssl: bool,
+    },
+
+    /// Detach (stop) migration
+    Detach {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
     },
 }
 

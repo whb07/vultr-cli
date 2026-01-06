@@ -4,6 +4,7 @@
 
 mod auth;
 mod block_storage;
+mod database;
 mod firewall;
 mod instance;
 mod kubernetes;
@@ -15,6 +16,7 @@ mod vpc;
 
 pub use auth::handle_auth;
 pub use block_storage::handle_block_storage;
+pub use database::handle_database;
 pub use firewall::handle_firewall;
 pub use instance::handle_instance;
 pub use kubernetes::handle_kubernetes;
