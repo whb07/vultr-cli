@@ -1,9 +1,9 @@
 //! Reference data command handlers (regions, plans, OS)
 
 use crate::api::VultrClient;
+use crate::commands::PriceMode;
 use crate::config::OutputFormat;
 use crate::error::VultrResult;
-use crate::commands::PriceMode;
 use crate::output::{print_bare_metal_plans, print_output};
 
 pub async fn handle_regions(client: &VultrClient, output: OutputFormat) -> VultrResult<()> {

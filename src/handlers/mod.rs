@@ -32,12 +32,12 @@ mod vpc2;
 pub use account::handle_account;
 pub use application::handle_applications;
 pub use auth::handle_auth;
-pub use config::handle_config;
 pub use backup::handle_backup;
 pub use bare_metal::handle_bare_metal;
 pub use billing::handle_billing;
 pub use block_storage::handle_block_storage;
 pub use cdn::handle_cdn;
+pub use config::handle_config;
 pub use database::handle_database;
 pub use dns::handle_dns;
 pub use firewall::handle_firewall;
@@ -70,15 +70,14 @@ mod common {
         if let Some(path) = input.strip_prefix('@') {
             if path == "-" {
                 let mut buf = String::new();
-                std::io::stdin()
-                    .read_to_string(&mut buf)
-                    .map_err(|e| VultrError::InvalidInput(format!("Failed to read stdin: {}", e)))?;
+                std::io::stdin().read_to_string(&mut buf).map_err(|e| {
+                    VultrError::InvalidInput(format!("Failed to read stdin: {}", e))
+                })?;
                 return Ok(buf);
             }
             let expanded = expand_tilde(path);
-            std::fs::read_to_string(&expanded).map_err(|e| {
-                VultrError::InvalidInput(format!("Failed to read '{}': {}", path, e))
-            })
+            std::fs::read_to_string(&expanded)
+                .map_err(|e| VultrError::InvalidInput(format!("Failed to read '{}': {}", path, e)))
         } else {
             Ok(input.to_string())
         }
@@ -89,9 +88,9 @@ mod common {
         if let Some(path) = input.strip_prefix('@') {
             if path == "-" {
                 let mut buf = Vec::new();
-                std::io::stdin()
-                    .read_to_end(&mut buf)
-                    .map_err(|e| VultrError::InvalidInput(format!("Failed to read stdin: {}", e)))?;
+                std::io::stdin().read_to_end(&mut buf).map_err(|e| {
+                    VultrError::InvalidInput(format!("Failed to read stdin: {}", e))
+                })?;
                 return Ok(buf);
             }
             let expanded = expand_tilde(path);

@@ -187,8 +187,9 @@ pub async fn handle_database(
             database_id,
             options,
         } => {
-            let parsed: serde_json::Value = serde_json::from_str(&options)
-                .map_err(|e| crate::error::VultrError::InvalidInput(format!("Invalid JSON: {}", e)))?;
+            let parsed: serde_json::Value = serde_json::from_str(&options).map_err(|e| {
+                crate::error::VultrError::InvalidInput(format!("Invalid JSON: {}", e))
+            })?;
             let result = client
                 .update_database_advanced_options(&database_id, parsed)
                 .await?;
@@ -266,9 +267,12 @@ async fn handle_database_user(
             acl_keys,
         } => {
             let request = UpdateUserAccessControlRequest {
-                acl_categories: acl_categories.map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
-                acl_channels: acl_channels.map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
-                acl_commands: acl_commands.map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
+                acl_categories: acl_categories
+                    .map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
+                acl_channels: acl_channels
+                    .map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
+                acl_commands: acl_commands
+                    .map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
                 acl_keys: acl_keys.map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
             };
             let user = client
@@ -581,7 +585,9 @@ async fn handle_database_quota(
             client_id,
             username,
         } => {
-            if skip_confirm || confirm_delete("database quota", &format!("{}/{}", client_id, username))? {
+            if skip_confirm
+                || confirm_delete("database quota", &format!("{}/{}", client_id, username))?
+            {
                 client
                     .delete_database_quota(&database_id, &client_id, &username)
                     .await?;

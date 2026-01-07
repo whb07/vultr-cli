@@ -167,10 +167,7 @@ async fn handle_load_balancer_ssl(
                 chain_b64,
             };
             client.create_load_balancer_ssl(&lb_id, ssl).await?;
-            print_success(&format!(
-                "SSL certificate added to load balancer {}",
-                lb_id
-            ));
+            print_success(&format!("SSL certificate added to load balancer {}", lb_id));
         }
         LoadBalancerSslCommands::Delete { lb_id } => {
             if skip_confirm || confirm_delete("SSL certificate", &lb_id)? {
@@ -183,10 +180,7 @@ async fn handle_load_balancer_ssl(
         }
         LoadBalancerSslCommands::DisableAutoSsl { lb_id } => {
             client.disable_load_balancer_auto_ssl(&lb_id).await?;
-            print_success(&format!(
-                "Auto SSL disabled for load balancer {}",
-                lb_id
-            ));
+            print_success(&format!("Auto SSL disabled for load balancer {}", lb_id));
         }
     }
     Ok(())

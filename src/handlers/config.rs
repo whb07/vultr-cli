@@ -22,7 +22,9 @@ pub fn handle_config(args: ConfigArgs, current_profile: &str) -> VultrResult<()>
                 "default_profile" => Some(config.default_profile.clone()),
                 "http.timeout" => Some(config.settings.http.timeout.to_string()),
                 "http.max_retries" => Some(config.settings.http.max_retries.to_string()),
-                "http.backoff_initial_ms" => Some(config.settings.http.backoff_initial_ms.to_string()),
+                "http.backoff_initial_ms" => {
+                    Some(config.settings.http.backoff_initial_ms.to_string())
+                }
                 "http.backoff_max_ms" => Some(config.settings.http.backoff_max_ms.to_string()),
                 _ => {
                     return Err(VultrError::InvalidInput(format!(
@@ -45,9 +47,9 @@ pub fn handle_config(args: ConfigArgs, current_profile: &str) -> VultrResult<()>
 
             match key.as_str() {
                 "output_format" => {
-                    config.settings.output_format = value.parse::<OutputFormat>().map_err(|e| {
-                        VultrError::InvalidInput(e)
-                    })?;
+                    config.settings.output_format = value
+                        .parse::<OutputFormat>()
+                        .map_err(|e| VultrError::InvalidInput(e))?;
                 }
                 "confirm_destructive" => {
                     config.settings.confirm_destructive = value.parse::<bool>().map_err(|_| {
@@ -78,9 +80,10 @@ pub fn handle_config(args: ConfigArgs, current_profile: &str) -> VultrResult<()>
                     })?;
                 }
                 "http.backoff_initial_ms" => {
-                    config.settings.http.backoff_initial_ms = value.parse::<u64>().map_err(|_| {
-                        VultrError::InvalidInput("Value must be a positive integer".to_string())
-                    })?;
+                    config.settings.http.backoff_initial_ms =
+                        value.parse::<u64>().map_err(|_| {
+                            VultrError::InvalidInput("Value must be a positive integer".to_string())
+                        })?;
                 }
                 "http.backoff_max_ms" => {
                     config.settings.http.backoff_max_ms = value.parse::<u64>().map_err(|_| {

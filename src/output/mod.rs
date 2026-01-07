@@ -266,7 +266,11 @@ impl From<&Backup> for BackupRow {
                 .as_ref()
                 .map(|st| st.to_string())
                 .unwrap_or_default(),
-            ready: if b.is_ready() { "Yes".to_string() } else { "No".to_string() },
+            ready: if b.is_ready() {
+                "Yes".to_string()
+            } else {
+                "No".to_string()
+            },
             date_created: b.date_created.clone().unwrap_or_default(),
         }
     }
@@ -591,7 +595,11 @@ impl From<&Iso> for IsoRow {
                 .as_ref()
                 .map(|st| st.to_string())
                 .unwrap_or_default(),
-            ready: if i.is_ready() { "Yes".to_string() } else { "No".to_string() },
+            ready: if i.is_ready() {
+                "Yes".to_string()
+            } else {
+                "No".to_string()
+            },
             date_created: i.date_created.clone().unwrap_or_default(),
         }
     }
@@ -682,7 +690,9 @@ impl From<&BlockStorage> for BlockStorageRow {
             region: b.region.clone().unwrap_or_default(),
             status: b.status.as_ref().map(|s| s.to_string()).unwrap_or_default(),
             attached_to: if b.is_attached() {
-                b.attached_to_instance.clone().unwrap_or_else(|| "-".to_string())
+                b.attached_to_instance
+                    .clone()
+                    .unwrap_or_else(|| "-".to_string())
             } else {
                 "-".to_string()
             },
@@ -959,11 +969,7 @@ impl From<&ReservedIp> for ReservedIpRow {
         Self {
             id: r.id.clone(),
             region: r.region.clone().unwrap_or_default(),
-            ip_type: r
-                .ip_type
-                .as_deref()
-                .map(format_ip_type)
-                .unwrap_or_default(),
+            ip_type: r.ip_type.as_deref().map(format_ip_type).unwrap_or_default(),
             subnet: r.cidr().unwrap_or_default(),
             label: r.label.clone().unwrap_or_default(),
             instance_id: if r.is_attached() {
@@ -1410,10 +1416,7 @@ impl From<&BareMetalPlan> for BareMetalPlanHourlyRow {
         Self {
             id: p.id.clone(),
             cpu_count: p.cpu_count.map(|v| v.to_string()).unwrap_or_default(),
-            cpu_threads: p
-                .cpu_threads
-                .map(|v| v.to_string())
-                .unwrap_or_default(),
+            cpu_threads: p.cpu_threads.map(|v| v.to_string()).unwrap_or_default(),
             cpu_model: p.cpu_model.clone().unwrap_or_default(),
             ram: format_ram_gb(p.ram),
             disk: p.disk.map(|d| d.to_string()).unwrap_or_default(),
@@ -1455,10 +1458,7 @@ impl From<&BareMetalPlan> for BareMetalPlanMonthlyRow {
         Self {
             id: p.id.clone(),
             cpu_count: p.cpu_count.map(|v| v.to_string()).unwrap_or_default(),
-            cpu_threads: p
-                .cpu_threads
-                .map(|v| v.to_string())
-                .unwrap_or_default(),
+            cpu_threads: p.cpu_threads.map(|v| v.to_string()).unwrap_or_default(),
             cpu_model: p.cpu_model.clone().unwrap_or_default(),
             ram: format_ram_gb(p.ram),
             disk: p.disk.map(|d| d.to_string()).unwrap_or_default(),
@@ -1604,11 +1604,7 @@ impl From<&Ipv4Info> for Ipv4InfoRow {
             ip: i.ip.clone(),
             netmask: i.netmask.clone().unwrap_or_default(),
             gateway: i.gateway.clone().unwrap_or_default(),
-            ip_type: i
-                .ip_type
-                .as_deref()
-                .map(format_ip_type)
-                .unwrap_or_default(),
+            ip_type: i.ip_type.as_deref().map(format_ip_type).unwrap_or_default(),
             reverse: i.reverse.clone().unwrap_or_default(),
         }
     }
@@ -1656,11 +1652,7 @@ impl From<&Ipv6Info> for Ipv6InfoRow {
                 .network_size
                 .map(|s| format!("/{}", s))
                 .unwrap_or_default(),
-            ip_type: i
-                .ip_type
-                .as_deref()
-                .map(format_ip_type)
-                .unwrap_or_default(),
+            ip_type: i.ip_type.as_deref().map(format_ip_type).unwrap_or_default(),
         }
     }
 }
@@ -3314,11 +3306,7 @@ impl From<&LBFirewallRule> for LBFirewallRuleRow {
             id: r.id.clone().unwrap_or_default(),
             port: r.port.map(|p| p.to_string()).unwrap_or_default(),
             source: r.source.clone().unwrap_or_default(),
-            ip_type: r
-                .ip_type
-                .as_deref()
-                .map(format_ip_type)
-                .unwrap_or_default(),
+            ip_type: r.ip_type.as_deref().map(format_ip_type).unwrap_or_default(),
         }
     }
 }
@@ -3411,7 +3399,11 @@ impl From<&CdnPullZone> for CdnPullZoneRow {
                 .as_ref()
                 .map(|st| st.to_string())
                 .unwrap_or_default(),
-            active: if z.is_active() { "Yes".to_string() } else { "No".to_string() },
+            active: if z.is_active() {
+                "Yes".to_string()
+            } else {
+                "No".to_string()
+            },
             date_created: z.date_created.clone().unwrap_or_default(),
         }
     }
@@ -3465,7 +3457,11 @@ impl From<&CdnPushZone> for CdnPushZoneRow {
                 .as_ref()
                 .map(|st| st.to_string())
                 .unwrap_or_default(),
-            active: if z.is_active() { "Yes".to_string() } else { "No".to_string() },
+            active: if z.is_active() {
+                "Yes".to_string()
+            } else {
+                "No".to_string()
+            },
             date_created: z.date_created.clone().unwrap_or_default(),
         }
     }
@@ -4533,11 +4529,7 @@ impl From<&IpWhitelistEntry> for IpWhitelistEntryRow {
         Self {
             subnet: e.subnet.clone().unwrap_or_default(),
             subnet_size: e.subnet_size.map(|s| s.to_string()).unwrap_or_default(),
-            ip_type: e
-                .ip_type
-                .as_deref()
-                .map(format_ip_type)
-                .unwrap_or_default(),
+            ip_type: e.ip_type.as_deref().map(format_ip_type).unwrap_or_default(),
             date_added: e.date_added.clone().unwrap_or_default(),
         }
     }

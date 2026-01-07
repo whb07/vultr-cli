@@ -249,7 +249,9 @@ async fn handle_node_pool(
             cluster_id,
             nodepool_id,
         } => {
-            let labels = client.list_node_pool_labels(&cluster_id, &nodepool_id).await?;
+            let labels = client
+                .list_node_pool_labels(&cluster_id, &nodepool_id)
+                .await?;
             print_output(&labels, output);
         }
 
@@ -286,7 +288,9 @@ async fn handle_node_pool(
             cluster_id,
             nodepool_id,
         } => {
-            let taints = client.list_node_pool_taints(&cluster_id, &nodepool_id).await?;
+            let taints = client
+                .list_node_pool_taints(&cluster_id, &nodepool_id)
+                .await?;
             print_output(&taints, output);
         }
     }
