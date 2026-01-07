@@ -132,7 +132,13 @@ async fn run(cli: Cli) -> VultrResult<()> {
                 }
                 Commands::Regions => handle_regions(&client, output).await,
                 Commands::Plans(args) => {
-                    handle_plans(&client, output, args.plan_type.as_deref()).await
+                    handle_plans(
+                        &client,
+                        output,
+                        args.plan_type.as_deref(),
+                        args.bare_metal,
+                    )
+                    .await
                 }
                 Commands::Os => handle_os(&client, output).await,
                 Commands::Applications => handle_applications(&client, output).await,

@@ -1509,6 +1509,12 @@ impl VultrClient {
         Ok(response.data.plans)
     }
 
+    /// List all bare metal plans
+    pub async fn list_bare_metal_plans(&self) -> VultrResult<Vec<BareMetalPlan>> {
+        let response: ListResponse<BareMetalPlansResponse> = self.get("/plans-metal").await?;
+        Ok(response.data.plans)
+    }
+
     /// List all applications
     pub async fn list_applications(&self) -> VultrResult<Vec<Application>> {
         let response: ApplicationsResponse = self.get("/applications").await?;

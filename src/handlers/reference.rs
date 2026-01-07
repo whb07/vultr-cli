@@ -15,9 +15,15 @@ pub async fn handle_plans(
     client: &VultrClient,
     output: OutputFormat,
     plan_type: Option<&str>,
+    bare_metal: bool,
 ) -> VultrResult<()> {
-    let plans = client.list_plans(plan_type).await?;
-    print_output(&plans, output);
+    if bare_metal {
+        let plans = client.list_bare_metal_plans().await?;
+        print_output(&plans, output);
+    } else {
+        let plans = client.list_plans(plan_type).await?;
+        print_output(&plans, output);
+    }
     Ok(())
 }
 

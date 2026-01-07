@@ -4269,6 +4269,10 @@ pub struct PlansArgs {
     /// Filter by plan type (vc2, vhf, vdc)
     #[arg(long)]
     pub plan_type: Option<String>,
+
+    /// List bare metal plans (includes CPU/RAM/pricing)
+    #[arg(long, alias = "metal", conflicts_with = "plan_type")]
+    pub bare_metal: bool,
 }
 
 // ==================
@@ -4618,6 +4622,7 @@ mod tests {
     fn test_plans_args_with_type() {
         let args = PlansArgs {
             plan_type: Some("vc2".to_string()),
+            bare_metal: false,
         };
         assert_eq!(args.plan_type.unwrap(), "vc2");
     }

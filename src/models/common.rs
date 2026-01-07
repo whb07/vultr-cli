@@ -87,6 +87,55 @@ pub struct Plan {
     pub locations: Vec<String>,
 }
 
+/// Bare metal plan information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BareMetalPlan {
+    /// Unique plan ID (e.g., "vbm-4c-32gb")
+    pub id: String,
+    /// Number of CPUs
+    #[serde(default)]
+    pub cpu_count: Option<i32>,
+    /// Number of CPU threads
+    #[serde(default)]
+    pub cpu_threads: Option<i32>,
+    /// CPU model
+    #[serde(default)]
+    pub cpu_model: Option<String>,
+    /// RAM in MB
+    #[serde(default)]
+    pub ram: Option<i32>,
+    /// Disk size in GB
+    #[serde(default)]
+    pub disk: Option<String>,
+    /// Number of disks
+    #[serde(default)]
+    pub disk_count: Option<i32>,
+    /// Monthly bandwidth in GB
+    #[serde(default)]
+    pub bandwidth: Option<i32>,
+    /// Invoice type (hourly or monthly)
+    #[serde(default)]
+    pub invoice_type: Option<String>,
+    /// Monthly cost in USD
+    #[serde(default)]
+    pub monthly_cost: Option<f64>,
+    /// Hourly cost in USD
+    #[serde(default)]
+    pub hourly_cost: Option<f64>,
+    /// Monthly cost for preemptible configurations
+    #[serde(default)]
+    pub monthly_cost_preemptible: Option<f64>,
+    /// Hourly cost for preemptible configurations
+    #[serde(default)]
+    pub hourly_cost_preemptible: Option<f64>,
+    /// Plan type (e.g., SSD)
+    #[serde(default, rename = "type")]
+    pub plan_type: Option<String>,
+    /// Regions where this plan is available
+    #[serde(default)]
+    pub locations: Vec<String>,
+}
+
 /// Response wrapper for regions list
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegionsResponse {
@@ -103,6 +152,12 @@ pub struct OsResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlansResponse {
     pub plans: Vec<Plan>,
+}
+
+/// Response wrapper for bare metal plans list
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BareMetalPlansResponse {
+    pub plans: Vec<BareMetalPlan>,
 }
 
 #[cfg(test)]

@@ -1308,6 +1308,72 @@ impl TableDisplay for Vec<Plan> {
     }
 }
 
+/// Wrapper for displaying bare metal plans in a table
+#[derive(Tabled)]
+struct BareMetalPlanRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "CPUs")]
+    cpu_count: String,
+    #[tabled(rename = "Threads")]
+    cpu_threads: String,
+    #[tabled(rename = "CPU Model")]
+    cpu_model: String,
+    #[tabled(rename = "RAM (MB)")]
+    ram: String,
+    #[tabled(rename = "Disk (GB)")]
+    disk: String,
+    #[tabled(rename = "Disks")]
+    disk_count: String,
+    #[tabled(rename = "BW (GB)")]
+    bandwidth: String,
+    #[tabled(rename = "$/month")]
+    monthly: String,
+    #[tabled(rename = "$/hour")]
+    hourly: String,
+    #[tabled(rename = "Type")]
+    plan_type: String,
+}
+
+impl From<&BareMetalPlan> for BareMetalPlanRow {
+    fn from(p: &BareMetalPlan) -> Self {
+        Self {
+            id: p.id.clone(),
+            cpu_count: p.cpu_count.map(|v| v.to_string()).unwrap_or_default(),
+            cpu_threads: p
+                .cpu_threads
+                .map(|v| v.to_string())
+                .unwrap_or_default(),
+            cpu_model: p.cpu_model.clone().unwrap_or_default(),
+            ram: p.ram.map(|r| r.to_string()).unwrap_or_default(),
+            disk: p.disk.clone().unwrap_or_default(),
+            disk_count: p.disk_count.map(|d| d.to_string()).unwrap_or_default(),
+            bandwidth: p.bandwidth.map(|b| b.to_string()).unwrap_or_default(),
+            monthly: p
+                .monthly_cost
+                .map(|c| format!("{:.2}", c))
+                .unwrap_or_default(),
+            hourly: p
+                .hourly_cost
+                .map(|c| format!("{:.2}", c))
+                .unwrap_or_default(),
+            plan_type: p.plan_type.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<BareMetalPlan> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No bare metal plans found.".yellow());
+            return;
+        }
+        let rows: Vec<BareMetalPlanRow> = self.iter().map(BareMetalPlanRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
 /// Wrapper for displaying OS in a table
 #[derive(Tabled)]
 struct OsRow {

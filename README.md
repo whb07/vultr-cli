@@ -198,6 +198,7 @@ vultr-cli regions
 # List plans (optionally filter by type)
 vultr-cli plans
 vultr-cli plans --plan-type vc2
+vultr-cli plans --bare-metal
 
 # List operating systems
 vultr-cli os
