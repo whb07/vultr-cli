@@ -50,3 +50,7 @@ httpdate = "1"
 lto = true
 codegen-units = 1
 strip = true
+
+[dev-dependencies]
+syn = { version = "2", features = ["full"] }
+walkdir = "2"
