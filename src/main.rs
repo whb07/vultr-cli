@@ -137,6 +137,8 @@ async fn run(cli: Cli) -> VultrResult<()> {
                         output,
                         args.plan_type.as_deref(),
                         args.bare_metal,
+                        args.price,
+                        args.region.as_deref(),
                     )
                     .await
                 }

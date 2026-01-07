@@ -14,7 +14,7 @@ pub fn print_output<T: serde::Serialize + TableDisplay>(data: &T, format: Output
 }
 
 /// Print data as JSON
-pub fn print_json<T: serde::Serialize>(data: &T) {
+pub fn print_json<T: serde::Serialize + ?Sized>(data: &T) {
     match serde_json::to_string_pretty(data) {
         Ok(json) => println!("{}", json),
         Err(e) => eprintln!("{}: {}", "Error formatting JSON".red(), e),
@@ -157,7 +157,7 @@ impl From<&StartupScript> for StartupScriptRow {
             script_type: s
                 .script_type
                 .as_ref()
-                .map(|t| t.to_string())
+                .map(|t| format_script_type(&t.to_string()))
                 .unwrap_or_default(),
             date_modified: s.date_modified.clone().unwrap_or_default(),
         }
@@ -363,7 +363,11 @@ impl From<&BareMetalIpv4> for BareMetalIpv4Row {
             ip: ip.ip.clone(),
             netmask: ip.netmask.clone().unwrap_or_default(),
             gateway: ip.gateway.clone().unwrap_or_default(),
-            ip_type: ip.ip_type.clone().unwrap_or_default(),
+            ip_type: ip
+                .ip_type
+                .as_deref()
+                .map(format_ip_type)
+                .unwrap_or_default(),
             reverse: ip.reverse.clone().unwrap_or_default(),
         }
     }
@@ -408,7 +412,11 @@ impl From<&BareMetalIpv6> for BareMetalIpv6Row {
             ip: ip.ip.clone(),
             network: ip.network.clone().unwrap_or_default(),
             network_size: ip.network_size.map(|n| n.to_string()).unwrap_or_default(),
-            ip_type: ip.ip_type.clone().unwrap_or_default(),
+            ip_type: ip
+                .ip_type
+                .as_deref()
+                .map(format_ip_type)
+                .unwrap_or_default(),
         }
     }
 }
@@ -951,7 +959,11 @@ impl From<&ReservedIp> for ReservedIpRow {
         Self {
             id: r.id.clone(),
             region: r.region.clone().unwrap_or_default(),
-            ip_type: r.ip_type.clone().unwrap_or_default(),
+            ip_type: r
+                .ip_type
+                .as_deref()
+                .map(format_ip_type)
+                .unwrap_or_default(),
             subnet: r.cidr().unwrap_or_default(),
             label: r.label.clone().unwrap_or_default(),
             instance_id: if r.is_attached() {
@@ -1202,7 +1214,11 @@ impl From<&Vpc2Node> for Vpc2NodeRow {
             ip_address: n.ip_address.clone().unwrap_or_default(),
             mac_address: n.mac_address.map(|m| m.to_string()).unwrap_or_default(),
             description: n.description.clone().unwrap_or_default(),
-            node_type: n.node_type.clone().unwrap_or_default(),
+            node_type: n
+                .node_type
+                .as_deref()
+                .map(format_vpc2_node_type)
+                .unwrap_or_default(),
         }
     }
 }
@@ -1270,7 +1286,7 @@ struct PlanRow {
     id: String,
     #[tabled(rename = "vCPUs")]
     vcpus: String,
-    #[tabled(rename = "RAM (MB)")]
+    #[tabled(rename = "RAM (GB)")]
     ram: String,
     #[tabled(rename = "Disk (GB)")]
     disk: String,
@@ -1285,13 +1301,17 @@ impl From<&Plan> for PlanRow {
         Self {
             id: p.id.clone(),
             vcpus: p.vcpu_count.map(|v| v.to_string()).unwrap_or_default(),
-            ram: p.ram.map(|r| r.to_string()).unwrap_or_default(),
+            ram: format_ram_gb(p.ram),
             disk: p.disk.map(|d| d.to_string()).unwrap_or_default(),
             monthly: p
                 .monthly_cost
                 .map(|c| format!("{:.2}", c))
                 .unwrap_or_default(),
-            plan_type: p.plan_type.clone().unwrap_or_default(),
+            plan_type: p
+                .plan_type
+                .as_deref()
+                .map(format_plan_type)
+                .unwrap_or_default(),
         }
     }
 }
@@ -1308,9 +1328,63 @@ impl TableDisplay for Vec<Plan> {
     }
 }
 
-/// Wrapper for displaying bare metal plans in a table
+fn format_ram_gb(mb: Option<i32>) -> String {
+    let mb = match mb {
+        Some(value) => value as f64,
+        None => return String::new(),
+    };
+    let gb = mb / 1024.0;
+    if (gb.fract() - 0.0).abs() < f64::EPSILON {
+        format!("{:.0}", gb)
+    } else {
+        format!("{:.2}", gb)
+    }
+}
+
+fn format_plan_type(plan_type: &str) -> String {
+    match plan_type.trim().to_lowercase().as_str() {
+        "vc2" => "Cloud Compute".to_string(),
+        "vhf" => "High Frequency Compute".to_string(),
+        "vdc" => "Dedicated Cloud".to_string(),
+        "vhp" => "High Performance".to_string(),
+        "voc" => "Optimized Cloud".to_string(),
+        "voc-g" => "Optimized Cloud (General Purpose)".to_string(),
+        "voc-c" => "Optimized Cloud (CPU)".to_string(),
+        "voc-m" => "Optimized Cloud (Memory)".to_string(),
+        "voc-s" => "Optimized Cloud (Storage)".to_string(),
+        "vcg" => "Cloud GPU".to_string(),
+        "vbm" => "Bare Metal".to_string(),
+        other => other.to_string(),
+    }
+}
+
+fn format_ip_type(ip_type: &str) -> String {
+    match ip_type.trim().to_lowercase().as_str() {
+        "v4" | "ipv4" => "IPv4".to_string(),
+        "v6" | "ipv6" => "IPv6".to_string(),
+        other => other.to_string(),
+    }
+}
+
+fn format_script_type(script_type: &str) -> String {
+    match script_type.trim().to_lowercase().as_str() {
+        "boot" => "Boot".to_string(),
+        "pxe" => "PXE".to_string(),
+        other => other.to_string(),
+    }
+}
+
+fn format_vpc2_node_type(node_type: &str) -> String {
+    match node_type.trim().to_lowercase().as_str() {
+        "instance" => "Instance".to_string(),
+        "baremetal" | "bare-metal" | "bare_metal" => "Bare Metal".to_string(),
+        other => other.to_string(),
+    }
+}
+
+/// Wrapper for displaying bare metal plans in a table (hourly pricing)
 #[derive(Tabled)]
-struct BareMetalPlanRow {
+struct BareMetalPlanHourlyRow {
     #[tabled(rename = "ID")]
     id: String,
     #[tabled(rename = "CPUs")]
@@ -1319,23 +1393,19 @@ struct BareMetalPlanRow {
     cpu_threads: String,
     #[tabled(rename = "CPU Model")]
     cpu_model: String,
-    #[tabled(rename = "RAM (MB)")]
+    #[tabled(rename = "RAM (GB)")]
     ram: String,
     #[tabled(rename = "Disk (GB)")]
     disk: String,
     #[tabled(rename = "Disks")]
     disk_count: String,
-    #[tabled(rename = "BW (GB)")]
-    bandwidth: String,
-    #[tabled(rename = "$/month")]
-    monthly: String,
     #[tabled(rename = "$/hour")]
-    hourly: String,
+    price: String,
     #[tabled(rename = "Type")]
     plan_type: String,
 }
 
-impl From<&BareMetalPlan> for BareMetalPlanRow {
+impl From<&BareMetalPlan> for BareMetalPlanHourlyRow {
     fn from(p: &BareMetalPlan) -> Self {
         Self {
             id: p.id.clone(),
@@ -1345,15 +1415,10 @@ impl From<&BareMetalPlan> for BareMetalPlanRow {
                 .map(|v| v.to_string())
                 .unwrap_or_default(),
             cpu_model: p.cpu_model.clone().unwrap_or_default(),
-            ram: p.ram.map(|r| r.to_string()).unwrap_or_default(),
-            disk: p.disk.clone().unwrap_or_default(),
+            ram: format_ram_gb(p.ram),
+            disk: p.disk.map(|d| d.to_string()).unwrap_or_default(),
             disk_count: p.disk_count.map(|d| d.to_string()).unwrap_or_default(),
-            bandwidth: p.bandwidth.map(|b| b.to_string()).unwrap_or_default(),
-            monthly: p
-                .monthly_cost
-                .map(|c| format!("{:.2}", c))
-                .unwrap_or_default(),
-            hourly: p
+            price: p
                 .hourly_cost
                 .map(|c| format!("{:.2}", c))
                 .unwrap_or_default(),
@@ -1362,15 +1427,80 @@ impl From<&BareMetalPlan> for BareMetalPlanRow {
     }
 }
 
-impl TableDisplay for Vec<BareMetalPlan> {
-    fn print_table(&self) {
-        if self.is_empty() {
-            println!("{}", "No bare metal plans found.".yellow());
-            return;
+/// Wrapper for displaying bare metal plans in a table (monthly pricing)
+#[derive(Tabled)]
+struct BareMetalPlanMonthlyRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "CPUs")]
+    cpu_count: String,
+    #[tabled(rename = "Threads")]
+    cpu_threads: String,
+    #[tabled(rename = "CPU Model")]
+    cpu_model: String,
+    #[tabled(rename = "RAM (GB)")]
+    ram: String,
+    #[tabled(rename = "Disk (GB)")]
+    disk: String,
+    #[tabled(rename = "Disks")]
+    disk_count: String,
+    #[tabled(rename = "$/month")]
+    price: String,
+    #[tabled(rename = "Type")]
+    plan_type: String,
+}
+
+impl From<&BareMetalPlan> for BareMetalPlanMonthlyRow {
+    fn from(p: &BareMetalPlan) -> Self {
+        Self {
+            id: p.id.clone(),
+            cpu_count: p.cpu_count.map(|v| v.to_string()).unwrap_or_default(),
+            cpu_threads: p
+                .cpu_threads
+                .map(|v| v.to_string())
+                .unwrap_or_default(),
+            cpu_model: p.cpu_model.clone().unwrap_or_default(),
+            ram: format_ram_gb(p.ram),
+            disk: p.disk.map(|d| d.to_string()).unwrap_or_default(),
+            disk_count: p.disk_count.map(|d| d.to_string()).unwrap_or_default(),
+            price: p
+                .monthly_cost
+                .map(|c| format!("{:.2}", c))
+                .unwrap_or_default(),
+            plan_type: p.plan_type.clone().unwrap_or_default(),
         }
-        let rows: Vec<BareMetalPlanRow> = self.iter().map(BareMetalPlanRow::from).collect();
+    }
+}
+
+fn print_bare_metal_plans_table(plans: &[BareMetalPlan], monthly: bool) {
+    if plans.is_empty() {
+        println!("{}", "No bare metal plans found.".yellow());
+        return;
+    }
+
+    if monthly {
+        let rows: Vec<BareMetalPlanMonthlyRow> =
+            plans.iter().map(BareMetalPlanMonthlyRow::from).collect();
         let table = Table::new(rows).with(Style::rounded()).to_string();
         println!("{}", table);
+    } else {
+        let rows: Vec<BareMetalPlanHourlyRow> =
+            plans.iter().map(BareMetalPlanHourlyRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+pub fn print_bare_metal_plans(plans: &[BareMetalPlan], format: OutputFormat, monthly: bool) {
+    match format {
+        OutputFormat::Json => print_json(plans),
+        OutputFormat::Table => print_bare_metal_plans_table(plans, monthly),
+    }
+}
+
+impl TableDisplay for Vec<BareMetalPlan> {
+    fn print_table(&self) {
+        print_bare_metal_plans_table(self, false);
     }
 }
 
@@ -1474,7 +1604,11 @@ impl From<&Ipv4Info> for Ipv4InfoRow {
             ip: i.ip.clone(),
             netmask: i.netmask.clone().unwrap_or_default(),
             gateway: i.gateway.clone().unwrap_or_default(),
-            ip_type: i.ip_type.clone().unwrap_or_default(),
+            ip_type: i
+                .ip_type
+                .as_deref()
+                .map(format_ip_type)
+                .unwrap_or_default(),
             reverse: i.reverse.clone().unwrap_or_default(),
         }
     }
@@ -1522,7 +1656,11 @@ impl From<&Ipv6Info> for Ipv6InfoRow {
                 .network_size
                 .map(|s| format!("/{}", s))
                 .unwrap_or_default(),
-            ip_type: i.ip_type.clone().unwrap_or_default(),
+            ip_type: i
+                .ip_type
+                .as_deref()
+                .map(format_ip_type)
+                .unwrap_or_default(),
         }
     }
 }
@@ -3176,7 +3314,11 @@ impl From<&LBFirewallRule> for LBFirewallRuleRow {
             id: r.id.clone().unwrap_or_default(),
             port: r.port.map(|p| p.to_string()).unwrap_or_default(),
             source: r.source.clone().unwrap_or_default(),
-            ip_type: r.ip_type.clone().unwrap_or_default(),
+            ip_type: r
+                .ip_type
+                .as_deref()
+                .map(format_ip_type)
+                .unwrap_or_default(),
         }
     }
 }
@@ -3206,7 +3348,7 @@ impl TableDisplay for LBFirewallRule {
             println!("  {}: {}", "Source".green(), source);
         }
         if let Some(ip_type) = &self.ip_type {
-            println!("  {}: {}", "IP Type".green(), ip_type);
+            println!("  {}: {}", "IP Type".green(), format_ip_type(ip_type));
         }
     }
 }
@@ -4391,7 +4533,11 @@ impl From<&IpWhitelistEntry> for IpWhitelistEntryRow {
         Self {
             subnet: e.subnet.clone().unwrap_or_default(),
             subnet_size: e.subnet_size.map(|s| s.to_string()).unwrap_or_default(),
-            ip_type: e.ip_type.clone().unwrap_or_default(),
+            ip_type: e
+                .ip_type
+                .as_deref()
+                .map(format_ip_type)
+                .unwrap_or_default(),
             date_added: e.date_added.clone().unwrap_or_default(),
         }
     }
@@ -4670,8 +4816,9 @@ mod tests {
         let row = PlanRow::from(&plan);
         assert_eq!(row.id, "vc2-1c-1gb");
         assert_eq!(row.vcpus, "1");
-        assert_eq!(row.ram, "1024");
+        assert_eq!(row.ram, "1");
         assert_eq!(row.monthly, "5.00");
+        assert_eq!(row.plan_type, "Cloud Compute");
     }
 
     #[test]
@@ -4701,6 +4848,6 @@ mod tests {
         let row = StartupScriptRow::from(&script);
         assert_eq!(row.id, "script-123");
         assert_eq!(row.name, "Setup");
-        assert_eq!(row.script_type, "boot");
+        assert_eq!(row.script_type, "Boot");
     }
 }

@@ -208,11 +208,13 @@ impl Config {
     }
 
     /// Get the current profile
+    #[allow(dead_code)]
     pub fn current_profile(&self) -> Option<&Profile> {
         self.profiles.get(&self.default_profile)
     }
 
     /// Get a mutable reference to the current profile, creating it if needed
+    #[allow(dead_code)]
     pub fn current_profile_mut(&mut self) -> &mut Profile {
         let profile_name = self.default_profile.clone();
         self.profiles.entry(profile_name).or_default()

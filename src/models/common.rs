@@ -92,21 +92,33 @@ pub struct Plan {
 pub struct BareMetalPlan {
     /// Unique plan ID (e.g., "vbm-4c-32gb")
     pub id: String,
+    /// Number of physical CPUs
+    #[serde(default)]
+    pub physical_cpus: Option<i32>,
     /// Number of CPUs
     #[serde(default)]
     pub cpu_count: Option<i32>,
+    /// Number of CPU cores
+    #[serde(default)]
+    pub cpu_cores: Option<i32>,
     /// Number of CPU threads
     #[serde(default)]
     pub cpu_threads: Option<i32>,
+    /// CPU manufacturer
+    #[serde(default)]
+    pub cpu_manufacturer: Option<String>,
     /// CPU model
     #[serde(default)]
     pub cpu_model: Option<String>,
+    /// CPU clock speed in MHz
+    #[serde(default)]
+    pub cpu_mhz: Option<i32>,
     /// RAM in MB
     #[serde(default)]
     pub ram: Option<i32>,
     /// Disk size in GB
     #[serde(default)]
-    pub disk: Option<String>,
+    pub disk: Option<i32>,
     /// Number of disks
     #[serde(default)]
     pub disk_count: Option<i32>,
@@ -116,6 +128,12 @@ pub struct BareMetalPlan {
     /// Invoice type (hourly or monthly)
     #[serde(default)]
     pub invoice_type: Option<String>,
+    /// Whether the plan supports on-demand deployment
+    #[serde(default)]
+    pub deploy_ondemand: Option<bool>,
+    /// Whether the plan supports preemptible deployment
+    #[serde(default)]
+    pub deploy_preemptible: Option<bool>,
     /// Monthly cost in USD
     #[serde(default)]
     pub monthly_cost: Option<f64>,
@@ -157,6 +175,7 @@ pub struct PlansResponse {
 /// Response wrapper for bare metal plans list
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BareMetalPlansResponse {
+    #[serde(rename = "plans_metal")]
     pub plans: Vec<BareMetalPlan>,
 }
 

@@ -4273,6 +4273,20 @@ pub struct PlansArgs {
     /// List bare metal plans (includes CPU/RAM/pricing)
     #[arg(long, alias = "metal", conflicts_with = "plan_type")]
     pub bare_metal: bool,
+
+    /// Show pricing in hourly or monthly units for bare metal plans (table output only)
+    #[arg(long, value_enum, default_value = "hourly")]
+    pub price: PriceMode,
+
+    /// Filter plans by region (e.g., "ewr")
+    #[arg(long)]
+    pub region: Option<String>,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum PriceMode {
+    Hourly,
+    Monthly,
 }
 
 // ==================
@@ -4623,6 +4637,8 @@ mod tests {
         let args = PlansArgs {
             plan_type: Some("vc2".to_string()),
             bare_metal: false,
+            price: PriceMode::Hourly,
+            region: None,
         };
         assert_eq!(args.plan_type.unwrap(), "vc2");
     }

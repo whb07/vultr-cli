@@ -198,7 +198,10 @@ vultr-cli regions
 # List plans (optionally filter by type)
 vultr-cli plans
 vultr-cli plans --plan-type vc2
+vultr-cli plans --region ewr
 vultr-cli plans --bare-metal
+vultr-cli plans --bare-metal --price monthly
+vultr-cli plans --bare-metal --region ewr
 
 # List operating systems
 vultr-cli os
