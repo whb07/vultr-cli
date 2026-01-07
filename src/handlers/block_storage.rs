@@ -92,7 +92,9 @@ pub async fn handle_block_storage(
             }
             client.delete_block_storage(&id).await?;
             print_success(&format!("Block storage {} deletion initiated", id));
-            api::verify_block_storage_deleted(client, &id, wait_opts).await?;
+            if wait {
+                api::verify_block_storage_deleted(client, &id, wait_opts).await?;
+            }
         }
 
         BlockStorageCommands::Attach {

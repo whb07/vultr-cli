@@ -149,6 +149,46 @@ impl VultrClient {
         }
     }
 
+    /// Make a PUT request that returns no content
+    async fn put_no_content(&self, path: &str, body: impl Serialize) -> VultrResult<()> {
+        let url = format!("{}{}", API_BASE_URL, path);
+        let body_value = serde_json::to_value(body)?;
+
+        let make_request = || {
+            self.client
+                .put(&url)
+                .header("Authorization", format!("Bearer {}", self.api_key))
+                .json(&body_value)
+        };
+
+        let response = self.send_with_retry(make_request).await?;
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            self.handle_error(response).await
+        }
+    }
+
+    /// Make a PATCH request that returns no content
+    async fn patch_no_content(&self, path: &str, body: impl Serialize) -> VultrResult<()> {
+        let url = format!("{}{}", API_BASE_URL, path);
+        let body_value = serde_json::to_value(body)?;
+
+        let make_request = || {
+            self.client
+                .patch(&url)
+                .header("Authorization", format!("Bearer {}", self.api_key))
+                .json(&body_value)
+        };
+
+        let response = self.send_with_retry(make_request).await?;
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            self.handle_error(response).await
+        }
+    }
+
     /// Send a request with retries for transient failures.
     ///
     /// Retries on:
@@ -273,12 +313,13 @@ impl VultrClient {
         let status = response.status();
 
         match status {
-            StatusCode::UNAUTHORIZED => Err(VultrError::AuthenticationRequired),
+            StatusCode::UNAUTHORIZED => Err(VultrError::InvalidApiKey),
             StatusCode::TOO_MANY_REQUESTS => Err(VultrError::RateLimited),
             StatusCode::NOT_FOUND => {
                 let body = response.text().await.unwrap_or_default();
                 if let Ok(error) = serde_json::from_str::<ApiErrorResponse>(&body) {
-                    Err(VultrError::api_error(status.as_u16(), error.error))
+                    let error_status = error.status.unwrap_or(status.as_u16());
+                    Err(VultrError::api_error(error_status, error.error))
                 } else {
                     Err(VultrError::api_error(status.as_u16(), "Resource not found"))
                 }
@@ -286,7 +327,8 @@ impl VultrClient {
             _ => {
                 let body = response.text().await.unwrap_or_default();
                 if let Ok(error) = serde_json::from_str::<ApiErrorResponse>(&body) {
-                    Err(VultrError::api_error(status.as_u16(), error.error))
+                    let error_status = error.status.unwrap_or(status.as_u16());
+                    Err(VultrError::api_error(error_status, error.error))
                 } else {
                     Err(VultrError::api_error(
                         status.as_u16(),
@@ -832,6 +874,87 @@ impl VultrClient {
     }
 
     // =====================
+    // ISO Operations
+    // =====================
+
+    /// List all ISOs
+    pub async fn list_isos(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Iso>, Meta)> {
+        let mut path = "/iso".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<IsosResponse> = self.get(&path).await?;
+        Ok((response.data.isos, response.meta))
+    }
+
+    /// Get a single ISO
+    pub async fn get_iso(&self, iso_id: &str) -> VultrResult<Iso> {
+        let response: IsoResponse = self.get(&format!("/iso/{}", iso_id)).await?;
+        Ok(response.iso)
+    }
+
+    /// Create a new ISO from URL
+    pub async fn create_iso(&self, request: CreateIsoRequest) -> VultrResult<Iso> {
+        let response: IsoResponse = self.post("/iso", request).await?;
+        Ok(response.iso)
+    }
+
+    /// Delete an ISO
+    pub async fn delete_iso(&self, iso_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/iso/{}", iso_id)).await
+    }
+
+    /// List all public ISOs
+    pub async fn list_public_isos(&self) -> VultrResult<Vec<PublicIso>> {
+        let response: PublicIsosResponse = self.get("/iso-public").await?;
+        Ok(response.public_isos)
+    }
+
+    // =====================
+    // Backup Operations
+    // =====================
+
+    /// List all backups
+    pub async fn list_backups(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Backup>, Meta)> {
+        let mut path = "/backups".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<BackupsResponse> = self.get(&path).await?;
+        Ok((response.data.backups, response.meta))
+    }
+
+    /// Get a single backup
+    pub async fn get_backup(&self, backup_id: &str) -> VultrResult<Backup> {
+        let response: BackupResponse = self.get(&format!("/backups/{}", backup_id)).await?;
+        Ok(response.backup)
+    }
+
+    // =====================
     // Block Storage Operations
     // =====================
 
@@ -909,7 +1032,206 @@ impl VultrClient {
     }
 
     // =====================
+    // Object Storage Operations
+    // =====================
+
+    /// List all object storages
+    pub async fn list_object_storages(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<ObjectStorage>, Meta)> {
+        let mut path = "/object-storage".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<ObjectStoragesResponse> = self.get(&path).await?;
+        Ok((response.data.object_storages, response.meta))
+    }
+
+    /// Get a single object storage
+    pub async fn get_object_storage(&self, object_storage_id: &str) -> VultrResult<ObjectStorage> {
+        let response: ObjectStorageResponse = self
+            .get(&format!("/object-storage/{}", object_storage_id))
+            .await?;
+        Ok(response.object_storage)
+    }
+
+    /// Create a new object storage
+    pub async fn create_object_storage(
+        &self,
+        request: CreateObjectStorageRequest,
+    ) -> VultrResult<ObjectStorage> {
+        let response: ObjectStorageResponse = self.post("/object-storage", request).await?;
+        Ok(response.object_storage)
+    }
+
+    /// Update an object storage
+    pub async fn update_object_storage(
+        &self,
+        object_storage_id: &str,
+        request: UpdateObjectStorageRequest,
+    ) -> VultrResult<()> {
+        self.put::<serde_json::Value>(&format!("/object-storage/{}", object_storage_id), request)
+            .await?;
+        Ok(())
+    }
+
+    /// Delete an object storage
+    pub async fn delete_object_storage(&self, object_storage_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/object-storage/{}", object_storage_id))
+            .await
+    }
+
+    /// Regenerate object storage keys
+    pub async fn regenerate_object_storage_keys(
+        &self,
+        object_storage_id: &str,
+    ) -> VultrResult<S3Credentials> {
+        let response: RegenerateKeysResponse = self
+            .post(
+                &format!("/object-storage/{}/regenerate-keys", object_storage_id),
+                serde_json::json!({}),
+            )
+            .await?;
+        Ok(response.s3_credentials)
+    }
+
+    /// List all object storage clusters
+    pub async fn list_object_storage_clusters(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<ObjectStorageCluster>, Meta)> {
+        let mut path = "/object-storage/clusters".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<ObjectStorageClustersResponse> = self.get(&path).await?;
+        Ok((response.data.clusters, response.meta))
+    }
+
+    /// List all object storage tiers
+    pub async fn list_object_storage_tiers(&self) -> VultrResult<Vec<ObjectStorageTier>> {
+        let response: TiersResponse = self.get("/object-storage/tiers").await?;
+        Ok(response.tiers)
+    }
+
+    /// List all tiers for a specific cluster
+    pub async fn list_cluster_tiers(&self, cluster_id: i32) -> VultrResult<Vec<ClusterTier>> {
+        let response: ClusterTiersResponse = self
+            .get(&format!("/object-storage/clusters/{}/tiers", cluster_id))
+            .await?;
+        Ok(response.tiers)
+    }
+
+    // =====================
     // Firewall Operations
+    // =====================
+    // Reserved IP Operations
+    // =====================
+
+    /// List all Reserved IPs
+    pub async fn list_reserved_ips(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<ReservedIp>, Meta)> {
+        let mut path = "/reserved-ips".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<ReservedIpsResponse> = self.get(&path).await?;
+        Ok((response.data.reserved_ips, response.meta))
+    }
+
+    /// Get a single Reserved IP
+    pub async fn get_reserved_ip(&self, reserved_ip_id: &str) -> VultrResult<ReservedIp> {
+        let response: ReservedIpResponse = self
+            .get(&format!("/reserved-ips/{}", reserved_ip_id))
+            .await?;
+        Ok(response.reserved_ip)
+    }
+
+    /// Create a new Reserved IP
+    pub async fn create_reserved_ip(
+        &self,
+        request: CreateReservedIpRequest,
+    ) -> VultrResult<ReservedIp> {
+        let response: ReservedIpResponse = self.post("/reserved-ips", request).await?;
+        Ok(response.reserved_ip)
+    }
+
+    /// Update a Reserved IP
+    pub async fn update_reserved_ip(
+        &self,
+        reserved_ip_id: &str,
+        request: UpdateReservedIpRequest,
+    ) -> VultrResult<ReservedIp> {
+        let response: ReservedIpResponse = self
+            .patch(&format!("/reserved-ips/{}", reserved_ip_id), request)
+            .await?;
+        Ok(response.reserved_ip)
+    }
+
+    /// Delete a Reserved IP
+    pub async fn delete_reserved_ip(&self, reserved_ip_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/reserved-ips/{}", reserved_ip_id))
+            .await
+    }
+
+    /// Attach a Reserved IP to an instance
+    pub async fn attach_reserved_ip(
+        &self,
+        reserved_ip_id: &str,
+        request: AttachReservedIpRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/reserved-ips/{}/attach", reserved_ip_id), request)
+            .await
+    }
+
+    /// Detach a Reserved IP from an instance
+    pub async fn detach_reserved_ip(&self, reserved_ip_id: &str) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/reserved-ips/{}/detach", reserved_ip_id),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    /// Convert an instance IP to a Reserved IP
+    pub async fn convert_to_reserved_ip(
+        &self,
+        request: ConvertReservedIpRequest,
+    ) -> VultrResult<ReservedIp> {
+        let response: ReservedIpResponse = self.post("/reserved-ips/convert", request).await?;
+        Ok(response.reserved_ip)
+    }
+
     // =====================
 
     /// List all firewall groups
@@ -1069,6 +1391,99 @@ impl VultrClient {
     }
 
     // =====================
+    // VPC 2.0 Operations
+    // =====================
+
+    /// List all VPC 2.0 networks
+    pub async fn list_vpc2s(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Vpc2>, Meta)> {
+        let mut path = "/vpc2".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<Vpcs2Response> = self.get(&path).await?;
+        Ok((response.data.vpcs, response.meta))
+    }
+
+    /// Get a single VPC 2.0 network
+    pub async fn get_vpc2(&self, vpc_id: &str) -> VultrResult<Vpc2> {
+        let response: Vpc2Response = self.get(&format!("/vpc2/{}", vpc_id)).await?;
+        Ok(response.vpc)
+    }
+
+    /// Create a new VPC 2.0 network
+    pub async fn create_vpc2(&self, request: CreateVpc2Request) -> VultrResult<Vpc2> {
+        let response: Vpc2Response = self.post("/vpc2", request).await?;
+        Ok(response.vpc)
+    }
+
+    /// Update a VPC 2.0 network
+    pub async fn update_vpc2(&self, vpc_id: &str, request: UpdateVpcRequest) -> VultrResult<()> {
+        self.put::<serde_json::Value>(&format!("/vpc2/{}", vpc_id), request)
+            .await?;
+        Ok(())
+    }
+
+    /// Delete a VPC 2.0 network
+    pub async fn delete_vpc2(&self, vpc_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/vpc2/{}", vpc_id)).await
+    }
+
+    /// List nodes attached to a VPC 2.0 network
+    pub async fn list_vpc2_nodes(
+        &self,
+        vpc_id: &str,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Vpc2Node>, Meta)> {
+        let mut path = format!("/vpc2/{}/nodes", vpc_id);
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<Vpc2NodesResponse> = self.get(&path).await?;
+        Ok((response.data.nodes, response.meta))
+    }
+
+    /// Attach nodes to a VPC 2.0 network
+    pub async fn attach_vpc2_nodes(
+        &self,
+        vpc_id: &str,
+        request: AttachVpc2NodesRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/vpc2/{}/nodes/attach", vpc_id), request)
+            .await
+    }
+
+    /// Detach nodes from a VPC 2.0 network
+    pub async fn detach_vpc2_nodes(
+        &self,
+        vpc_id: &str,
+        request: DetachVpc2NodesRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/vpc2/{}/nodes/detach", vpc_id), request)
+            .await
+    }
+
+    // =====================
     // Reference Data
     // =====================
 
@@ -1092,6 +1507,12 @@ impl VultrClient {
         };
         let response: ListResponse<PlansResponse> = self.get(&path).await?;
         Ok(response.data.plans)
+    }
+
+    /// List all applications
+    pub async fn list_applications(&self) -> VultrResult<Vec<Application>> {
+        let response: ApplicationsResponse = self.get("/applications").await?;
+        Ok(response.applications)
     }
 
     // =====================
@@ -1254,6 +1675,73 @@ impl VultrClient {
             vke_id, nodepool_id
         ))
         .await
+    }
+
+    // Node Pool Label Operations
+
+    /// List labels for a node pool
+    pub async fn list_node_pool_labels(
+        &self,
+        vke_id: &str,
+        nodepool_id: &str,
+    ) -> VultrResult<Vec<NodePoolLabel>> {
+        let response: NodePoolLabelsResponse = self
+            .get(&format!(
+                "/kubernetes/clusters/{}/node-pools/{}/labels",
+                vke_id, nodepool_id
+            ))
+            .await?;
+        Ok(response.labels)
+    }
+
+    /// Create a label for a node pool
+    pub async fn create_node_pool_label(
+        &self,
+        vke_id: &str,
+        nodepool_id: &str,
+        request: CreateNodePoolLabelRequest,
+    ) -> VultrResult<NodePoolLabel> {
+        let response: serde_json::Value = self
+            .post(
+                &format!(
+                    "/kubernetes/clusters/{}/node-pools/{}/labels",
+                    vke_id, nodepool_id
+                ),
+                &request,
+            )
+            .await?;
+        serde_json::from_value(response["label"].clone()).map_err(VultrError::JsonError)
+    }
+
+    /// Delete a label from a node pool
+    pub async fn delete_node_pool_label(
+        &self,
+        vke_id: &str,
+        nodepool_id: &str,
+        label_id: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/kubernetes/clusters/{}/node-pools/{}/labels/{}",
+            vke_id, nodepool_id, label_id
+        ))
+        .await
+    }
+
+    // Node Pool Taint Operations
+
+    /// List taints for a node pool
+    pub async fn list_node_pool_taints(
+        &self,
+        vke_id: &str,
+        nodepool_id: &str,
+    ) -> VultrResult<Vec<NodePoolTaint>> {
+        let response: NodePoolTaintsResponse = self
+            .get(&format!(
+                "/kubernetes/clusters/{}/node-pools/{}/taints",
+                vke_id, nodepool_id
+            ))
+            .await?;
+        Ok(response.taints)
     }
 
     // Node Operations
@@ -1985,6 +2473,1539 @@ impl VultrClient {
             options,
         )
         .await
+    }
+
+    // =====================
+    // DNS Domain Operations
+    // =====================
+
+    /// List all DNS domains
+    pub async fn list_dns_domains(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<DnsDomain>, Meta)> {
+        let mut path = "/domains".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: DomainsResponseWithMeta = self.get(&path).await?;
+        Ok((response.domains, response.meta))
+    }
+
+    /// Get a DNS domain
+    pub async fn get_dns_domain(&self, dns_domain: &str) -> VultrResult<DnsDomain> {
+        let response: DomainResponse = self.get(&format!("/domains/{}", dns_domain)).await?;
+        Ok(response.domain)
+    }
+
+    /// Create a DNS domain
+    pub async fn create_dns_domain(&self, request: CreateDomainRequest) -> VultrResult<DnsDomain> {
+        let response: DomainResponse = self.post("/domains", request).await?;
+        Ok(response.domain)
+    }
+
+    /// Update a DNS domain
+    pub async fn update_dns_domain(
+        &self,
+        dns_domain: &str,
+        request: UpdateDomainRequest,
+    ) -> VultrResult<()> {
+        self.put_no_content(&format!("/domains/{}", dns_domain), request)
+            .await
+    }
+
+    /// Delete a DNS domain
+    pub async fn delete_dns_domain(&self, dns_domain: &str) -> VultrResult<()> {
+        self.delete(&format!("/domains/{}", dns_domain)).await
+    }
+
+    // =====================
+    // DNS SOA Operations
+    // =====================
+
+    /// Get SOA information for a DNS domain
+    pub async fn get_dns_soa(&self, dns_domain: &str) -> VultrResult<DnsSoa> {
+        let response: SoaResponse = self.get(&format!("/domains/{}/soa", dns_domain)).await?;
+        Ok(response.dns_soa)
+    }
+
+    /// Update SOA information for a DNS domain
+    pub async fn update_dns_soa(
+        &self,
+        dns_domain: &str,
+        request: UpdateSoaRequest,
+    ) -> VultrResult<()> {
+        self.patch_no_content(&format!("/domains/{}/soa", dns_domain), request)
+            .await
+    }
+
+    // =====================
+    // DNS DNSSEC Operations
+    // =====================
+
+    /// Get DNSSEC information for a DNS domain
+    pub async fn get_dns_dnssec(&self, dns_domain: &str) -> VultrResult<Vec<String>> {
+        let response: DnsSec = self.get(&format!("/domains/{}/dnssec", dns_domain)).await?;
+        Ok(response.dns_sec)
+    }
+
+    // =====================
+    // DNS Record Operations
+    // =====================
+
+    /// List DNS records for a domain
+    pub async fn list_dns_records(
+        &self,
+        dns_domain: &str,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<DnsRecord>, Meta)> {
+        let mut path = format!("/domains/{}/records", dns_domain);
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: RecordsResponseWithMeta = self.get(&path).await?;
+        Ok((response.records, response.meta))
+    }
+
+    /// Get a DNS record
+    pub async fn get_dns_record(
+        &self,
+        dns_domain: &str,
+        record_id: &str,
+    ) -> VultrResult<DnsRecord> {
+        let response: RecordResponse = self
+            .get(&format!("/domains/{}/records/{}", dns_domain, record_id))
+            .await?;
+        Ok(response.record)
+    }
+
+    /// Create a DNS record
+    pub async fn create_dns_record(
+        &self,
+        dns_domain: &str,
+        request: CreateRecordRequest,
+    ) -> VultrResult<DnsRecord> {
+        let response: RecordResponse = self
+            .post(&format!("/domains/{}/records", dns_domain), request)
+            .await?;
+        Ok(response.record)
+    }
+
+    /// Update a DNS record
+    pub async fn update_dns_record(
+        &self,
+        dns_domain: &str,
+        record_id: &str,
+        request: UpdateRecordRequest,
+    ) -> VultrResult<()> {
+        self.patch_no_content(
+            &format!("/domains/{}/records/{}", dns_domain, record_id),
+            request,
+        )
+        .await
+    }
+
+    /// Delete a DNS record
+    pub async fn delete_dns_record(&self, dns_domain: &str, record_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/domains/{}/records/{}", dns_domain, record_id))
+            .await
+    }
+
+    // =====================
+    // Load Balancer Operations
+    // =====================
+
+    /// List all load balancers
+    pub async fn list_load_balancers(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<LoadBalancer>, Meta)> {
+        let mut path = "/load-balancers".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<LoadBalancersResponse> = self.get(&path).await?;
+        Ok((response.data.load_balancers, response.meta))
+    }
+
+    /// Get a single load balancer
+    pub async fn get_load_balancer(&self, lb_id: &str) -> VultrResult<LoadBalancer> {
+        let response: LoadBalancerResponse =
+            self.get(&format!("/load-balancers/{}", lb_id)).await?;
+        Ok(response.load_balancer)
+    }
+
+    /// Create a new load balancer
+    pub async fn create_load_balancer(
+        &self,
+        request: CreateLoadBalancerRequest,
+    ) -> VultrResult<LoadBalancer> {
+        let response: LoadBalancerResponse = self.post("/load-balancers", request).await?;
+        Ok(response.load_balancer)
+    }
+
+    /// Update a load balancer
+    pub async fn update_load_balancer(
+        &self,
+        lb_id: &str,
+        request: UpdateLoadBalancerRequest,
+    ) -> VultrResult<LoadBalancer> {
+        let response: LoadBalancerResponse = self
+            .patch(&format!("/load-balancers/{}", lb_id), request)
+            .await?;
+        Ok(response.load_balancer)
+    }
+
+    /// Delete a load balancer
+    pub async fn delete_load_balancer(&self, lb_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/load-balancers/{}", lb_id)).await
+    }
+
+    // =====================
+    // Load Balancer SSL Operations
+    // =====================
+
+    /// Add SSL certificate to a load balancer
+    pub async fn create_load_balancer_ssl(&self, lb_id: &str, ssl: SSLConfig) -> VultrResult<()> {
+        self.post_no_content(&format!("/load-balancers/{}/ssl", lb_id), ssl)
+            .await
+    }
+
+    /// Delete SSL certificate from a load balancer
+    pub async fn delete_load_balancer_ssl(&self, lb_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/load-balancers/{}/ssl", lb_id)).await
+    }
+
+    /// Disable auto SSL on a load balancer
+    pub async fn disable_load_balancer_auto_ssl(&self, lb_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/load-balancers/{}/auto_ssl", lb_id))
+            .await
+    }
+
+    // =====================
+    // Load Balancer Forwarding Rules
+    // =====================
+
+    /// List forwarding rules for a load balancer
+    pub async fn list_load_balancer_forwarding_rules(
+        &self,
+        lb_id: &str,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<ForwardingRule>, Meta)> {
+        let mut path = format!("/load-balancers/{}/forwarding-rules", lb_id);
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<ForwardingRulesResponse> = self.get(&path).await?;
+        Ok((response.data.forwarding_rules, response.meta))
+    }
+
+    /// Get a forwarding rule for a load balancer
+    pub async fn get_load_balancer_forwarding_rule(
+        &self,
+        lb_id: &str,
+        rule_id: &str,
+    ) -> VultrResult<ForwardingRule> {
+        let response: ForwardingRuleResponse = self
+            .get(&format!(
+                "/load-balancers/{}/forwarding-rules/{}",
+                lb_id, rule_id
+            ))
+            .await?;
+        Ok(response.forwarding_rule)
+    }
+
+    /// Create a forwarding rule for a load balancer
+    pub async fn create_load_balancer_forwarding_rule(
+        &self,
+        lb_id: &str,
+        request: CreateForwardingRuleRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/load-balancers/{}/forwarding-rules", lb_id),
+            request,
+        )
+        .await
+    }
+
+    /// Delete a forwarding rule from a load balancer
+    pub async fn delete_load_balancer_forwarding_rule(
+        &self,
+        lb_id: &str,
+        rule_id: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/load-balancers/{}/forwarding-rules/{}",
+            lb_id, rule_id
+        ))
+        .await
+    }
+
+    // =====================
+    // Load Balancer Firewall Rules
+    // =====================
+
+    /// List firewall rules for a load balancer
+    pub async fn list_load_balancer_firewall_rules(
+        &self,
+        lb_id: &str,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<LBFirewallRule>, Meta)> {
+        let mut path = format!("/load-balancers/{}/firewall-rules", lb_id);
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<LBFirewallRulesResponse> = self.get(&path).await?;
+        Ok((response.data.firewall_rules, response.meta))
+    }
+
+    /// Get a firewall rule for a load balancer
+    pub async fn get_load_balancer_firewall_rule(
+        &self,
+        lb_id: &str,
+        rule_id: &str,
+    ) -> VultrResult<LBFirewallRule> {
+        let response: LBFirewallRuleResponse = self
+            .get(&format!(
+                "/load-balancers/{}/firewall-rules/{}",
+                lb_id, rule_id
+            ))
+            .await?;
+        Ok(response.firewall_rule)
+    }
+
+    /// Create a firewall rule for a load balancer
+    pub async fn create_load_balancer_firewall_rule(
+        &self,
+        lb_id: &str,
+        request: CreateLBFirewallRuleRequest,
+    ) -> VultrResult<LBFirewallRule> {
+        let response: LBFirewallRuleResponse = self
+            .post(
+                &format!("/load-balancers/{}/firewall-rules", lb_id),
+                request,
+            )
+            .await?;
+        Ok(response.firewall_rule)
+    }
+
+    /// Delete a firewall rule from a load balancer
+    pub async fn delete_load_balancer_firewall_rule(
+        &self,
+        lb_id: &str,
+        rule_id: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/load-balancers/{}/firewall-rules/{}",
+            lb_id, rule_id
+        ))
+        .await
+    }
+
+    // =====================
+    // Load Balancer Reverse DNS
+    // =====================
+
+    /// Get reverse DNS for a load balancer
+    pub async fn get_load_balancer_reverse_dns(&self, lb_id: &str) -> VultrResult<ReverseDNS> {
+        self.get(&format!("/load-balancers/{}/reverse-dns", lb_id))
+            .await
+    }
+
+    /// Update IPv4 reverse DNS for a load balancer
+    pub async fn update_load_balancer_reverse_dns_ipv4(
+        &self,
+        lb_id: &str,
+        request: UpdateReverseDNSv4Request,
+    ) -> VultrResult<()> {
+        self.put_no_content(&format!("/load-balancers/{}/reverse-dns", lb_id), request)
+            .await
+    }
+
+    /// Create IPv6 reverse DNS for a load balancer
+    pub async fn create_load_balancer_reverse_dns_ipv6(
+        &self,
+        lb_id: &str,
+        request: CreateReverseDNSv6Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/load-balancers/{}/reverse-dns", lb_id), request)
+            .await
+    }
+
+    // =====================
+    // CDN Pull Zone Operations
+    // =====================
+
+    /// List all CDN Pull Zones
+    pub async fn list_cdn_pull_zones(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<CdnPullZone>, Meta)> {
+        let mut path = "/cdns/pull-zones".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: PullZonesResponse = self.get(&path).await?;
+        let meta = Meta {
+            total: Some(response.pull_zones.len() as i32),
+            links: None,
+        };
+        Ok((response.pull_zones, meta))
+    }
+
+    /// Get a CDN Pull Zone
+    pub async fn get_cdn_pull_zone(&self, pullzone_id: &str) -> VultrResult<CdnPullZone> {
+        let response: PullZoneResponse = self
+            .get(&format!("/cdns/pull-zones/{}", pullzone_id))
+            .await?;
+        Ok(response.pull_zone)
+    }
+
+    /// Create a CDN Pull Zone
+    pub async fn create_cdn_pull_zone(
+        &self,
+        request: CreatePullZoneRequest,
+    ) -> VultrResult<CdnPullZone> {
+        let response: PullZoneResponse = self.post("/cdns/pull-zones", request).await?;
+        Ok(response.pull_zone)
+    }
+
+    /// Update a CDN Pull Zone
+    pub async fn update_cdn_pull_zone(
+        &self,
+        pullzone_id: &str,
+        request: UpdatePullZoneRequest,
+    ) -> VultrResult<CdnPullZone> {
+        let response: PullZoneResponse = self
+            .put(&format!("/cdns/pull-zones/{}", pullzone_id), request)
+            .await?;
+        Ok(response.pull_zone)
+    }
+
+    /// Delete a CDN Pull Zone
+    pub async fn delete_cdn_pull_zone(&self, pullzone_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/cdns/pull-zones/{}", pullzone_id))
+            .await
+    }
+
+    /// Purge a CDN Pull Zone cache
+    pub async fn purge_cdn_pull_zone(&self, pullzone_id: &str) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/cdns/pull-zones/{}/purge", pullzone_id),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    // =====================
+    // CDN Push Zone Operations
+    // =====================
+
+    /// List all CDN Push Zones
+    pub async fn list_cdn_push_zones(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<CdnPushZone>, Meta)> {
+        let mut path = "/cdns/push-zones".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: PushZonesResponse = self.get(&path).await?;
+        let meta = Meta {
+            total: Some(response.push_zones.len() as i32),
+            links: None,
+        };
+        Ok((response.push_zones, meta))
+    }
+
+    /// Get a CDN Push Zone
+    pub async fn get_cdn_push_zone(&self, pushzone_id: &str) -> VultrResult<CdnPushZone> {
+        let response: PushZoneResponse = self
+            .get(&format!("/cdns/push-zones/{}", pushzone_id))
+            .await?;
+        Ok(response.push_zone)
+    }
+
+    /// Create a CDN Push Zone
+    pub async fn create_cdn_push_zone(
+        &self,
+        request: CreatePushZoneRequest,
+    ) -> VultrResult<CdnPushZone> {
+        let response: PushZoneResponse = self.post("/cdns/push-zones", request).await?;
+        Ok(response.push_zone)
+    }
+
+    /// Update a CDN Push Zone
+    pub async fn update_cdn_push_zone(
+        &self,
+        pushzone_id: &str,
+        request: UpdatePushZoneRequest,
+    ) -> VultrResult<CdnPushZone> {
+        let response: PushZoneResponse = self
+            .put(&format!("/cdns/push-zones/{}", pushzone_id), request)
+            .await?;
+        Ok(response.push_zone)
+    }
+
+    /// Delete a CDN Push Zone
+    pub async fn delete_cdn_push_zone(&self, pushzone_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/cdns/push-zones/{}", pushzone_id))
+            .await
+    }
+
+    // =====================
+    // CDN Push Zone File Operations
+    // =====================
+
+    /// List files in a CDN Push Zone
+    pub async fn list_cdn_push_zone_files(
+        &self,
+        pushzone_id: &str,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<CdnPushZoneFileMeta>, Meta)> {
+        let mut path = format!("/cdns/push-zones/{}/files", pushzone_id);
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: PushZoneFilesResponse = self.get(&path).await?;
+        let meta = Meta {
+            total: Some(response.files.len() as i32),
+            links: None,
+        };
+        Ok((response.files, meta))
+    }
+
+    /// Create a file upload endpoint for a CDN Push Zone
+    pub async fn create_cdn_push_zone_file_endpoint(
+        &self,
+        pushzone_id: &str,
+        request: CreateFileEndpointRequest,
+    ) -> VultrResult<CdnUploadEndpoint> {
+        let response: UploadEndpointResponse = self
+            .post(&format!("/cdns/push-zones/{}/files", pushzone_id), request)
+            .await?;
+        Ok(response.upload_endpoint)
+    }
+
+    /// Get a file from a CDN Push Zone
+    pub async fn get_cdn_push_zone_file(
+        &self,
+        pushzone_id: &str,
+        file_name: &str,
+    ) -> VultrResult<CdnPushZoneFile> {
+        let response: PushZoneFileResponse = self
+            .get(&format!(
+                "/cdns/push-zones/{}/files/{}",
+                pushzone_id, file_name
+            ))
+            .await?;
+        Ok(response.file)
+    }
+
+    /// Delete a file from a CDN Push Zone
+    pub async fn delete_cdn_push_zone_file(
+        &self,
+        pushzone_id: &str,
+        file_name: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/cdns/push-zones/{}/files/{}",
+            pushzone_id, file_name
+        ))
+        .await
+    }
+
+    // =====================
+    // Container Registry Operations
+    // =====================
+
+    /// List all container registries
+    pub async fn list_registries(&self) -> VultrResult<Vec<Registry>> {
+        let response: RegistriesResponse = self.get("/registries").await?;
+        Ok(response.registries)
+    }
+
+    /// Get a single container registry
+    pub async fn get_registry(&self, registry_id: &str) -> VultrResult<Registry> {
+        let response: RegistryResponse = self.get(&format!("/registry/{}", registry_id)).await?;
+        Ok(response.registry)
+    }
+
+    /// Create a new container registry
+    pub async fn create_registry(&self, request: CreateRegistryRequest) -> VultrResult<Registry> {
+        let response: RegistryResponse = self.post("/registry", request).await?;
+        Ok(response.registry)
+    }
+
+    /// Update a container registry
+    pub async fn update_registry(
+        &self,
+        registry_id: &str,
+        request: UpdateRegistryRequest,
+    ) -> VultrResult<Registry> {
+        let response: RegistryResponse = self
+            .put(&format!("/registry/{}", registry_id), request)
+            .await?;
+        Ok(response.registry)
+    }
+
+    /// Delete a container registry
+    pub async fn delete_registry(&self, registry_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/registry/{}", registry_id)).await
+    }
+
+    /// List repositories in a registry
+    pub async fn list_registry_repositories(
+        &self,
+        registry_id: &str,
+    ) -> VultrResult<Vec<RegistryRepository>> {
+        let response: RepositoriesResponse = self
+            .get(&format!("/registry/{}/repositories", registry_id))
+            .await?;
+        Ok(response.repositories)
+    }
+
+    /// Get a repository in a registry
+    pub async fn get_registry_repository(
+        &self,
+        registry_id: &str,
+        repository_image: &str,
+    ) -> VultrResult<RegistryRepository> {
+        let response: RepositoryResponse = self
+            .get(&format!(
+                "/registry/{}/repository/{}",
+                registry_id, repository_image
+            ))
+            .await?;
+        Ok(response.repository)
+    }
+
+    /// Delete a repository from a registry
+    pub async fn delete_registry_repository(
+        &self,
+        registry_id: &str,
+        repository_image: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/registry/{}/repository/{}",
+            registry_id, repository_image
+        ))
+        .await
+    }
+
+    /// List artifacts in a repository
+    pub async fn list_registry_artifacts(
+        &self,
+        registry_id: &str,
+        repository_image: &str,
+    ) -> VultrResult<Vec<RegistryArtifact>> {
+        let response: ArtifactsResponse = self
+            .get(&format!(
+                "/registry/{}/repository/{}/artifacts",
+                registry_id, repository_image
+            ))
+            .await?;
+        Ok(response.artifacts)
+    }
+
+    /// Delete an artifact from a repository
+    pub async fn delete_registry_artifact(
+        &self,
+        registry_id: &str,
+        repository_image: &str,
+        artifact_digest: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/registry/{}/repository/{}/artifact/{}",
+            registry_id, repository_image, artifact_digest
+        ))
+        .await
+    }
+
+    /// Get Docker credentials for a registry
+    pub async fn get_registry_docker_credentials(
+        &self,
+        registry_id: &str,
+        expiry_seconds: Option<i64>,
+        read_write: Option<bool>,
+    ) -> VultrResult<RegistryDockerCredentials> {
+        let mut path = format!("/registry/{}/docker-credentials", registry_id);
+        let mut params = vec![];
+        if let Some(e) = expiry_seconds {
+            params.push(format!("expiry_seconds={}", e));
+        }
+        if let Some(rw) = read_write {
+            params.push(format!("read_write={}", rw));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: DockerCredentialsResponse = self.get(&path).await?;
+        Ok(response.credentials)
+    }
+
+    /// Get Kubernetes Docker credentials for a registry
+    pub async fn get_registry_kubernetes_credentials(
+        &self,
+        registry_id: &str,
+        expiry_seconds: Option<i64>,
+        read_write: Option<bool>,
+        base64_encode: Option<bool>,
+    ) -> VultrResult<RegistryKubernetesCredentials> {
+        let mut path = format!("/registry/{}/docker-credentials/kubernetes", registry_id);
+        let mut params = vec![];
+        if let Some(e) = expiry_seconds {
+            params.push(format!("expiry_seconds={}", e));
+        }
+        if let Some(rw) = read_write {
+            params.push(format!("read_write={}", rw));
+        }
+        if let Some(b64) = base64_encode {
+            params.push(format!("base64_encode={}", b64));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: KubernetesCredentialsResponse = self.get(&path).await?;
+        Ok(response.credentials)
+    }
+
+    /// List robot accounts in a registry
+    pub async fn list_registry_robots(&self, registry_id: &str) -> VultrResult<Vec<RegistryRobot>> {
+        let response: RobotsResponse = self
+            .get(&format!("/registry/{}/robots", registry_id))
+            .await?;
+        Ok(response.robots)
+    }
+
+    /// Create a robot account
+    pub async fn create_registry_robot(
+        &self,
+        registry_id: &str,
+        request: CreateRobotRequest,
+    ) -> VultrResult<RegistryRobot> {
+        let response: RobotResponse = self
+            .post(&format!("/registry/{}/robots", registry_id), request)
+            .await?;
+        Ok(response.robot)
+    }
+
+    /// Get a robot account
+    pub async fn get_registry_robot(
+        &self,
+        registry_id: &str,
+        robot_name: &str,
+    ) -> VultrResult<RegistryRobot> {
+        let response: RobotResponse = self
+            .get(&format!("/registry/{}/robot/{}", registry_id, robot_name))
+            .await?;
+        Ok(response.robot)
+    }
+
+    /// Update a robot account
+    pub async fn update_registry_robot(
+        &self,
+        registry_id: &str,
+        robot_name: &str,
+        request: UpdateRobotRequest,
+    ) -> VultrResult<RegistryRobot> {
+        let response: RobotResponse = self
+            .put(
+                &format!("/registry/{}/robot/{}", registry_id, robot_name),
+                request,
+            )
+            .await?;
+        Ok(response.robot)
+    }
+
+    /// Delete a robot account
+    pub async fn delete_registry_robot(
+        &self,
+        registry_id: &str,
+        robot_name: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!("/registry/{}/robot/{}", registry_id, robot_name))
+            .await
+    }
+
+    /// List replications for a registry
+    pub async fn list_registry_replications(
+        &self,
+        registry_id: &str,
+    ) -> VultrResult<Vec<RegistryReplication>> {
+        let response: ReplicationsResponse = self
+            .get(&format!("/registry/{}/replications", registry_id))
+            .await?;
+        Ok(response.replications)
+    }
+
+    /// Create a replication for a registry
+    pub async fn create_registry_replication(
+        &self,
+        registry_id: &str,
+        request: CreateReplicationRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/registry/{}/replication", registry_id), request)
+            .await
+    }
+
+    /// Delete a replication from a registry
+    pub async fn delete_registry_replication(
+        &self,
+        registry_id: &str,
+        region: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!("/registry/{}/replication/{}", registry_id, region))
+            .await
+    }
+
+    /// Get retention schedule for a registry
+    pub async fn get_registry_retention_schedule(
+        &self,
+        registry_id: &str,
+    ) -> VultrResult<Option<RegistryRetentionSchedule>> {
+        let response: RetentionScheduleResponse = self
+            .get(&format!("/registry/{}/retention/schedule", registry_id))
+            .await?;
+        Ok(response.schedule)
+    }
+
+    /// Update retention schedule for a registry
+    pub async fn update_registry_retention_schedule(
+        &self,
+        registry_id: &str,
+        request: UpdateRetentionScheduleRequest,
+    ) -> VultrResult<()> {
+        self.put::<serde_json::Value>(
+            &format!("/registry/{}/retention/schedule", registry_id),
+            request,
+        )
+        .await?;
+        Ok(())
+    }
+
+    /// List retention rules for a registry
+    pub async fn list_registry_retention_rules(
+        &self,
+        registry_id: &str,
+    ) -> VultrResult<Vec<RegistryRetentionRule>> {
+        let response: RetentionRulesResponse = self
+            .get(&format!("/registry/{}/retention/rules", registry_id))
+            .await?;
+        Ok(response.rules)
+    }
+
+    /// Create a retention rule for a registry
+    pub async fn create_registry_retention_rule(
+        &self,
+        registry_id: &str,
+        request: CreateRetentionRuleRequest,
+    ) -> VultrResult<RegistryRetentionRule> {
+        let response: RetentionRuleResponse = self
+            .post(
+                &format!("/registry/{}/retention/rules", registry_id),
+                request,
+            )
+            .await?;
+        Ok(response.rule)
+    }
+
+    /// Update a retention rule
+    pub async fn update_registry_retention_rule(
+        &self,
+        registry_id: &str,
+        rule_id: i64,
+        request: UpdateRetentionRuleRequest,
+    ) -> VultrResult<RegistryRetentionRule> {
+        let response: RetentionRuleResponse = self
+            .put(
+                &format!("/registry/{}/retention/rules/{}", registry_id, rule_id),
+                request,
+            )
+            .await?;
+        Ok(response.rule)
+    }
+
+    /// Delete a retention rule
+    pub async fn delete_registry_retention_rule(
+        &self,
+        registry_id: &str,
+        rule_id: i64,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/registry/{}/retention/rules/{}",
+            registry_id, rule_id
+        ))
+        .await
+    }
+
+    /// List retention executions for a registry
+    pub async fn list_registry_retention_executions(
+        &self,
+        registry_id: &str,
+    ) -> VultrResult<Vec<RegistryRetentionExecution>> {
+        let response: RetentionExecutionsResponse = self
+            .get(&format!("/registry/{}/retention/executions", registry_id))
+            .await?;
+        Ok(response.executions)
+    }
+
+    /// Update user password for a registry
+    pub async fn update_registry_user_password(
+        &self,
+        registry_id: &str,
+        request: UpdateUserPasswordRequest,
+    ) -> VultrResult<()> {
+        self.put::<serde_json::Value>(&format!("/registry/{}/user/password", registry_id), request)
+            .await?;
+        Ok(())
+    }
+
+    /// List available registry regions
+    pub async fn list_registry_regions(&self) -> VultrResult<Vec<RegistryRegion>> {
+        let response: RegistryRegionsResponse = self.get("/registry/region/list").await?;
+        Ok(response.regions)
+    }
+
+    /// List available registry plans
+    pub async fn list_registry_plans(&self) -> VultrResult<Vec<RegistryPlan>> {
+        let response: RegistryPlansResponse = self.get("/registry/plan/list").await?;
+        // Convert the HashMap to Vec with the key as plan id
+        Ok(response
+            .plans
+            .into_iter()
+            .map(|(id, mut plan)| {
+                plan.id = id;
+                plan
+            })
+            .collect())
+    }
+
+    // =====================
+    // Bare Metal Operations
+    // =====================
+
+    /// List all bare metal servers
+    pub async fn list_bare_metals(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<BareMetal>, Meta)> {
+        let mut path = "/bare-metals".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ListResponse<BareMetalsResponse> = self.get(&path).await?;
+        Ok((response.data.bare_metals, response.meta))
+    }
+
+    /// Get a single bare metal server
+    pub async fn get_bare_metal(&self, baremetal_id: &str) -> VultrResult<BareMetal> {
+        let response: BareMetalResponse =
+            self.get(&format!("/bare-metals/{}", baremetal_id)).await?;
+        Ok(response.bare_metal)
+    }
+
+    /// Create a new bare metal server
+    pub async fn create_bare_metal(
+        &self,
+        request: CreateBareMetalRequest,
+    ) -> VultrResult<BareMetal> {
+        let response: BareMetalResponse = self.post("/bare-metals", request).await?;
+        Ok(response.bare_metal)
+    }
+
+    /// Update a bare metal server
+    pub async fn update_bare_metal(
+        &self,
+        baremetal_id: &str,
+        request: UpdateBareMetalRequest,
+    ) -> VultrResult<BareMetal> {
+        let response: BareMetalResponse = self
+            .patch(&format!("/bare-metals/{}", baremetal_id), request)
+            .await?;
+        Ok(response.bare_metal)
+    }
+
+    /// Delete a bare metal server
+    pub async fn delete_bare_metal(&self, baremetal_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/bare-metals/{}", baremetal_id)).await
+    }
+
+    /// Start a bare metal server
+    pub async fn start_bare_metal(&self, baremetal_id: &str) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/start", baremetal_id),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    /// Stop/halt a bare metal server
+    pub async fn halt_bare_metal(&self, baremetal_id: &str) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/halt", baremetal_id),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    /// Reboot a bare metal server
+    pub async fn reboot_bare_metal(&self, baremetal_id: &str) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/reboot", baremetal_id),
+            serde_json::json!({}),
+        )
+        .await
+    }
+
+    /// Reinstall a bare metal server
+    pub async fn reinstall_bare_metal(
+        &self,
+        baremetal_id: &str,
+        request: ReinstallBareMetalRequest,
+    ) -> VultrResult<BareMetal> {
+        let response: BareMetalResponse = self
+            .post(&format!("/bare-metals/{}/reinstall", baremetal_id), request)
+            .await?;
+        Ok(response.bare_metal)
+    }
+
+    /// Get bare metal bandwidth
+    pub async fn get_bare_metal_bandwidth(
+        &self,
+        baremetal_id: &str,
+    ) -> VultrResult<std::collections::HashMap<String, BandwidthData>> {
+        let response: BareMetalBandwidthResponse = self
+            .get(&format!("/bare-metals/{}/bandwidth", baremetal_id))
+            .await?;
+        Ok(response.bandwidth)
+    }
+
+    /// List bare metal IPv4 addresses
+    pub async fn list_bare_metal_ipv4(
+        &self,
+        baremetal_id: &str,
+    ) -> VultrResult<Vec<BareMetalIpv4>> {
+        let response: BareMetalIpv4Response = self
+            .get(&format!("/bare-metals/{}/ipv4", baremetal_id))
+            .await?;
+        Ok(response.ipv4s)
+    }
+
+    /// List bare metal IPv6 addresses
+    pub async fn list_bare_metal_ipv6(
+        &self,
+        baremetal_id: &str,
+    ) -> VultrResult<Vec<BareMetalIpv6>> {
+        let response: BareMetalIpv6Response = self
+            .get(&format!("/bare-metals/{}/ipv6", baremetal_id))
+            .await?;
+        Ok(response.ipv6s)
+    }
+
+    /// Set reverse DNS for bare metal IPv4
+    pub async fn set_bare_metal_reverse_ipv4(
+        &self,
+        baremetal_id: &str,
+        request: SetBareMetalReverseIpv4Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/ipv4/reverse", baremetal_id),
+            request,
+        )
+        .await
+    }
+
+    /// Set default reverse DNS for bare metal IPv4
+    pub async fn set_bare_metal_default_reverse_ipv4(
+        &self,
+        baremetal_id: &str,
+        request: SetBareMetalDefaultReverseIpv4Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/ipv4/reverse/default", baremetal_id),
+            request,
+        )
+        .await
+    }
+
+    /// Set reverse DNS for bare metal IPv6
+    pub async fn set_bare_metal_reverse_ipv6(
+        &self,
+        baremetal_id: &str,
+        request: SetBareMetalReverseIpv6Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/ipv6/reverse", baremetal_id),
+            request,
+        )
+        .await
+    }
+
+    /// Delete reverse DNS for bare metal IPv6
+    pub async fn delete_bare_metal_reverse_ipv6(
+        &self,
+        baremetal_id: &str,
+        ipv6: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/bare-metals/{}/ipv6/reverse/{}",
+            baremetal_id, ipv6
+        ))
+        .await
+    }
+
+    /// Get bare metal user data
+    pub async fn get_bare_metal_user_data(
+        &self,
+        baremetal_id: &str,
+    ) -> VultrResult<BareMetalUserData> {
+        let response: BareMetalUserDataResponse = self
+            .get(&format!("/bare-metals/{}/user-data", baremetal_id))
+            .await?;
+        Ok(response.user_data)
+    }
+
+    /// Get available upgrades for a bare metal server
+    pub async fn get_bare_metal_upgrades(
+        &self,
+        baremetal_id: &str,
+    ) -> VultrResult<BareMetalUpgrades> {
+        let response: BareMetalUpgradesResponse = self
+            .get(&format!("/bare-metals/{}/upgrades", baremetal_id))
+            .await?;
+        Ok(response.upgrades)
+    }
+
+    /// Get VNC URL for a bare metal server
+    pub async fn get_bare_metal_vnc(&self, baremetal_id: &str) -> VultrResult<BareMetalVnc> {
+        let response: BareMetalVncResponse = self
+            .get(&format!("/bare-metals/{}/vnc", baremetal_id))
+            .await?;
+        Ok(response.vnc)
+    }
+
+    /// List VPCs attached to a bare metal server
+    pub async fn list_bare_metal_vpcs(&self, baremetal_id: &str) -> VultrResult<Vec<BareMetalVpc>> {
+        let response: BareMetalVpcsResponse = self
+            .get(&format!("/bare-metals/{}/vpcs", baremetal_id))
+            .await?;
+        Ok(response.vpcs)
+    }
+
+    /// Attach a VPC to a bare metal server
+    pub async fn attach_bare_metal_vpc(
+        &self,
+        baremetal_id: &str,
+        request: AttachBareMetalVpcRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/vpcs/attach", baremetal_id),
+            request,
+        )
+        .await
+    }
+
+    /// Detach a VPC from a bare metal server
+    pub async fn detach_bare_metal_vpc(
+        &self,
+        baremetal_id: &str,
+        request: DetachBareMetalVpcRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/vpcs/detach", baremetal_id),
+            request,
+        )
+        .await
+    }
+
+    /// List VPC2s attached to a bare metal server
+    pub async fn list_bare_metal_vpc2s(
+        &self,
+        baremetal_id: &str,
+    ) -> VultrResult<Vec<BareMetalVpc2>> {
+        let response: BareMetalVpc2sResponse = self
+            .get(&format!("/bare-metals/{}/vpc2", baremetal_id))
+            .await?;
+        Ok(response.vpcs)
+    }
+
+    /// Attach a VPC2 to a bare metal server
+    pub async fn attach_bare_metal_vpc2(
+        &self,
+        baremetal_id: &str,
+        request: AttachBareMetalVpc2Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/vpc2/attach", baremetal_id),
+            request,
+        )
+        .await
+    }
+
+    /// Detach a VPC2 from a bare metal server
+    pub async fn detach_bare_metal_vpc2(
+        &self,
+        baremetal_id: &str,
+        request: DetachBareMetalVpc2Request,
+    ) -> VultrResult<()> {
+        self.post_no_content(
+            &format!("/bare-metals/{}/vpc2/detach", baremetal_id),
+            request,
+        )
+        .await
+    }
+
+    /// Bulk halt bare metal servers
+    pub async fn bulk_halt_bare_metals(&self, request: BulkBareMetalRequest) -> VultrResult<()> {
+        self.post_no_content("/bare-metals/halt", request).await
+    }
+
+    /// Bulk start bare metal servers
+    pub async fn bulk_start_bare_metals(&self, request: BulkBareMetalRequest) -> VultrResult<()> {
+        self.post_no_content("/bare-metals/start", request).await
+    }
+
+    /// Bulk reboot bare metal servers
+    pub async fn bulk_reboot_bare_metals(&self, request: BulkBareMetalRequest) -> VultrResult<()> {
+        self.post_no_content("/bare-metals/reboot", request).await
+    }
+
+    // =====================
+    // Account Operations
+    // =====================
+
+    /// Get account information
+    pub async fn get_account(&self) -> VultrResult<Account> {
+        let response: AccountResponse = self.get("/account").await?;
+        Ok(response.account)
+    }
+
+    /// Get BGP information
+    pub async fn get_account_bgp(&self) -> VultrResult<BgpInfo> {
+        let response: BgpResponse = self.get("/account/bgp").await?;
+        Ok(response.bgp_info)
+    }
+
+    /// Get account bandwidth usage
+    pub async fn get_account_bandwidth(&self) -> VultrResult<AccountBandwidth> {
+        let response: AccountBandwidthResponse = self.get("/account/bandwidth").await?;
+        Ok(response.bandwidth)
+    }
+
+    // =====================
+    // Billing Operations
+    // =====================
+
+    /// List billing history
+    pub async fn list_billing_history(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<BillingHistory>, Option<Meta>)> {
+        let mut path = "/billing/history".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: BillingHistoryResponse = self.get(&path).await?;
+        Ok((response.billing_history, response.meta))
+    }
+
+    /// List invoices
+    pub async fn list_invoices(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Invoice>, Option<Meta>)> {
+        let mut path = "/billing/invoices".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: InvoicesResponse = self.get(&path).await?;
+        Ok((response.billing_invoices, response.meta))
+    }
+
+    /// Get a single invoice
+    pub async fn get_invoice(&self, invoice_id: i64) -> VultrResult<Invoice> {
+        let response: InvoiceResponse = self
+            .get(&format!("/billing/invoices/{}", invoice_id))
+            .await?;
+        Ok(response.billing_invoice)
+    }
+
+    /// List invoice items
+    pub async fn list_invoice_items(
+        &self,
+        invoice_id: i64,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<InvoiceItem>, Option<Meta>)> {
+        let mut path = format!("/billing/invoices/{}/items", invoice_id);
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: InvoiceItemsResponse = self.get(&path).await?;
+        Ok((response.invoice_items, response.meta))
+    }
+
+    /// List pending charges
+    pub async fn list_pending_charges(&self) -> VultrResult<Vec<PendingCharge>> {
+        let response: PendingChargesResponse = self.get("/billing/pending-charges").await?;
+        Ok(response.pending_charges)
+    }
+
+    /// Get pending charges as CSV
+    pub async fn get_pending_charges_csv(&self) -> VultrResult<String> {
+        let url = format!("{}/billing/pending-charges/csv", API_BASE_URL);
+        let response = self
+            .client
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", self.api_key))
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            Ok(response.text().await?)
+        } else {
+            self.handle_error(response).await
+        }
+    }
+
+    // =====================
+    // User Operations
+    // =====================
+
+    /// List all users
+    pub async fn list_users(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<User>, Option<Meta>)> {
+        let mut path = "/users".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: UsersResponse = self.get(&path).await?;
+        Ok((response.users, response.meta))
+    }
+
+    /// Get a single user
+    pub async fn get_user(&self, user_id: &str) -> VultrResult<User> {
+        let response: UserResponse = self.get(&format!("/users/{}", user_id)).await?;
+        Ok(response.user)
+    }
+
+    /// Create a new user
+    pub async fn create_user(&self, request: CreateUserRequest) -> VultrResult<User> {
+        let response: UserResponse = self.post("/users", request).await?;
+        Ok(response.user)
+    }
+
+    /// Update a user
+    pub async fn update_user(&self, user_id: &str, request: UpdateUserRequest) -> VultrResult<()> {
+        self.patch_no_content(&format!("/users/{}", user_id), request)
+            .await
+    }
+
+    /// Delete a user
+    pub async fn delete_user(&self, user_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/users/{}", user_id)).await
+    }
+
+    /// List API keys for a user
+    pub async fn list_user_api_keys(
+        &self,
+        user_id: &str,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<ApiKey>, Option<Meta>)> {
+        let mut path = format!("/users/{}/apikeys", user_id);
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+
+        let response: ApiKeysResponse = self.get(&path).await?;
+        Ok((response.api_keys, response.meta))
+    }
+
+    /// Create an API key for a user
+    pub async fn create_user_api_key(
+        &self,
+        user_id: &str,
+        request: CreateApiKeyRequest,
+    ) -> VultrResult<ApiKey> {
+        let response: ApiKeyResponse = self
+            .post(&format!("/users/{}/apikeys", user_id), request)
+            .await?;
+        Ok(response.api_key)
+    }
+
+    /// Delete an API key for a user
+    pub async fn delete_user_api_key(&self, user_id: &str, api_key_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/users/{}/apikeys/{}", user_id, api_key_id))
+            .await
+    }
+
+    /// List IP whitelist for a user
+    pub async fn list_user_ip_whitelist(
+        &self,
+        user_id: &str,
+    ) -> VultrResult<Vec<IpWhitelistEntry>> {
+        let response: IpWhitelistResponse = self
+            .get(&format!("/users/{}/ip-whitelist", user_id))
+            .await?;
+        Ok(response.ip_whitelist)
+    }
+
+    /// Get a specific IP whitelist entry for a user
+    pub async fn get_user_ip_whitelist_entry(
+        &self,
+        user_id: &str,
+        subnet: &str,
+        subnet_size: i32,
+    ) -> VultrResult<IpWhitelistEntry> {
+        let response: IpWhitelistEntryResponse = self
+            .get(&format!(
+                "/users/{}/ip-whitelist/entry?subnet={}&subnet_size={}",
+                user_id, subnet, subnet_size
+            ))
+            .await?;
+        Ok(response.ip_whitelist_entry)
+    }
+
+    /// Add an IP to user whitelist
+    pub async fn add_user_ip_whitelist(
+        &self,
+        user_id: &str,
+        request: AddIpWhitelistRequest,
+    ) -> VultrResult<()> {
+        self.post_no_content(&format!("/users/{}/ip-whitelist", user_id), request)
+            .await
+    }
+
+    /// Delete an IP from user whitelist
+    pub async fn delete_user_ip_whitelist(
+        &self,
+        user_id: &str,
+        request: DeleteIpWhitelistRequest,
+    ) -> VultrResult<()> {
+        self.delete_with_body(&format!("/users/{}/ip-whitelist/entry", user_id), request)
+            .await
     }
 }
 

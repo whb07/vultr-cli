@@ -13,6 +13,7 @@ pub async fn handle_ssh_key(
     client: &VultrClient,
     output: OutputFormat,
     skip_confirm: bool,
+    wait: bool,
     wait_opts: &WaitOptions,
 ) -> VultrResult<()> {
     match args.command {
@@ -72,7 +73,9 @@ pub async fn handle_ssh_key(
             }
             client.delete_ssh_key(&id).await?;
             print_success(&format!("SSH key {} deletion initiated", id));
-            crate::api::verify_ssh_key_deleted(client, &id, wait_opts).await?;
+            if wait {
+                crate::api::verify_ssh_key_deleted(client, &id, wait_opts).await?;
+            }
         }
     }
     Ok(())

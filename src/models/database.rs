@@ -844,28 +844,6 @@ pub struct UpgradeDatabaseVersionRequest {
     pub version: String,
 }
 
-/// Advanced options (Kafka)
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct KafkaAdvancedOptions {
-    /// Advanced options configuration
-    #[serde(flatten)]
-    pub options: HashMap<String, serde_json::Value>,
-}
-
-/// Request to update Kafka advanced options
-#[derive(Debug, Clone, Serialize)]
-pub struct UpdateKafkaAdvancedOptionsRequest {
-    /// Kafka Connect enabled
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kafka_connect: Option<bool>,
-    /// Kafka REST enabled
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kafka_rest: Option<bool>,
-    /// Schema Registry enabled
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub schema_registry: Option<bool>,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

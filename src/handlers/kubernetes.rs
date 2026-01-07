@@ -13,7 +13,7 @@ use crate::models::{
     CreateClusterRequest, CreateNodePoolRequest, UpdateClusterRequest, UpdateNodePoolRequest,
     UpgradeClusterRequest,
 };
-use crate::output::{print_output, print_success};
+use crate::output::{print_info, print_output, print_success};
 
 pub async fn handle_kubernetes(
     args: KubernetesArgs,
@@ -129,7 +129,11 @@ pub async fn handle_kubernetes(
         KubernetesCommands::Upgrades { id } => {
             let upgrades = client.get_kubernetes_available_upgrades(&id).await?;
             if upgrades.is_empty() {
-                println!("No upgrades available for cluster {}", id);
+                if output == OutputFormat::Json {
+                    print_output(&upgrades, output);
+                } else {
+                    print_info(&format!("No upgrades available for cluster {}", id));
+                }
             } else {
                 print_output(&upgrades, output);
             }
@@ -239,6 +243,51 @@ async fn handle_node_pool(
 
             client.delete_node_pool(&cluster_id, &id).await?;
             print_success(&format!("Node pool {} deletion initiated", id));
+        }
+
+        KubernetesNodePoolCommands::ListLabels {
+            cluster_id,
+            nodepool_id,
+        } => {
+            let labels = client.list_node_pool_labels(&cluster_id, &nodepool_id).await?;
+            print_output(&labels, output);
+        }
+
+        KubernetesNodePoolCommands::AddLabel {
+            cluster_id,
+            nodepool_id,
+            key,
+            value,
+        } => {
+            let request = crate::models::CreateNodePoolLabelRequest { key, value };
+            let label = client
+                .create_node_pool_label(&cluster_id, &nodepool_id, request)
+                .await?;
+            print_success("Label added to node pool");
+            print_output(&label, output);
+        }
+
+        KubernetesNodePoolCommands::DeleteLabel {
+            cluster_id,
+            nodepool_id,
+            label_id,
+        } => {
+            if !skip_confirm && !confirm_delete("label", &label_id)? {
+                return Err(VultrError::Cancelled);
+            }
+
+            client
+                .delete_node_pool_label(&cluster_id, &nodepool_id, &label_id)
+                .await?;
+            print_success(&format!("Label {} deleted", label_id));
+        }
+
+        KubernetesNodePoolCommands::ListTaints {
+            cluster_id,
+            nodepool_id,
+        } => {
+            let taints = client.list_node_pool_taints(&cluster_id, &nodepool_id).await?;
+            print_output(&taints, output);
         }
     }
 

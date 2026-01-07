@@ -13,6 +13,7 @@ pub async fn handle_startup_script(
     client: &VultrClient,
     output: OutputFormat,
     skip_confirm: bool,
+    wait: bool,
     wait_opts: &WaitOptions,
 ) -> VultrResult<()> {
     match args.command {
@@ -88,7 +89,9 @@ pub async fn handle_startup_script(
             }
             client.delete_startup_script(&id).await?;
             print_success(&format!("Startup script {} deletion initiated", id));
-            crate::api::verify_startup_script_deleted(client, &id, wait_opts).await?;
+            if wait {
+                crate::api::verify_startup_script_deleted(client, &id, wait_opts).await?;
+            }
         }
     }
     Ok(())

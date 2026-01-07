@@ -20,14 +20,15 @@ pub async fn handle_firewall(
     client: &VultrClient,
     output: OutputFormat,
     skip_confirm: bool,
+    wait: bool,
     wait_opts: &WaitOptions,
 ) -> VultrResult<()> {
     match args.command {
         FirewallCommands::Group(g) => {
-            handle_firewall_group(g, client, output, skip_confirm, wait_opts).await
+            handle_firewall_group(g, client, output, skip_confirm, wait, wait_opts).await
         }
         FirewallCommands::Rule(r) => {
-            handle_firewall_rule(r, client, output, skip_confirm, wait_opts).await
+            handle_firewall_rule(r, client, output, skip_confirm, wait, wait_opts).await
         }
     }
 }
@@ -37,6 +38,7 @@ async fn handle_firewall_group(
     client: &VultrClient,
     output: OutputFormat,
     skip_confirm: bool,
+    wait: bool,
     wait_opts: &WaitOptions,
 ) -> VultrResult<()> {
     match args.command {
@@ -94,7 +96,9 @@ async fn handle_firewall_group(
             }
             client.delete_firewall_group(&id).await?;
             print_success(&format!("Firewall group {} deletion initiated", id));
-            api::verify_firewall_group_deleted(client, &id, wait_opts).await?;
+            if wait {
+                api::verify_firewall_group_deleted(client, &id, wait_opts).await?;
+            }
         }
     }
     Ok(())
@@ -105,6 +109,7 @@ async fn handle_firewall_rule(
     client: &VultrClient,
     output: OutputFormat,
     skip_confirm: bool,
+    wait: bool,
     wait_opts: &WaitOptions,
 ) -> VultrResult<()> {
     match args.command {
@@ -182,7 +187,9 @@ async fn handle_firewall_rule(
                 "Firewall rule {} deletion initiated from group {}",
                 rule_id, group_id
             ));
-            api::verify_firewall_rule_deleted(client, &group_id, rule_id, wait_opts).await?;
+            if wait {
+                api::verify_firewall_rule_deleted(client, &group_id, rule_id, wait_opts).await?;
+            }
         }
     }
     Ok(())

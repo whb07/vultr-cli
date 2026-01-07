@@ -11,7 +11,7 @@ pub enum VultrError {
     #[error("Authentication required. Run 'vultr-cli auth login' or set VULTR_API_KEY")]
     AuthenticationRequired,
 
-    #[error("Invalid API key format")]
+    #[error("Invalid or expired API key. Please check your API key and try again.")]
     InvalidApiKey,
 
     #[error("Network error: {0}")]

@@ -238,6 +238,416 @@ impl TableDisplay for Vec<Snapshot> {
     }
 }
 
+/// Wrapper for displaying backups in a table
+#[derive(Tabled)]
+struct BackupRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Size")]
+    size: String,
+    #[tabled(rename = "Status")]
+    status: String,
+    #[tabled(rename = "Ready")]
+    ready: String,
+    #[tabled(rename = "Created")]
+    date_created: String,
+}
+
+impl From<&Backup> for BackupRow {
+    fn from(b: &Backup) -> Self {
+        Self {
+            id: b.id.clone(),
+            description: b.description.clone().unwrap_or_default(),
+            size: b.size_human(),
+            status: b
+                .status
+                .as_ref()
+                .map(|st| st.to_string())
+                .unwrap_or_default(),
+            ready: if b.is_ready() { "Yes".to_string() } else { "No".to_string() },
+            date_created: b.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Backup {
+    fn print_table(&self) {
+        let rows = vec![BackupRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<Backup> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No backups found.".yellow());
+            return;
+        }
+        let rows: Vec<BackupRow> = self.iter().map(BackupRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying bare metal servers in a table
+#[derive(Tabled)]
+struct BareMetalRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "Region")]
+    region: String,
+    #[tabled(rename = "Plan")]
+    plan: String,
+    #[tabled(rename = "IP")]
+    main_ip: String,
+    #[tabled(rename = "Status")]
+    status: String,
+}
+
+impl From<&BareMetal> for BareMetalRow {
+    fn from(bm: &BareMetal) -> Self {
+        Self {
+            id: bm.id.clone(),
+            label: bm.label.clone().unwrap_or_default(),
+            region: bm.region.clone().unwrap_or_default(),
+            plan: bm.plan.clone().unwrap_or_default(),
+            main_ip: bm.main_ip.clone().unwrap_or_default(),
+            status: bm.status.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for BareMetal {
+    fn print_table(&self) {
+        let rows = vec![BareMetalRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<BareMetal> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No bare metal servers found.".yellow());
+            return;
+        }
+        let rows: Vec<BareMetalRow> = self.iter().map(BareMetalRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying bare metal IPv4 in a table
+#[derive(Tabled)]
+struct BareMetalIpv4Row {
+    #[tabled(rename = "IP")]
+    ip: String,
+    #[tabled(rename = "Netmask")]
+    netmask: String,
+    #[tabled(rename = "Gateway")]
+    gateway: String,
+    #[tabled(rename = "Type")]
+    ip_type: String,
+    #[tabled(rename = "Reverse")]
+    reverse: String,
+}
+
+impl From<&BareMetalIpv4> for BareMetalIpv4Row {
+    fn from(ip: &BareMetalIpv4) -> Self {
+        Self {
+            ip: ip.ip.clone(),
+            netmask: ip.netmask.clone().unwrap_or_default(),
+            gateway: ip.gateway.clone().unwrap_or_default(),
+            ip_type: ip.ip_type.clone().unwrap_or_default(),
+            reverse: ip.reverse.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for BareMetalIpv4 {
+    fn print_table(&self) {
+        let rows = vec![BareMetalIpv4Row::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<BareMetalIpv4> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No IPv4 addresses found.".yellow());
+            return;
+        }
+        let rows: Vec<BareMetalIpv4Row> = self.iter().map(BareMetalIpv4Row::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying bare metal IPv6 in a table
+#[derive(Tabled)]
+struct BareMetalIpv6Row {
+    #[tabled(rename = "IP")]
+    ip: String,
+    #[tabled(rename = "Network")]
+    network: String,
+    #[tabled(rename = "Network Size")]
+    network_size: String,
+    #[tabled(rename = "Type")]
+    ip_type: String,
+}
+
+impl From<&BareMetalIpv6> for BareMetalIpv6Row {
+    fn from(ip: &BareMetalIpv6) -> Self {
+        Self {
+            ip: ip.ip.clone(),
+            network: ip.network.clone().unwrap_or_default(),
+            network_size: ip.network_size.map(|n| n.to_string()).unwrap_or_default(),
+            ip_type: ip.ip_type.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for BareMetalIpv6 {
+    fn print_table(&self) {
+        let rows = vec![BareMetalIpv6Row::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<BareMetalIpv6> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No IPv6 addresses found.".yellow());
+            return;
+        }
+        let rows: Vec<BareMetalIpv6Row> = self.iter().map(BareMetalIpv6Row::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying bare metal VPC in a table
+#[derive(Tabled)]
+struct BareMetalVpcRow {
+    #[tabled(rename = "VPC ID")]
+    id: String,
+    #[tabled(rename = "MAC Address")]
+    mac_address: String,
+    #[tabled(rename = "IP Address")]
+    ip_address: String,
+}
+
+impl From<&BareMetalVpc> for BareMetalVpcRow {
+    fn from(vpc: &BareMetalVpc) -> Self {
+        Self {
+            id: vpc.id.clone(),
+            mac_address: vpc.mac_address.clone().unwrap_or_default(),
+            ip_address: vpc.ip_address.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for BareMetalVpc {
+    fn print_table(&self) {
+        let rows = vec![BareMetalVpcRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<BareMetalVpc> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VPCs attached.".yellow());
+            return;
+        }
+        let rows: Vec<BareMetalVpcRow> = self.iter().map(BareMetalVpcRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying bare metal VPC2 in a table
+#[derive(Tabled)]
+struct BareMetalVpc2Row {
+    #[tabled(rename = "VPC2 ID")]
+    id: String,
+    #[tabled(rename = "MAC Address")]
+    mac_address: String,
+    #[tabled(rename = "IP Address")]
+    ip_address: String,
+}
+
+impl From<&BareMetalVpc2> for BareMetalVpc2Row {
+    fn from(vpc: &BareMetalVpc2) -> Self {
+        Self {
+            id: vpc.id.clone(),
+            mac_address: vpc.mac_address.clone().unwrap_or_default(),
+            ip_address: vpc.ip_address.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for BareMetalVpc2 {
+    fn print_table(&self) {
+        let rows = vec![BareMetalVpc2Row::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<BareMetalVpc2> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VPC2s attached.".yellow());
+            return;
+        }
+        let rows: Vec<BareMetalVpc2Row> = self.iter().map(BareMetalVpc2Row::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for BareMetalUpgrades {
+    fn print_table(&self) {
+        println!("{}", "Available OS Upgrades:".cyan());
+        if self.os.is_empty() {
+            println!("  {}", "None available".yellow());
+        } else {
+            for os in &self.os {
+                println!(
+                    "  - {} (ID: {}, Arch: {}, Family: {})",
+                    os.name,
+                    os.id,
+                    os.arch.as_deref().unwrap_or("-"),
+                    os.family.as_deref().unwrap_or("-")
+                );
+            }
+        }
+        println!("\n{}", "Available Applications:".cyan());
+        if self.applications.is_empty() {
+            println!("  {}", "None available".yellow());
+        } else {
+            for app in &self.applications {
+                println!("  - {} (ID: {})", app.name, app.id);
+            }
+        }
+    }
+}
+
+impl TableDisplay for BareMetalVnc {
+    fn print_table(&self) {
+        println!("{}: {}", "VNC URL".cyan(), self.url);
+    }
+}
+
+impl TableDisplay for BareMetalUserData {
+    fn print_table(&self) {
+        println!("{}", "User Data (Base64):".cyan());
+        println!("{}", self.data);
+    }
+}
+
+/// Wrapper for displaying ISOs in a table
+#[derive(Tabled)]
+struct IsoRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Filename")]
+    filename: String,
+    #[tabled(rename = "Size")]
+    size: String,
+    #[tabled(rename = "Status")]
+    status: String,
+    #[tabled(rename = "Ready")]
+    ready: String,
+    #[tabled(rename = "Created")]
+    date_created: String,
+}
+
+impl From<&Iso> for IsoRow {
+    fn from(i: &Iso) -> Self {
+        Self {
+            id: i.id.clone(),
+            filename: i.filename.clone().unwrap_or_default(),
+            size: i.size_human(),
+            status: i
+                .status
+                .as_ref()
+                .map(|st| st.to_string())
+                .unwrap_or_default(),
+            ready: if i.is_ready() { "Yes".to_string() } else { "No".to_string() },
+            date_created: i.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Iso {
+    fn print_table(&self) {
+        let rows = vec![IsoRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+        if let Some(md5) = &self.md5sum {
+            println!("\n{}: {}", "MD5".cyan(), md5);
+        }
+        if let Some(sha512) = &self.sha512sum {
+            println!("{}: {}", "SHA512".cyan(), sha512);
+        }
+    }
+}
+
+impl TableDisplay for Vec<Iso> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No ISOs found.".yellow());
+            return;
+        }
+        let rows: Vec<IsoRow> = self.iter().map(IsoRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying public ISOs in a table
+#[derive(Tabled)]
+struct PublicIsoRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Description")]
+    description: String,
+}
+
+impl From<&PublicIso> for PublicIsoRow {
+    fn from(i: &PublicIso) -> Self {
+        Self {
+            id: i.id.clone(),
+            name: i.name.clone().unwrap_or_default(),
+            description: i.description.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<PublicIso> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No public ISOs found.".yellow());
+            return;
+        }
+        let rows: Vec<PublicIsoRow> = self.iter().map(PublicIsoRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
 /// Wrapper for displaying block storage in a table
 #[derive(Tabled)]
 struct BlockStorageRow {
@@ -263,10 +673,11 @@ impl From<&BlockStorage> for BlockStorageRow {
             size_gb: b.size_gb.map(|s| s.to_string()).unwrap_or_default(),
             region: b.region.clone().unwrap_or_default(),
             status: b.status.as_ref().map(|s| s.to_string()).unwrap_or_default(),
-            attached_to: b
-                .attached_to_instance
-                .clone()
-                .unwrap_or_else(|| "-".to_string()),
+            attached_to: if b.is_attached() {
+                b.attached_to_instance.clone().unwrap_or_else(|| "-".to_string())
+            } else {
+                "-".to_string()
+            },
         }
     }
 }
@@ -286,6 +697,287 @@ impl TableDisplay for Vec<BlockStorage> {
             return;
         }
         let rows: Vec<BlockStorageRow> = self.iter().map(BlockStorageRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying object storage in a table
+#[derive(Tabled)]
+struct ObjectStorageRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "Region")]
+    region: String,
+    #[tabled(rename = "Status")]
+    status: String,
+    #[tabled(rename = "Hostname")]
+    hostname: String,
+}
+
+impl From<&ObjectStorage> for ObjectStorageRow {
+    fn from(o: &ObjectStorage) -> Self {
+        Self {
+            id: o.id.clone(),
+            label: o.label.clone().unwrap_or_default(),
+            region: o.region.clone().unwrap_or_default(),
+            status: o.status.as_ref().map(|s| s.to_string()).unwrap_or_default(),
+            hostname: o.s3_hostname.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for ObjectStorage {
+    fn print_table(&self) {
+        let rows = vec![ObjectStorageRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+        if let Some(access_key) = &self.s3_access_key {
+            println!("\n{}: {}", "Access Key".cyan(), access_key);
+        }
+        if let Some(secret_key) = &self.s3_secret_key {
+            println!("{}: {}", "Secret Key".cyan(), secret_key);
+        }
+    }
+}
+
+impl TableDisplay for Vec<ObjectStorage> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No object storages found.".yellow());
+            return;
+        }
+        let rows: Vec<ObjectStorageRow> = self.iter().map(ObjectStorageRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying object storage clusters in a table
+#[derive(Tabled)]
+struct ObjectStorageClusterRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Region")]
+    region: String,
+    #[tabled(rename = "Hostname")]
+    hostname: String,
+    #[tabled(rename = "Deploy")]
+    deploy: String,
+}
+
+impl From<&ObjectStorageCluster> for ObjectStorageClusterRow {
+    fn from(c: &ObjectStorageCluster) -> Self {
+        Self {
+            id: c.id.to_string(),
+            region: c.region.clone().unwrap_or_default(),
+            hostname: c.hostname.clone().unwrap_or_default(),
+            deploy: c.deploy.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for ObjectStorageCluster {
+    fn print_table(&self) {
+        let rows = vec![ObjectStorageClusterRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<ObjectStorageCluster> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No object storage clusters found.".yellow());
+            return;
+        }
+        let rows: Vec<ObjectStorageClusterRow> =
+            self.iter().map(ObjectStorageClusterRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying object storage tiers in a table
+#[derive(Tabled)]
+struct ObjectStorageTierRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Price")]
+    price: String,
+    #[tabled(rename = "Default")]
+    is_default: String,
+    #[tabled(rename = "Slug")]
+    slug: String,
+}
+
+impl From<&ObjectStorageTier> for ObjectStorageTierRow {
+    fn from(t: &ObjectStorageTier) -> Self {
+        Self {
+            id: t.id.to_string(),
+            name: t.sales_name.clone().unwrap_or_default(),
+            price: t.price.map(|p| format!("${:.2}", p)).unwrap_or_default(),
+            is_default: t.is_default.clone().unwrap_or_default(),
+            slug: t.slug.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for ObjectStorageTier {
+    fn print_table(&self) {
+        let rows = vec![ObjectStorageTierRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+        if let Some(desc) = &self.sales_desc {
+            println!("\n{}: {}", "Description".cyan(), desc);
+        }
+    }
+}
+
+impl TableDisplay for Vec<ObjectStorageTier> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No object storage tiers found.".yellow());
+            return;
+        }
+        let rows: Vec<ObjectStorageTierRow> = self.iter().map(ObjectStorageTierRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying cluster-specific tiers in a table
+#[derive(Tabled)]
+struct ClusterTierRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Price")]
+    price: String,
+    #[tabled(rename = "Default")]
+    is_default: String,
+    #[tabled(rename = "Slug")]
+    slug: String,
+}
+
+impl From<&ClusterTier> for ClusterTierRow {
+    fn from(t: &ClusterTier) -> Self {
+        Self {
+            id: t.id.to_string(),
+            name: t.sales_name.clone().unwrap_or_default(),
+            price: t.price.map(|p| format!("${:.2}", p)).unwrap_or_default(),
+            is_default: t.is_default.clone().unwrap_or_default(),
+            slug: t.slug.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for ClusterTier {
+    fn print_table(&self) {
+        let rows = vec![ClusterTierRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+        if let Some(desc) = &self.sales_desc {
+            println!("\n{}: {}", "Description".cyan(), desc);
+        }
+    }
+}
+
+impl TableDisplay for Vec<ClusterTier> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No cluster tiers found.".yellow());
+            return;
+        }
+        let rows: Vec<ClusterTierRow> = self.iter().map(ClusterTierRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying S3 credentials
+#[derive(Tabled)]
+struct S3CredentialsRow {
+    #[tabled(rename = "Hostname")]
+    hostname: String,
+    #[tabled(rename = "Access Key")]
+    access_key: String,
+    #[tabled(rename = "Secret Key")]
+    secret_key: String,
+}
+
+impl From<&S3Credentials> for S3CredentialsRow {
+    fn from(c: &S3Credentials) -> Self {
+        Self {
+            hostname: c.s3_hostname.clone().unwrap_or_default(),
+            access_key: c.s3_access_key.clone().unwrap_or_default(),
+            secret_key: c.s3_secret_key.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for S3Credentials {
+    fn print_table(&self) {
+        let rows = vec![S3CredentialsRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying reserved IPs in a table
+#[derive(Tabled)]
+struct ReservedIpRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Region")]
+    region: String,
+    #[tabled(rename = "Type")]
+    ip_type: String,
+    #[tabled(rename = "Subnet")]
+    subnet: String,
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "Instance")]
+    instance_id: String,
+}
+
+impl From<&ReservedIp> for ReservedIpRow {
+    fn from(r: &ReservedIp) -> Self {
+        Self {
+            id: r.id.clone(),
+            region: r.region.clone().unwrap_or_default(),
+            ip_type: r.ip_type.clone().unwrap_or_default(),
+            subnet: r.cidr().unwrap_or_default(),
+            label: r.label.clone().unwrap_or_default(),
+            instance_id: if r.is_attached() {
+                r.instance_id.clone().unwrap_or_else(|| "-".to_string())
+            } else {
+                "-".to_string()
+            },
+        }
+    }
+}
+
+impl TableDisplay for ReservedIp {
+    fn print_table(&self) {
+        let rows = vec![ReservedIpRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<ReservedIp> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No reserved IPs found.".yellow());
+            return;
+        }
+        let rows: Vec<ReservedIpRow> = self.iter().map(ReservedIpRow::from).collect();
         let table = Table::new(rows).with(Style::rounded()).to_string();
         println!("{}", table);
     }
@@ -441,6 +1133,100 @@ impl TableDisplay for Vec<Vpc> {
     }
 }
 
+/// Wrapper for displaying VPC 2.0 networks in a table
+#[derive(Tabled)]
+struct Vpc2Row {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Region")]
+    region: String,
+    #[tabled(rename = "IP Block")]
+    ip_block: String,
+    #[tabled(rename = "Created")]
+    date_created: String,
+}
+
+impl From<&Vpc2> for Vpc2Row {
+    fn from(v: &Vpc2) -> Self {
+        Self {
+            id: v.id.clone(),
+            description: v.description.clone().unwrap_or_default(),
+            region: v.region.clone().unwrap_or_default(),
+            ip_block: v.cidr().unwrap_or_default(),
+            date_created: v.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vpc2 {
+    fn print_table(&self) {
+        let rows = vec![Vpc2Row::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<Vpc2> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VPC 2.0 networks found.".yellow());
+            return;
+        }
+        let rows: Vec<Vpc2Row> = self.iter().map(Vpc2Row::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying VPC 2.0 nodes in a table
+#[derive(Tabled)]
+struct Vpc2NodeRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "IP Address")]
+    ip_address: String,
+    #[tabled(rename = "MAC Address")]
+    mac_address: String,
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Type")]
+    node_type: String,
+}
+
+impl From<&Vpc2Node> for Vpc2NodeRow {
+    fn from(n: &Vpc2Node) -> Self {
+        Self {
+            id: n.id.clone().unwrap_or_default(),
+            ip_address: n.ip_address.clone().unwrap_or_default(),
+            mac_address: n.mac_address.map(|m| m.to_string()).unwrap_or_default(),
+            description: n.description.clone().unwrap_or_default(),
+            node_type: n.node_type.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vpc2Node {
+    fn print_table(&self) {
+        let rows = vec![Vpc2NodeRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<Vpc2Node> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VPC 2.0 nodes found.".yellow());
+            return;
+        }
+        let rows: Vec<Vpc2NodeRow> = self.iter().map(Vpc2NodeRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
 /// Wrapper for displaying regions in a table
 #[derive(Tabled)]
 struct RegionRow {
@@ -553,6 +1339,45 @@ impl TableDisplay for Vec<Os> {
             return;
         }
         let rows: Vec<OsRow> = self.iter().map(OsRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying applications in a table
+#[derive(Tabled)]
+struct ApplicationRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Short Name")]
+    short_name: String,
+    #[tabled(rename = "Type")]
+    app_type: String,
+    #[tabled(rename = "Vendor")]
+    vendor: String,
+}
+
+impl From<&Application> for ApplicationRow {
+    fn from(a: &Application) -> Self {
+        Self {
+            id: a.id.to_string(),
+            name: a.name.clone(),
+            short_name: a.short_name.clone(),
+            app_type: a.app_type.clone(),
+            vendor: a.vendor.clone(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<Application> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No applications found.".yellow());
+            return;
+        }
+        let rows: Vec<ApplicationRow> = self.iter().map(ApplicationRow::from).collect();
         let table = Table::new(rows).with(Style::rounded()).to_string();
         println!("{}", table);
     }
@@ -885,7 +1710,7 @@ impl TableDisplay for Vec<String> {
 
 /// Print a success message
 pub fn print_success(message: &str) {
-    println!("{} {}", "✓".green(), message);
+    eprintln!("{} {}", "✓".green(), message);
 }
 
 /// Print an error message
@@ -895,12 +1720,12 @@ pub fn print_error(message: &str) {
 
 /// Print a warning message
 pub fn print_warning(message: &str) {
-    println!("{} {}", "⚠".yellow(), message);
+    eprintln!("{} {}", "⚠".yellow(), message);
 }
 
 /// Print an info message
 pub fn print_info(message: &str) {
-    println!("{} {}", "ℹ".cyan(), message);
+    eprintln!("{} {}", "ℹ".cyan(), message);
 }
 
 // =====================
@@ -1162,6 +1987,89 @@ impl TableDisplay for KubeNode {
         if let Some(created) = &self.date_created {
             println!("  {}: {}", "Created".green(), created);
         }
+    }
+}
+
+// NodePoolLabel display
+
+#[derive(Tabled)]
+struct NodePoolLabelRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Key")]
+    key: String,
+    #[tabled(rename = "Value")]
+    value: String,
+}
+
+impl From<&NodePoolLabel> for NodePoolLabelRow {
+    fn from(label: &NodePoolLabel) -> Self {
+        Self {
+            id: label.id.clone().unwrap_or_default(),
+            key: label.key.clone().unwrap_or_default(),
+            value: label.value.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<NodePoolLabel> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No labels found.".yellow());
+            return;
+        }
+        let rows: Vec<NodePoolLabelRow> = self.iter().map(NodePoolLabelRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for NodePoolLabel {
+    fn print_table(&self) {
+        println!("{}", "Label:".cyan());
+        if let Some(id) = &self.id {
+            println!("  {}: {}", "ID".green(), id);
+        }
+        if let Some(key) = &self.key {
+            println!("  {}: {}", "Key".green(), key);
+        }
+        if let Some(value) = &self.value {
+            println!("  {}: {}", "Value".green(), value);
+        }
+    }
+}
+
+// NodePoolTaint display
+
+#[derive(Tabled)]
+struct NodePoolTaintRow {
+    #[tabled(rename = "Key")]
+    key: String,
+    #[tabled(rename = "Value")]
+    value: String,
+    #[tabled(rename = "Effect")]
+    effect: String,
+}
+
+impl From<&NodePoolTaint> for NodePoolTaintRow {
+    fn from(taint: &NodePoolTaint) -> Self {
+        Self {
+            key: taint.key.clone().unwrap_or_default(),
+            value: taint.value.clone().unwrap_or_default(),
+            effect: taint.effect.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<NodePoolTaint> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No taints found.".yellow());
+            return;
+        }
+        let rows: Vec<NodePoolTaintRow> = self.iter().map(NodePoolTaintRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
     }
 }
 
@@ -1702,6 +2610,53 @@ impl TableDisplay for Vec<DatabaseAlert> {
     }
 }
 
+#[derive(Tabled)]
+struct DatabaseQuotaRow {
+    #[tabled(rename = "Client ID")]
+    client_id: String,
+    #[tabled(rename = "User")]
+    user: String,
+    #[tabled(rename = "Consumer Rate")]
+    consumer_byte_rate: String,
+    #[tabled(rename = "Producer Rate")]
+    producer_byte_rate: String,
+    #[tabled(rename = "Request %")]
+    request_percentage: String,
+}
+
+impl From<&DatabaseQuota> for DatabaseQuotaRow {
+    fn from(q: &DatabaseQuota) -> Self {
+        Self {
+            client_id: q.client_id.clone().unwrap_or_else(|| "-".to_string()),
+            user: q.user.clone().unwrap_or_else(|| "-".to_string()),
+            consumer_byte_rate: q
+                .consumer_byte_rate
+                .map(|v| format!("{}", v))
+                .unwrap_or_else(|| "-".to_string()),
+            producer_byte_rate: q
+                .producer_byte_rate
+                .map(|v| format!("{}", v))
+                .unwrap_or_else(|| "-".to_string()),
+            request_percentage: q
+                .request_percentage
+                .map(|v| format!("{}%", v))
+                .unwrap_or_else(|| "-".to_string()),
+        }
+    }
+}
+
+impl TableDisplay for Vec<DatabaseQuota> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No quotas found.".yellow());
+            return;
+        }
+        let rows: Vec<DatabaseQuotaRow> = self.iter().map(DatabaseQuotaRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
 impl TableDisplay for DatabaseUsage {
     fn print_table(&self) {
         println!("{}", "Database Usage:".cyan());
@@ -1805,6 +2760,1594 @@ impl TableDisplay for DatabaseMigration {
             }
             println!("    SSL: {}", if creds.ssl { "Yes" } else { "No" });
         }
+    }
+}
+
+// =====================
+// DNS Display Types
+// =====================
+
+/// Table row for DNS domains
+#[derive(Tabled)]
+pub struct DnsDomainRow {
+    #[tabled(rename = "DOMAIN")]
+    pub domain: String,
+    #[tabled(rename = "DNSSEC")]
+    pub dns_sec: String,
+    #[tabled(rename = "CREATED")]
+    pub date_created: String,
+}
+
+impl From<&DnsDomain> for DnsDomainRow {
+    fn from(d: &DnsDomain) -> Self {
+        Self {
+            domain: d.domain.clone(),
+            dns_sec: d.dns_sec.clone().unwrap_or_else(|| "-".to_string()),
+            date_created: d.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<DnsDomain> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No DNS domains found.".yellow());
+            return;
+        }
+        let rows: Vec<DnsDomainRow> = self.iter().map(DnsDomainRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for DnsDomain {
+    fn print_table(&self) {
+        println!("{}", "DNS Domain:".cyan());
+        println!("  {}: {}", "Domain".green(), self.domain);
+        if let Some(dns_sec) = &self.dns_sec {
+            println!("  {}: {}", "DNSSEC".green(), dns_sec);
+        }
+        if let Some(created) = &self.date_created {
+            println!("  {}: {}", "Created".green(), created);
+        }
+    }
+}
+
+/// Table row for DNS records
+#[derive(Tabled)]
+pub struct DnsRecordRow {
+    #[tabled(rename = "ID")]
+    pub id: String,
+    #[tabled(rename = "TYPE")]
+    pub record_type: String,
+    #[tabled(rename = "NAME")]
+    pub name: String,
+    #[tabled(rename = "DATA")]
+    pub data: String,
+    #[tabled(rename = "TTL")]
+    pub ttl: String,
+    #[tabled(rename = "PRIORITY")]
+    pub priority: String,
+}
+
+impl From<&DnsRecord> for DnsRecordRow {
+    fn from(r: &DnsRecord) -> Self {
+        Self {
+            id: r.id.clone(),
+            record_type: r.record_type.clone().unwrap_or_default(),
+            name: r.name.clone().unwrap_or_default(),
+            data: r.data.clone().unwrap_or_default(),
+            ttl: r
+                .ttl
+                .map(|t| t.to_string())
+                .unwrap_or_else(|| "-".to_string()),
+            priority: r
+                .priority
+                .map(|p| p.to_string())
+                .unwrap_or_else(|| "-".to_string()),
+        }
+    }
+}
+
+impl TableDisplay for Vec<DnsRecord> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No DNS records found.".yellow());
+            return;
+        }
+        let rows: Vec<DnsRecordRow> = self.iter().map(DnsRecordRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for DnsRecord {
+    fn print_table(&self) {
+        println!("{}", "DNS Record:".cyan());
+        println!("  {}: {}", "ID".green(), self.id);
+        if let Some(record_type) = &self.record_type {
+            println!("  {}: {}", "Type".green(), record_type);
+        }
+        if let Some(name) = &self.name {
+            println!("  {}: {}", "Name".green(), name);
+        }
+        if let Some(data) = &self.data {
+            println!("  {}: {}", "Data".green(), data);
+        }
+        if let Some(ttl) = &self.ttl {
+            println!("  {}: {}", "TTL".green(), ttl);
+        }
+        if let Some(priority) = &self.priority {
+            println!("  {}: {}", "Priority".green(), priority);
+        }
+    }
+}
+
+impl TableDisplay for DnsSoa {
+    fn print_table(&self) {
+        println!("{}", "SOA Information:".cyan());
+        if let Some(nsprimary) = &self.nsprimary {
+            println!("  {}: {}", "Primary Nameserver".green(), nsprimary);
+        }
+        if let Some(email) = &self.email {
+            println!("  {}: {}", "Contact Email".green(), email);
+        }
+    }
+}
+
+// =====================
+// Load Balancer Display
+// =====================
+
+/// Wrapper for displaying load balancers in a table
+#[derive(Tabled)]
+struct LoadBalancerRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "Region")]
+    region: String,
+    #[tabled(rename = "Status")]
+    status: String,
+    #[tabled(rename = "IPv4")]
+    ipv4: String,
+    #[tabled(rename = "Nodes")]
+    nodes: String,
+}
+
+impl From<&LoadBalancer> for LoadBalancerRow {
+    fn from(lb: &LoadBalancer) -> Self {
+        Self {
+            id: lb.id.clone(),
+            label: lb.label.clone().unwrap_or_default(),
+            region: lb.region.clone().unwrap_or_default(),
+            status: lb.status.clone().unwrap_or_default(),
+            ipv4: lb.ipv4.clone().unwrap_or_default(),
+            nodes: lb.nodes.map(|n| n.to_string()).unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<LoadBalancer> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No load balancers found.".yellow());
+            return;
+        }
+        let rows: Vec<LoadBalancerRow> = self.iter().map(LoadBalancerRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for LoadBalancer {
+    fn print_table(&self) {
+        println!("{}", "Load Balancer:".cyan());
+        println!("  {}: {}", "ID".green(), self.id);
+        if let Some(label) = &self.label {
+            println!("  {}: {}", "Label".green(), label);
+        }
+        if let Some(region) = &self.region {
+            println!("  {}: {}", "Region".green(), region);
+        }
+        if let Some(status) = &self.status {
+            println!("  {}: {}", "Status".green(), status);
+        }
+        if let Some(ipv4) = &self.ipv4 {
+            println!("  {}: {}", "IPv4".green(), ipv4);
+        }
+        if let Some(ipv6) = &self.ipv6 {
+            println!("  {}: {}", "IPv6".green(), ipv6);
+        }
+        if let Some(nodes) = &self.nodes {
+            println!("  {}: {}", "Nodes".green(), nodes);
+        }
+        if let Some(has_ssl) = &self.has_ssl {
+            println!("  {}: {}", "Has SSL".green(), has_ssl);
+        }
+        if let Some(http2) = &self.http2 {
+            println!("  {}: {}", "HTTP2".green(), http2);
+        }
+        if let Some(http3) = &self.http3 {
+            println!("  {}: {}", "HTTP3".green(), http3);
+        }
+        if let Some(date_created) = &self.date_created {
+            println!("  {}: {}", "Created".green(), date_created);
+        }
+        if let Some(generic_info) = &self.generic_info {
+            println!("  {}:", "Generic Info".cyan());
+            if let Some(algo) = &generic_info.balancing_algorithm {
+                println!("    {}: {}", "Algorithm".green(), algo);
+            }
+            if let Some(ssl_redirect) = &generic_info.ssl_redirect {
+                println!("    {}: {}", "SSL Redirect".green(), ssl_redirect);
+            }
+            if let Some(proxy) = &generic_info.proxy_protocol {
+                println!("    {}: {}", "Proxy Protocol".green(), proxy);
+            }
+            if let Some(timeout) = &generic_info.timeout {
+                println!("    {}: {}s", "Timeout".green(), timeout);
+            }
+            if let Some(vpc) = &generic_info.vpc {
+                println!("    {}: {}", "VPC".green(), vpc);
+            }
+        }
+        if let Some(health_check) = &self.health_check {
+            println!("  {}:", "Health Check".cyan());
+            if let Some(protocol) = &health_check.protocol {
+                println!("    {}: {}", "Protocol".green(), protocol);
+            }
+            if let Some(port) = &health_check.port {
+                println!("    {}: {}", "Port".green(), port);
+            }
+            if let Some(path) = &health_check.path {
+                println!("    {}: {}", "Path".green(), path);
+            }
+            if let Some(interval) = &health_check.check_interval {
+                println!("    {}: {}s", "Interval".green(), interval);
+            }
+            if let Some(timeout) = &health_check.response_timeout {
+                println!("    {}: {}s", "Response Timeout".green(), timeout);
+            }
+        }
+        if !self.forwarding_rules.is_empty() {
+            println!(
+                "  {}: {}",
+                "Forwarding Rules".green(),
+                self.forwarding_rules.len()
+            );
+        }
+        if !self.firewall_rules.is_empty() {
+            println!(
+                "  {}: {}",
+                "Firewall Rules".green(),
+                self.firewall_rules.len()
+            );
+        }
+        if !self.instances.is_empty() {
+            println!("  {}: {}", "Instances".green(), self.instances.join(", "));
+        }
+    }
+}
+
+/// Wrapper for displaying forwarding rules in a table
+#[derive(Tabled)]
+struct ForwardingRuleRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Frontend Protocol")]
+    frontend_protocol: String,
+    #[tabled(rename = "Frontend Port")]
+    frontend_port: String,
+    #[tabled(rename = "Backend Protocol")]
+    backend_protocol: String,
+    #[tabled(rename = "Backend Port")]
+    backend_port: String,
+}
+
+impl From<&ForwardingRule> for ForwardingRuleRow {
+    fn from(r: &ForwardingRule) -> Self {
+        Self {
+            id: r.id.clone().unwrap_or_default(),
+            frontend_protocol: r.frontend_protocol.clone().unwrap_or_default(),
+            frontend_port: r.frontend_port.map(|p| p.to_string()).unwrap_or_default(),
+            backend_protocol: r.backend_protocol.clone().unwrap_or_default(),
+            backend_port: r.backend_port.map(|p| p.to_string()).unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<ForwardingRule> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No forwarding rules found.".yellow());
+            return;
+        }
+        let rows: Vec<ForwardingRuleRow> = self.iter().map(ForwardingRuleRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for ForwardingRule {
+    fn print_table(&self) {
+        println!("{}", "Forwarding Rule:".cyan());
+        if let Some(id) = &self.id {
+            println!("  {}: {}", "ID".green(), id);
+        }
+        if let Some(protocol) = &self.frontend_protocol {
+            println!("  {}: {}", "Frontend Protocol".green(), protocol);
+        }
+        if let Some(port) = &self.frontend_port {
+            println!("  {}: {}", "Frontend Port".green(), port);
+        }
+        if let Some(protocol) = &self.backend_protocol {
+            println!("  {}: {}", "Backend Protocol".green(), protocol);
+        }
+        if let Some(port) = &self.backend_port {
+            println!("  {}: {}", "Backend Port".green(), port);
+        }
+    }
+}
+
+/// Wrapper for displaying LB firewall rules in a table
+#[derive(Tabled)]
+struct LBFirewallRuleRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Port")]
+    port: String,
+    #[tabled(rename = "Source")]
+    source: String,
+    #[tabled(rename = "IP Type")]
+    ip_type: String,
+}
+
+impl From<&LBFirewallRule> for LBFirewallRuleRow {
+    fn from(r: &LBFirewallRule) -> Self {
+        Self {
+            id: r.id.clone().unwrap_or_default(),
+            port: r.port.map(|p| p.to_string()).unwrap_or_default(),
+            source: r.source.clone().unwrap_or_default(),
+            ip_type: r.ip_type.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<LBFirewallRule> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No firewall rules found.".yellow());
+            return;
+        }
+        let rows: Vec<LBFirewallRuleRow> = self.iter().map(LBFirewallRuleRow::from).collect();
+        let table = Table::new(rows).with(Style::sharp()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for LBFirewallRule {
+    fn print_table(&self) {
+        println!("{}", "Firewall Rule:".cyan());
+        if let Some(id) = &self.id {
+            println!("  {}: {}", "ID".green(), id);
+        }
+        if let Some(port) = &self.port {
+            println!("  {}: {}", "Port".green(), port);
+        }
+        if let Some(source) = &self.source {
+            println!("  {}: {}", "Source".green(), source);
+        }
+        if let Some(ip_type) = &self.ip_type {
+            println!("  {}: {}", "IP Type".green(), ip_type);
+        }
+    }
+}
+
+impl TableDisplay for ReverseDNS {
+    fn print_table(&self) {
+        println!("{}", "Reverse DNS:".cyan());
+        if let Some(ipv4) = &self.ipv4 {
+            println!("  {}: {}", "IPv4".green(), ipv4);
+        }
+        if !self.ipv6.is_empty() {
+            println!("  {}:", "IPv6".green());
+            for entry in &self.ipv6 {
+                println!("    - {}", entry);
+            }
+        }
+    }
+}
+
+// ==================
+// CDN Output
+// ==================
+
+/// Wrapper for displaying CDN Pull Zones in a table
+#[derive(Tabled)]
+struct CdnPullZoneRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "Origin")]
+    origin: String,
+    #[tabled(rename = "CDN URL")]
+    cdn_url: String,
+    #[tabled(rename = "Status")]
+    status: String,
+    #[tabled(rename = "Active")]
+    active: String,
+    #[tabled(rename = "Created")]
+    date_created: String,
+}
+
+impl From<&CdnPullZone> for CdnPullZoneRow {
+    fn from(z: &CdnPullZone) -> Self {
+        let origin = format!(
+            "{}://{}",
+            z.origin_scheme
+                .as_ref()
+                .map(|s| s.to_string())
+                .unwrap_or_default(),
+            z.origin_domain.clone().unwrap_or_default()
+        );
+        Self {
+            id: z.id.clone(),
+            label: z.label.clone().unwrap_or_default(),
+            origin,
+            cdn_url: z.cdn_url.clone().unwrap_or_default(),
+            status: z
+                .status
+                .as_ref()
+                .map(|st| st.to_string())
+                .unwrap_or_default(),
+            active: if z.is_active() { "Yes".to_string() } else { "No".to_string() },
+            date_created: z.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for CdnPullZone {
+    fn print_table(&self) {
+        let rows = vec![CdnPullZoneRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<CdnPullZone> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No CDN Pull Zones found.".yellow());
+            return;
+        }
+        let rows: Vec<CdnPullZoneRow> = self.iter().map(CdnPullZoneRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying CDN Push Zones in a table
+#[derive(Tabled)]
+struct CdnPushZoneRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "CDN URL")]
+    cdn_url: String,
+    #[tabled(rename = "Status")]
+    status: String,
+    #[tabled(rename = "Active")]
+    active: String,
+    #[tabled(rename = "Created")]
+    date_created: String,
+}
+
+impl From<&CdnPushZone> for CdnPushZoneRow {
+    fn from(z: &CdnPushZone) -> Self {
+        Self {
+            id: z.id.clone(),
+            label: z.label.clone().unwrap_or_default(),
+            cdn_url: z.cdn_url.clone().unwrap_or_default(),
+            status: z
+                .status
+                .as_ref()
+                .map(|st| st.to_string())
+                .unwrap_or_default(),
+            active: if z.is_active() { "Yes".to_string() } else { "No".to_string() },
+            date_created: z.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for CdnPushZone {
+    fn print_table(&self) {
+        let rows = vec![CdnPushZoneRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<CdnPushZone> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No CDN Push Zones found.".yellow());
+            return;
+        }
+        let rows: Vec<CdnPushZoneRow> = self.iter().map(CdnPushZoneRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying CDN Push Zone Files in a table
+#[derive(Tabled)]
+struct CdnPushZoneFileRow {
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Size")]
+    size: String,
+    #[tabled(rename = "Last Modified")]
+    last_modified: String,
+}
+
+impl From<&CdnPushZoneFileMeta> for CdnPushZoneFileRow {
+    fn from(f: &CdnPushZoneFileMeta) -> Self {
+        Self {
+            name: f.name.clone().unwrap_or_default(),
+            size: f.size.clone().unwrap_or_default(),
+            last_modified: f.last_modified.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for CdnPushZoneFileMeta {
+    fn print_table(&self) {
+        let rows = vec![CdnPushZoneFileRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<CdnPushZoneFileMeta> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No files found.".yellow());
+            return;
+        }
+        let rows: Vec<CdnPushZoneFileRow> = self.iter().map(CdnPushZoneFileRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for CdnPushZoneFile {
+    fn print_table(&self) {
+        println!("{}", "File Details:".cyan());
+        if let Some(name) = &self.name {
+            println!("  {}: {}", "Name".green(), name);
+        }
+        if let Some(mime) = &self.mime {
+            println!("  {}: {}", "MIME Type".green(), mime);
+        }
+        if let Some(size) = &self.size {
+            println!("  {}: {}", "Size".green(), size);
+        }
+        if let Some(last_modified) = &self.last_modified {
+            println!("  {}: {}", "Last Modified".green(), last_modified);
+        }
+    }
+}
+
+impl TableDisplay for CdnUploadEndpoint {
+    fn print_table(&self) {
+        println!("{}", "Upload Endpoint:".cyan());
+        if let Some(url) = &self.url {
+            println!("  {}: {}", "URL".green(), url);
+        }
+        if let Some(inputs) = &self.inputs {
+            println!("{}", "  Inputs:".cyan());
+            if let Some(acl) = &inputs.acl {
+                println!("    {}: {}", "ACL".green(), acl);
+            }
+            if let Some(key) = &inputs.key {
+                println!("    {}: {}", "Key".green(), key);
+            }
+            if let Some(algo) = &inputs.x_amz_algorithm {
+                println!("    {}: {}", "Algorithm".green(), algo);
+            }
+        }
+    }
+}
+
+// ===========================
+// Container Registry Types
+// ===========================
+
+/// Wrapper for displaying registries in a table
+#[derive(Tabled)]
+struct RegistryRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "URN")]
+    urn: String,
+    #[tabled(rename = "Public")]
+    public: String,
+    #[tabled(rename = "Created")]
+    date_created: String,
+}
+
+impl From<&Registry> for RegistryRow {
+    fn from(r: &Registry) -> Self {
+        Self {
+            id: r.id.clone(),
+            name: r.name.clone().unwrap_or_default(),
+            urn: r.urn.clone().unwrap_or_default(),
+            public: if r.public { "Yes" } else { "No" }.to_string(),
+            date_created: r.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Registry {
+    fn print_table(&self) {
+        let rows = vec![RegistryRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+
+        // Print additional details
+        if let Some(storage) = &self.storage {
+            println!("\n{}", "Storage:".cyan());
+            if let Some(used) = &storage.used {
+                if let Some(mb) = used.mb {
+                    println!("  {}: {:.2} MB", "Used".green(), mb);
+                }
+            }
+            if let Some(allowed) = &storage.allowed {
+                if let Some(mb) = allowed.mb {
+                    println!("  {}: {:.2} MB", "Allowed".green(), mb);
+                }
+            }
+        }
+
+        if let Some(root_user) = &self.root_user {
+            println!("\n{}", "Root User:".cyan());
+            if let Some(username) = &root_user.username {
+                println!("  {}: {}", "Username".green(), username);
+            }
+        }
+    }
+}
+
+impl TableDisplay for Vec<Registry> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No registries found.".yellow());
+            return;
+        }
+        let rows: Vec<RegistryRow> = self.iter().map(RegistryRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying registry repositories in a table
+#[derive(Tabled)]
+struct RegistryRepositoryRow {
+    #[tabled(rename = "Image")]
+    image: String,
+    #[tabled(rename = "Artifacts")]
+    artifact_count: String,
+    #[tabled(rename = "Pulls")]
+    pull_count: String,
+    #[tabled(rename = "Updated")]
+    updated_at: String,
+}
+
+impl From<&RegistryRepository> for RegistryRepositoryRow {
+    fn from(r: &RegistryRepository) -> Self {
+        Self {
+            image: r.image.clone().unwrap_or_default(),
+            artifact_count: r.artifact_count.map(|c| c.to_string()).unwrap_or_default(),
+            pull_count: r.pull_count.map(|c| c.to_string()).unwrap_or_default(),
+            updated_at: r.updated_at.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for RegistryRepository {
+    fn print_table(&self) {
+        let rows = vec![RegistryRepositoryRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+
+        if let Some(desc) = &self.description {
+            if !desc.is_empty() {
+                println!("\n{}: {}", "Description".cyan(), desc);
+            }
+        }
+    }
+}
+
+impl TableDisplay for Vec<RegistryRepository> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No repositories found.".yellow());
+            return;
+        }
+        let rows: Vec<RegistryRepositoryRow> =
+            self.iter().map(RegistryRepositoryRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying registry artifacts in a table
+#[derive(Tabled)]
+struct RegistryArtifactRow {
+    #[tabled(rename = "Digest")]
+    digest: String,
+    #[tabled(rename = "Type")]
+    artifact_type: String,
+    #[tabled(rename = "Size")]
+    size: String,
+    #[tabled(rename = "Pushed")]
+    push_time: String,
+}
+
+impl From<&RegistryArtifact> for RegistryArtifactRow {
+    fn from(a: &RegistryArtifact) -> Self {
+        let size = a
+            .size
+            .map(|s| {
+                if s > 1_000_000 {
+                    format!("{:.2} MB", s as f64 / 1_000_000.0)
+                } else if s > 1_000 {
+                    format!("{:.2} KB", s as f64 / 1_000.0)
+                } else {
+                    format!("{} B", s)
+                }
+            })
+            .unwrap_or_default();
+
+        Self {
+            digest: a
+                .digest
+                .clone()
+                .unwrap_or_default()
+                .chars()
+                .take(20)
+                .collect::<String>()
+                + "...",
+            artifact_type: a.artifact_kind.clone().unwrap_or_default(),
+            size,
+            push_time: a.push_time.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for RegistryArtifact {
+    fn print_table(&self) {
+        println!("{}", "Artifact Details:".cyan());
+        if let Some(digest) = &self.digest {
+            println!("  {}: {}", "Digest".green(), digest);
+        }
+        if let Some(kind) = &self.artifact_kind {
+            println!("  {}: {}", "Type".green(), kind);
+        }
+        if let Some(size) = &self.size {
+            println!("  {}: {} bytes", "Size".green(), size);
+        }
+        if let Some(push) = &self.push_time {
+            println!("  {}: {}", "Push Time".green(), push);
+        }
+        if let Some(pull) = &self.pull_time {
+            println!("  {}: {}", "Pull Time".green(), pull);
+        }
+        if !self.tags.is_empty() {
+            println!("  {}: {:?}", "Tags".green(), self.tags);
+        }
+    }
+}
+
+impl TableDisplay for Vec<RegistryArtifact> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No artifacts found.".yellow());
+            return;
+        }
+        let rows: Vec<RegistryArtifactRow> = self.iter().map(RegistryArtifactRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying registry robots in a table
+#[derive(Tabled)]
+struct RegistryRobotRow {
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Disabled")]
+    disabled: String,
+    #[tabled(rename = "Duration")]
+    duration: String,
+}
+
+impl From<&RegistryRobot> for RegistryRobotRow {
+    fn from(r: &RegistryRobot) -> Self {
+        Self {
+            name: r.name.clone().unwrap_or_default(),
+            description: r.description.clone().unwrap_or_default(),
+            disabled: if r.disable { "Yes" } else { "No" }.to_string(),
+            duration: r
+                .duration
+                .map(|d| {
+                    if d == -1 {
+                        "Never expires".to_string()
+                    } else {
+                        format!("{} seconds", d)
+                    }
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for RegistryRobot {
+    fn print_table(&self) {
+        let rows = vec![RegistryRobotRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+
+        if let Some(secret) = &self.secret {
+            println!("\n{}: {}", "Secret".cyan(), secret);
+        }
+    }
+}
+
+impl TableDisplay for Vec<RegistryRobot> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No robot accounts found.".yellow());
+            return;
+        }
+        let rows: Vec<RegistryRobotRow> = self.iter().map(RegistryRobotRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying registry replications in a table
+#[derive(Tabled)]
+struct RegistryReplicationRow {
+    #[tabled(rename = "Region")]
+    region: String,
+    #[tabled(rename = "Namespace")]
+    namespace: String,
+    #[tabled(rename = "URN")]
+    urn: String,
+}
+
+impl From<&RegistryReplication> for RegistryReplicationRow {
+    fn from(r: &RegistryReplication) -> Self {
+        Self {
+            region: r.region.clone().unwrap_or_default(),
+            namespace: r.namespace.clone().unwrap_or_default(),
+            urn: r.urn.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for RegistryReplication {
+    fn print_table(&self) {
+        let rows = vec![RegistryReplicationRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<RegistryReplication> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No replications found.".yellow());
+            return;
+        }
+        let rows: Vec<RegistryReplicationRow> =
+            self.iter().map(RegistryReplicationRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying registry retention rules in a table
+#[derive(Tabled)]
+struct RegistryRetentionRuleRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Template")]
+    template: String,
+    #[tabled(rename = "Action")]
+    action: String,
+    #[tabled(rename = "Disabled")]
+    disabled: String,
+}
+
+impl From<&RegistryRetentionRule> for RegistryRetentionRuleRow {
+    fn from(r: &RegistryRetentionRule) -> Self {
+        Self {
+            id: r.id.map(|i| i.to_string()).unwrap_or_default(),
+            template: r.template.clone().unwrap_or_default(),
+            action: r.action.clone().unwrap_or_default(),
+            disabled: if r.disabled { "Yes" } else { "No" }.to_string(),
+        }
+    }
+}
+
+impl TableDisplay for RegistryRetentionRule {
+    fn print_table(&self) {
+        let rows = vec![RegistryRetentionRuleRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+
+        if let Some(params) = &self.params {
+            println!("\n{}", "Parameters:".cyan());
+            for (k, v) in params {
+                println!("  {}: {}", k.green(), v);
+            }
+        }
+    }
+}
+
+impl TableDisplay for Vec<RegistryRetentionRule> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No retention rules found.".yellow());
+            return;
+        }
+        let rows: Vec<RegistryRetentionRuleRow> =
+            self.iter().map(RegistryRetentionRuleRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying registry retention executions in a table
+#[derive(Tabled)]
+struct RegistryRetentionExecutionRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Status")]
+    status: String,
+    #[tabled(rename = "Trigger")]
+    trigger: String,
+    #[tabled(rename = "Start Time")]
+    start_time: String,
+}
+
+impl From<&RegistryRetentionExecution> for RegistryRetentionExecutionRow {
+    fn from(e: &RegistryRetentionExecution) -> Self {
+        Self {
+            id: e.id.map(|i| i.to_string()).unwrap_or_default(),
+            status: e.status.clone().unwrap_or_default(),
+            trigger: e.trigger.clone().unwrap_or_default(),
+            start_time: e.start_time.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for RegistryRetentionExecution {
+    fn print_table(&self) {
+        let rows = vec![RegistryRetentionExecutionRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<RegistryRetentionExecution> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No retention executions found.".yellow());
+            return;
+        }
+        let rows: Vec<RegistryRetentionExecutionRow> = self
+            .iter()
+            .map(RegistryRetentionExecutionRow::from)
+            .collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for RegistryRetentionSchedule {
+    fn print_table(&self) {
+        println!("{}", "Retention Schedule:".cyan());
+        if let Some(stype) = &self.schedule_type {
+            println!("  {}: {}", "Type".green(), stype);
+        }
+        if let Some(cron) = &self.cron {
+            println!("  {}: {}", "Cron".green(), cron);
+        }
+    }
+}
+
+/// Wrapper for displaying registry regions in a table
+#[derive(Tabled)]
+struct RegistryRegionRow {
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "URN")]
+    urn: String,
+    #[tabled(rename = "Public")]
+    public: String,
+}
+
+impl From<&RegistryRegion> for RegistryRegionRow {
+    fn from(r: &RegistryRegion) -> Self {
+        Self {
+            name: r.name.clone().unwrap_or_default(),
+            urn: r.urn.clone().unwrap_or_default(),
+            public: if r.public { "Yes" } else { "No" }.to_string(),
+        }
+    }
+}
+
+impl TableDisplay for RegistryRegion {
+    fn print_table(&self) {
+        let rows = vec![RegistryRegionRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<RegistryRegion> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No registry regions found.".yellow());
+            return;
+        }
+        let rows: Vec<RegistryRegionRow> = self.iter().map(RegistryRegionRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+/// Wrapper for displaying registry plans in a table
+#[derive(Tabled)]
+struct RegistryPlanRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Name")]
+    vanity_name: String,
+    #[tabled(rename = "Max Storage (MB)")]
+    max_storage_mb: String,
+    #[tabled(rename = "Monthly Price")]
+    monthly_price: String,
+}
+
+impl From<&RegistryPlan> for RegistryPlanRow {
+    fn from(p: &RegistryPlan) -> Self {
+        Self {
+            id: p.id.clone(),
+            vanity_name: p.vanity_name.clone().unwrap_or_default(),
+            max_storage_mb: p.max_storage_mb.map(|s| s.to_string()).unwrap_or_default(),
+            monthly_price: p
+                .monthly_price
+                .map(|p| format!("${}", p))
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for RegistryPlan {
+    fn print_table(&self) {
+        let rows = vec![RegistryPlanRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<RegistryPlan> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No registry plans found.".yellow());
+            return;
+        }
+        let rows: Vec<RegistryPlanRow> = self.iter().map(RegistryPlanRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for RegistryDockerCredentials {
+    fn print_table(&self) {
+        println!("{}", "Docker Credentials:".cyan());
+        if let Some(auths) = &self.auths {
+            for (registry, auth) in auths {
+                println!("  {}: {}", "Registry".green(), registry);
+                if let Some(auth_str) = &auth.auth {
+                    println!("    {}: {}", "Auth".green(), auth_str);
+                }
+            }
+        }
+    }
+}
+
+impl TableDisplay for RegistryKubernetesCredentials {
+    fn print_table(&self) {
+        println!("{}", "Kubernetes Docker Credentials:".cyan());
+        if let Some(api_version) = &self.api_version {
+            println!("  {}: {}", "API Version".green(), api_version);
+        }
+        if let Some(kind) = &self.kind {
+            println!("  {}: {}", "Kind".green(), kind);
+        }
+        if let Some(cred_type) = &self.cred_type {
+            println!("  {}: {}", "Type".green(), cred_type);
+        }
+        if let Some(metadata) = &self.metadata {
+            if let Some(name) = &metadata.name {
+                println!("  {}: {}", "Secret Name".green(), name);
+            }
+        }
+        if let Some(data) = &self.data {
+            if let Some(dockerconfig) = &data.dockerconfigjson {
+                println!("  {}: {}", ".dockerconfigjson".green(), dockerconfig);
+            }
+        }
+    }
+}
+
+// ==================
+// Account TableDisplay
+// ==================
+
+impl TableDisplay for Account {
+    fn print_table(&self) {
+        println!("{}", "Account Information".cyan().bold());
+        println!(
+            "  {}: {}",
+            "Name".green(),
+            self.name.as_deref().unwrap_or("-")
+        );
+        println!(
+            "  {}: {}",
+            "Email".green(),
+            self.email.as_deref().unwrap_or("-")
+        );
+        println!(
+            "  {}: ${:.2}",
+            "Balance".green(),
+            self.balance.unwrap_or(0.0)
+        );
+        println!(
+            "  {}: ${:.2}",
+            "Pending Charges".green(),
+            self.pending_charges.unwrap_or(0.0)
+        );
+        if let Some(date) = &self.last_payment_date {
+            println!("  {}: {}", "Last Payment Date".green(), date);
+        }
+        if let Some(amount) = self.last_payment_amount {
+            println!("  {}: ${:.2}", "Last Payment Amount".green(), amount);
+        }
+        if !self.acls.is_empty() {
+            println!("  {}: {}", "ACLs".green(), self.acls.join(", "));
+        }
+    }
+}
+
+impl TableDisplay for BgpInfo {
+    fn print_table(&self) {
+        println!("{}", "BGP Information".cyan().bold());
+        println!(
+            "  {}: {}",
+            "Enabled".green(),
+            self.enabled
+                .map(|b| if b { "Yes" } else { "No" })
+                .unwrap_or("-")
+        );
+        if let Some(asn) = self.asn {
+            println!("  {}: {}", "ASN".green(), asn);
+        }
+        if !self.allowed_prefix_ipv4.is_empty() {
+            println!("  {}:", "IPv4 Prefixes".green());
+            for prefix in &self.allowed_prefix_ipv4 {
+                println!(
+                    "    - {} ({})",
+                    prefix.prefix.as_deref().unwrap_or("-"),
+                    prefix.description.as_deref().unwrap_or("no description")
+                );
+            }
+        }
+        if !self.allowed_prefix_ipv6.is_empty() {
+            println!("  {}:", "IPv6 Prefixes".green());
+            for prefix in &self.allowed_prefix_ipv6 {
+                println!(
+                    "    - {} ({})",
+                    prefix.prefix.as_deref().unwrap_or("-"),
+                    prefix.description.as_deref().unwrap_or("no description")
+                );
+            }
+        }
+    }
+}
+
+impl TableDisplay for AccountBandwidth {
+    fn print_table(&self) {
+        println!("{}", "Account Bandwidth".cyan().bold());
+        if let Some(prev) = &self.previous_month {
+            println!("  {}:", "Previous Month".green());
+            println!(
+                "    {}: {} bytes",
+                "Incoming".cyan(),
+                prev.incoming_bytes.unwrap_or(0)
+            );
+            println!(
+                "    {}: {} bytes",
+                "Outgoing".cyan(),
+                prev.outgoing_bytes.unwrap_or(0)
+            );
+            if let Some(total) = prev.gb_total {
+                println!("    {}: {:.2} GB", "Total".cyan(), total);
+            }
+        }
+        if let Some(curr) = &self.current_month_to_date {
+            println!("  {}:", "Current Month".green());
+            println!(
+                "    {}: {} bytes",
+                "Incoming".cyan(),
+                curr.incoming_bytes.unwrap_or(0)
+            );
+            println!(
+                "    {}: {} bytes",
+                "Outgoing".cyan(),
+                curr.outgoing_bytes.unwrap_or(0)
+            );
+            if let Some(total) = curr.gb_total {
+                println!("    {}: {:.2} GB", "Total".cyan(), total);
+            }
+        }
+    }
+}
+
+// ==================
+// Billing TableDisplay
+// ==================
+
+#[derive(Tabled)]
+struct BillingHistoryRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Date")]
+    date: String,
+    #[tabled(rename = "Type")]
+    entry_type: String,
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Amount")]
+    amount: String,
+    #[tabled(rename = "Balance")]
+    balance: String,
+}
+
+impl From<&BillingHistory> for BillingHistoryRow {
+    fn from(b: &BillingHistory) -> Self {
+        Self {
+            id: b.id.map(|i| i.to_string()).unwrap_or_default(),
+            date: b.date.clone().unwrap_or_default(),
+            entry_type: b.entry_type.clone().unwrap_or_default(),
+            description: b.description.clone().unwrap_or_default(),
+            amount: format!("${:.2}", b.amount.unwrap_or(0.0)),
+            balance: format!("${:.2}", b.balance.unwrap_or(0.0)),
+        }
+    }
+}
+
+impl TableDisplay for BillingHistory {
+    fn print_table(&self) {
+        let rows = vec![BillingHistoryRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<BillingHistory> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No billing history found.".yellow());
+            return;
+        }
+        let rows: Vec<BillingHistoryRow> = self.iter().map(BillingHistoryRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+#[derive(Tabled)]
+struct InvoiceRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Date")]
+    date: String,
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Amount")]
+    amount: String,
+    #[tabled(rename = "Balance")]
+    balance: String,
+}
+
+impl From<&Invoice> for InvoiceRow {
+    fn from(i: &Invoice) -> Self {
+        Self {
+            id: i.id.map(|id| id.to_string()).unwrap_or_default(),
+            date: i.date.clone().unwrap_or_default(),
+            description: i.description.clone().unwrap_or_default(),
+            amount: format!("${:.2}", i.amount.unwrap_or(0.0)),
+            balance: format!("${:.2}", i.balance.unwrap_or(0.0)),
+        }
+    }
+}
+
+impl TableDisplay for Invoice {
+    fn print_table(&self) {
+        let rows = vec![InvoiceRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<Invoice> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No invoices found.".yellow());
+            return;
+        }
+        let rows: Vec<InvoiceRow> = self.iter().map(InvoiceRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+#[derive(Tabled)]
+struct InvoiceItemRow {
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Product")]
+    product: String,
+    #[tabled(rename = "Start")]
+    start_date: String,
+    #[tabled(rename = "End")]
+    end_date: String,
+    #[tabled(rename = "Units")]
+    units: String,
+    #[tabled(rename = "Unit Type")]
+    unit_type: String,
+    #[tabled(rename = "Unit Price")]
+    unit_price: String,
+    #[tabled(rename = "Total")]
+    total: String,
+}
+
+impl From<&InvoiceItem> for InvoiceItemRow {
+    fn from(i: &InvoiceItem) -> Self {
+        Self {
+            description: i.description.clone().unwrap_or_default(),
+            product: i.product.clone().unwrap_or_default(),
+            start_date: i.start_date.clone().unwrap_or_default(),
+            end_date: i.end_date.clone().unwrap_or_default(),
+            units: i.units.map(|u| u.to_string()).unwrap_or_default(),
+            unit_type: i.unit_type.clone().unwrap_or_default(),
+            unit_price: format!("${:.4}", i.unit_price.unwrap_or(0.0)),
+            total: format!("${:.2}", i.total.unwrap_or(0.0)),
+        }
+    }
+}
+
+impl TableDisplay for InvoiceItem {
+    fn print_table(&self) {
+        let rows = vec![InvoiceItemRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<InvoiceItem> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No invoice items found.".yellow());
+            return;
+        }
+        let rows: Vec<InvoiceItemRow> = self.iter().map(InvoiceItemRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+#[derive(Tabled)]
+struct PendingChargeRow {
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Date")]
+    date: String,
+    #[tabled(rename = "Amount")]
+    amount: String,
+}
+
+impl From<&PendingCharge> for PendingChargeRow {
+    fn from(p: &PendingCharge) -> Self {
+        Self {
+            description: p.description.clone().unwrap_or_default(),
+            date: p.date.clone().unwrap_or_default(),
+            amount: format!("${:.2}", p.amount.unwrap_or(0.0)),
+        }
+    }
+}
+
+impl TableDisplay for PendingCharge {
+    fn print_table(&self) {
+        let rows = vec![PendingChargeRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<PendingCharge> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No pending charges found.".yellow());
+            return;
+        }
+        let rows: Vec<PendingChargeRow> = self.iter().map(PendingChargeRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+// ==================
+// User TableDisplay
+// ==================
+
+#[derive(Tabled)]
+struct UserRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Email")]
+    email: String,
+    #[tabled(rename = "API Enabled")]
+    api_enabled: String,
+}
+
+impl From<&User> for UserRow {
+    fn from(u: &User) -> Self {
+        Self {
+            id: u.id.clone(),
+            name: u.name.clone().unwrap_or_default(),
+            email: u.email.clone().unwrap_or_default(),
+            api_enabled: u
+                .api_enabled
+                .map(|b| if b { "Yes" } else { "No" })
+                .unwrap_or("-")
+                .to_string(),
+        }
+    }
+}
+
+impl TableDisplay for User {
+    fn print_table(&self) {
+        let rows = vec![UserRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+        if !self.acls.is_empty() {
+            println!("\n{}: {}", "ACLs".cyan(), self.acls.join(", "));
+        }
+    }
+}
+
+impl TableDisplay for Vec<User> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No users found.".yellow());
+            return;
+        }
+        let rows: Vec<UserRow> = self.iter().map(UserRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+#[derive(Tabled)]
+struct ApiKeyRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Created")]
+    date_created: String,
+}
+
+impl From<&ApiKey> for ApiKeyRow {
+    fn from(k: &ApiKey) -> Self {
+        Self {
+            id: k.id.clone().unwrap_or_default(),
+            name: k.name.clone().unwrap_or_default(),
+            date_created: k.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for ApiKey {
+    fn print_table(&self) {
+        let rows = vec![ApiKeyRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+        if let Some(key) = &self.api_key {
+            println!("\n{}: {}", "API Key".cyan(), key);
+        }
+    }
+}
+
+impl TableDisplay for Vec<ApiKey> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No API keys found.".yellow());
+            return;
+        }
+        let rows: Vec<ApiKeyRow> = self.iter().map(ApiKeyRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+#[derive(Tabled)]
+struct IpWhitelistEntryRow {
+    #[tabled(rename = "Subnet")]
+    subnet: String,
+    #[tabled(rename = "Size")]
+    subnet_size: String,
+    #[tabled(rename = "Type")]
+    ip_type: String,
+    #[tabled(rename = "Date Added")]
+    date_added: String,
+}
+
+impl From<&IpWhitelistEntry> for IpWhitelistEntryRow {
+    fn from(e: &IpWhitelistEntry) -> Self {
+        Self {
+            subnet: e.subnet.clone().unwrap_or_default(),
+            subnet_size: e.subnet_size.map(|s| s.to_string()).unwrap_or_default(),
+            ip_type: e.ip_type.clone().unwrap_or_default(),
+            date_added: e.date_added.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for IpWhitelistEntry {
+    fn print_table(&self) {
+        let rows = vec![IpWhitelistEntryRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<IpWhitelistEntry> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No IP whitelist entries found.".yellow());
+            return;
+        }
+        let rows: Vec<IpWhitelistEntryRow> = self.iter().map(IpWhitelistEntryRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
     }
 }
 

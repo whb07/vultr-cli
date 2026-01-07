@@ -64,12 +64,19 @@ pub async fn handle_instance(
                 plan: create_args.plan,
                 os_id: create_args.os_id,
                 snapshot_id: create_args.snapshot_id,
+                iso_id: create_args.iso_id,
                 app_id: create_args.app_id,
+                image_id: create_args.image_id,
                 label: create_args.label,
                 hostname: create_args.hostname,
                 sshkey_id: create_args.ssh_keys,
                 script_id: create_args.script_id,
                 enable_ipv6: if create_args.enable_ipv6 {
+                    Some(true)
+                } else {
+                    None
+                },
+                disable_public_ipv4: if create_args.disable_public_ipv4 {
                     Some(true)
                 } else {
                     None
@@ -84,8 +91,14 @@ pub async fn handle_instance(
                 } else {
                     None
                 },
+                activation_email: if create_args.activation_email {
+                    Some(true)
+                } else {
+                    None
+                },
                 attach_vpc: create_args.vpc,
                 firewall_group_id: create_args.firewall_group_id,
+                reserved_ipv4: create_args.reserved_ipv4,
                 tags: create_args.tags,
                 user_data: create_args
                     .user_data
@@ -97,6 +110,7 @@ pub async fn handle_instance(
                         )
                     })
                     .transpose()?,
+                user_scheme: create_args.user_scheme,
                 ..Default::default()
             };
 
@@ -136,7 +150,9 @@ pub async fn handle_instance(
             }
             client.delete_instance(&id).await?;
             print_success(&format!("Instance {} deletion initiated", id));
-            api::verify_instance_deleted(client, &id, wait_opts).await?;
+            if wait {
+                api::verify_instance_deleted(client, &id, wait_opts).await?;
+            }
         }
 
         InstanceCommands::Start { id } => {

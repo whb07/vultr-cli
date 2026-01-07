@@ -42,6 +42,7 @@ async fn run(cli: Cli) -> VultrResult<()> {
             generate_completions(args.shell);
             Ok(())
         }
+        Commands::Config(args) => handle_config(args, &cli.profile),
         _ => {
             // Load config and merge with CLI flags
             let cfg = crate::config::Config::load()?;
@@ -86,33 +87,58 @@ async fn run(cli: Cli) -> VultrResult<()> {
                     handle_instance(args, &client, output, skip_confirm, cli.wait, &wait_opts).await
                 }
                 Commands::SshKey(args) => {
-                    handle_ssh_key(args, &client, output, skip_confirm, &wait_opts).await
+                    handle_ssh_key(args, &client, output, skip_confirm, cli.wait, &wait_opts).await
                 }
                 Commands::StartupScript(args) => {
-                    handle_startup_script(args, &client, output, skip_confirm, &wait_opts).await
+                    handle_startup_script(args, &client, output, skip_confirm, cli.wait, &wait_opts)
+                        .await
                 }
                 Commands::Snapshot(args) => {
                     handle_snapshot(args, &client, output, skip_confirm, cli.wait, &wait_opts).await
                 }
+                Commands::Backup(args) => handle_backup(args, &client, output).await,
+                Commands::BareMetal(args) => {
+                    handle_bare_metal(args, &client, output, skip_confirm).await
+                }
+                Commands::Iso(args) => handle_iso(args, &client, output, skip_confirm).await,
                 Commands::BlockStorage(args) => {
                     handle_block_storage(args, &client, output, skip_confirm, cli.wait, &wait_opts)
                         .await
                 }
+                Commands::ObjectStorage(args) => {
+                    handle_object_storage(args, &client, output, skip_confirm).await
+                }
                 Commands::Firewall(args) => {
-                    handle_firewall(args, &client, output, skip_confirm, &wait_opts).await
+                    handle_firewall(args, &client, output, skip_confirm, cli.wait, &wait_opts).await
                 }
                 Commands::Vpc(args) => handle_vpc(args, &client, output, skip_confirm).await,
+                Commands::Vpc2(args) => handle_vpc2(args, &client, output, skip_confirm).await,
                 Commands::Kubernetes(args) => {
                     handle_kubernetes(args, &client, output, skip_confirm).await
                 }
+                Commands::LoadBalancer(args) => {
+                    handle_load_balancer(args, &client, output, skip_confirm).await
+                }
                 Commands::Database(args) => {
                     handle_database(args, &client, output, skip_confirm).await
+                }
+                Commands::Cdn(args) => handle_cdn(args, &client, output, skip_confirm).await,
+                Commands::Dns(args) => handle_dns(args, &client, output, skip_confirm).await,
+                Commands::Registry(args) => {
+                    handle_registry(args, &client, output, skip_confirm).await
+                }
+                Commands::ReservedIp(args) => {
+                    handle_reserved_ip(args, &client, output, skip_confirm).await
                 }
                 Commands::Regions => handle_regions(&client, output).await,
                 Commands::Plans(args) => {
                     handle_plans(&client, output, args.plan_type.as_deref()).await
                 }
                 Commands::Os => handle_os(&client, output).await,
+                Commands::Applications => handle_applications(&client, output).await,
+                Commands::Account(args) => handle_account(args, &client, output).await,
+                Commands::Billing(args) => handle_billing(args, &client, output).await,
+                Commands::User(args) => handle_user(args, &client, output, skip_confirm).await,
                 _ => unreachable!(),
             }
         }

@@ -9,10 +9,10 @@ use std::path::PathBuf;
 const APP_NAME: &str = "vultr-cli";
 
 /// CLI Configuration
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     /// Default profile to use
-    #[serde(default)]
+    #[serde(default = "default_profile")]
     pub default_profile: String,
     /// Named profiles
     #[serde(default)]
@@ -25,11 +25,6 @@ pub struct Config {
 /// Profile configuration
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Profile {
-    /// API key (stored in keyring, not in config file)
-    #[serde(skip)]
-    pub api_key: Option<String>,
-    /// Default region for this profile
-    pub default_region: Option<String>,
     /// Default output format
     pub output_format: Option<OutputFormat>,
 }
@@ -91,6 +86,10 @@ fn default_http_backoff_max_ms() -> u64 {
     10_000
 }
 
+fn default_profile() -> String {
+    "default".to_string()
+}
+
 impl Default for HttpSettings {
     fn default() -> Self {
         Self {
@@ -122,6 +121,16 @@ impl Default for Settings {
             wait_timeout: 600,
             poll_interval: 5,
             http: HttpSettings::default(),
+        }
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            default_profile: default_profile(),
+            profiles: std::collections::HashMap::new(),
+            settings: Settings::default(),
         }
     }
 }
@@ -177,7 +186,10 @@ impl Config {
         let path = Self::config_path()?;
         if path.exists() {
             let content = std::fs::read_to_string(&path)?;
-            let config: Config = serde_json::from_str(&content)?;
+            let mut config: Config = serde_json::from_str(&content)?;
+            if config.default_profile.trim().is_empty() {
+                config.default_profile = default_profile();
+            }
             Ok(config)
         } else {
             Ok(Config::default())
@@ -197,21 +209,12 @@ impl Config {
 
     /// Get the current profile
     pub fn current_profile(&self) -> Option<&Profile> {
-        let profile_name = if self.default_profile.is_empty() {
-            "default"
-        } else {
-            &self.default_profile
-        };
-        self.profiles.get(profile_name)
+        self.profiles.get(&self.default_profile)
     }
 
     /// Get a mutable reference to the current profile, creating it if needed
     pub fn current_profile_mut(&mut self) -> &mut Profile {
-        let profile_name = if self.default_profile.is_empty() {
-            "default".to_string()
-        } else {
-            self.default_profile.clone()
-        };
+        let profile_name = self.default_profile.clone();
         self.profiles.entry(profile_name).or_default()
     }
 }
@@ -318,6 +321,9 @@ impl SecureStorage {
                     if msg.contains("not found")
                         || msg.contains("no entry")
                         || msg.contains("item not found")
+                        || msg.contains("no matching entry")
+                        || msg.contains("secret not found")
+                        || msg.contains("no password")
                     {
                         Ok(None)
                     } else {
@@ -408,30 +414,29 @@ mod tests {
     fn test_profile_default() {
         let profile = Profile::default();
         assert!(profile.output_format.is_none());
-        assert!(profile.api_key.is_none());
-        assert!(profile.default_region.is_none());
     }
 
     #[test]
     fn test_config_default() {
         let config = Config::default();
         assert!(config.profiles.is_empty());
-        assert!(config.default_profile.is_empty());
+        assert_eq!(config.default_profile, "default");
     }
 
     #[test]
     fn test_config_current_profile() {
         let mut config = Config::default();
         let profile = Profile {
-            api_key: None,
-            default_region: Some("ewr".to_string()),
             output_format: Some(OutputFormat::Json),
         };
         config.profiles.insert("default".to_string(), profile);
 
         let retrieved = config.current_profile();
         assert!(retrieved.is_some());
-        assert_eq!(retrieved.unwrap().default_region.as_ref().unwrap(), "ewr");
+        assert_eq!(
+            retrieved.unwrap().output_format.unwrap(),
+            OutputFormat::Json
+        );
     }
 
     #[test]
@@ -439,15 +444,13 @@ mod tests {
         let mut config = Config::default();
         config.default_profile = "production".to_string();
         let profile = Profile {
-            api_key: None,
-            default_region: Some("lax".to_string()),
             output_format: None,
         };
         config.profiles.insert("production".to_string(), profile);
 
         let retrieved = config.current_profile();
         assert!(retrieved.is_some());
-        assert_eq!(retrieved.unwrap().default_region.as_ref().unwrap(), "lax");
+        assert!(retrieved.unwrap().output_format.is_none());
     }
 
     #[test]
@@ -462,7 +465,7 @@ mod tests {
         let mut config = Config::default();
         {
             let profile = config.current_profile_mut();
-            profile.default_region = Some("ord".to_string());
+            profile.output_format = Some(OutputFormat::Json);
         }
         assert!(config.profiles.contains_key("default"));
         assert_eq!(
@@ -470,10 +473,9 @@ mod tests {
                 .profiles
                 .get("default")
                 .unwrap()
-                .default_region
-                .as_ref()
+                .output_format
                 .unwrap(),
-            "ord"
+            OutputFormat::Json
         );
     }
 
@@ -501,8 +503,6 @@ mod tests {
         config.default_profile = "production".to_string();
 
         let profile = Profile {
-            api_key: None,
-            default_region: Some("ewr".to_string()),
             output_format: Some(OutputFormat::Json),
         };
         config.profiles.insert("production".to_string(), profile);
@@ -549,12 +549,9 @@ mod tests {
     #[test]
     fn test_profile_clone() {
         let profile = Profile {
-            api_key: None,
-            default_region: Some("ewr".to_string()),
             output_format: Some(OutputFormat::Json),
         };
         let cloned = profile.clone();
-        assert_eq!(cloned.default_region.unwrap(), "ewr");
         assert_eq!(cloned.output_format.unwrap(), OutputFormat::Json);
     }
 

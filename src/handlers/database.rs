@@ -5,7 +5,7 @@ use crate::commands::*;
 use crate::config::OutputFormat;
 use crate::error::VultrResult;
 use crate::models::*;
-use crate::output::{print_json, print_output};
+use crate::output::{print_json, print_output, print_success};
 
 use super::confirm_delete;
 
@@ -67,7 +67,7 @@ pub async fn handle_database(
         DatabaseCommands::Delete { id } => {
             if skip_confirm || confirm_delete("database", &id)? {
                 client.delete_database(&id).await?;
-                println!("Database {} deleted", id);
+                print_success(&format!("Database {} deleted", id));
             }
         }
         DatabaseCommands::Plans {
@@ -130,7 +130,7 @@ pub async fn handle_database(
         }
         DatabaseCommands::Promote { id } => {
             client.promote_read_replica(&id).await?;
-            println!("Read replica {} promoted to standalone", id);
+            print_success(&format!("Read replica {} promoted to standalone", id));
         }
         DatabaseCommands::Maintenance { id } => {
             let maintenance = client.get_database_maintenance(&id).await?;
@@ -182,6 +182,20 @@ pub async fn handle_database(
         DatabaseCommands::AdvancedOptions { id } => {
             let options = client.get_database_advanced_options(&id).await?;
             print_json(&options);
+        }
+        DatabaseCommands::SetAdvancedOptions {
+            database_id,
+            options,
+        } => {
+            let parsed: serde_json::Value = serde_json::from_str(&options)
+                .map_err(|e| crate::error::VultrError::InvalidInput(format!("Invalid JSON: {}", e)))?;
+            let result = client
+                .update_database_advanced_options(&database_id, parsed)
+                .await?;
+            print_json(&result);
+        }
+        DatabaseCommands::Quota(quota_args) => {
+            handle_database_quota(quota_args, client, output, skip_confirm).await?;
         }
     }
     Ok(())
@@ -240,8 +254,27 @@ async fn handle_database_user(
         } => {
             if skip_confirm || confirm_delete("database user", &username)? {
                 client.delete_database_user(&database_id, &username).await?;
-                println!("User {} deleted", username);
+                print_success(&format!("User {} deleted", username));
             }
+        }
+        DatabaseUserCommands::AccessControl {
+            database_id,
+            username,
+            acl_categories,
+            acl_channels,
+            acl_commands,
+            acl_keys,
+        } => {
+            let request = UpdateUserAccessControlRequest {
+                acl_categories: acl_categories.map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
+                acl_channels: acl_channels.map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
+                acl_commands: acl_commands.map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
+                acl_keys: acl_keys.map(|s| s.split(',').map(|x| x.trim().to_string()).collect()),
+            };
+            let user = client
+                .update_user_access_control(&database_id, &username, request)
+                .await?;
+            print_output(&user, output);
         }
     }
     Ok(())
@@ -272,7 +305,7 @@ async fn handle_database_db(
         DatabaseDbCommands::Delete { database_id, name } => {
             if skip_confirm || confirm_delete("logical database", &name)? {
                 client.delete_logical_database(&database_id, &name).await?;
-                println!("Logical database {} deleted", name);
+                print_success(&format!("Logical database {} deleted", name));
             }
         }
     }
@@ -334,7 +367,7 @@ async fn handle_database_pool(
         DatabasePoolCommands::Delete { database_id, name } => {
             if skip_confirm || confirm_delete("connection pool", &name)? {
                 client.delete_connection_pool(&database_id, &name).await?;
-                println!("Connection pool {} deleted", name);
+                print_success(&format!("Connection pool {} deleted", name));
             }
         }
     }
@@ -394,7 +427,7 @@ async fn handle_database_topic(
         DatabaseTopicCommands::Delete { database_id, name } => {
             if skip_confirm || confirm_delete("Kafka topic", &name)? {
                 client.delete_kafka_topic(&database_id, &name).await?;
-                println!("Kafka topic {} deleted", name);
+                print_success(&format!("Kafka topic {} deleted", name));
             }
         }
     }
@@ -438,7 +471,7 @@ async fn handle_database_connector(
         DatabaseConnectorCommands::Delete { database_id, name } => {
             if skip_confirm || confirm_delete("Kafka connector", &name)? {
                 client.delete_kafka_connector(&database_id, &name).await?;
-                println!("Kafka connector {} deleted", name);
+                print_success(&format!("Kafka connector {} deleted", name));
             }
         }
         DatabaseConnectorCommands::Status { database_id, name } => {
@@ -447,15 +480,15 @@ async fn handle_database_connector(
         }
         DatabaseConnectorCommands::Pause { database_id, name } => {
             client.pause_kafka_connector(&database_id, &name).await?;
-            println!("Connector {} paused", name);
+            print_success(&format!("Connector {} paused", name));
         }
         DatabaseConnectorCommands::Resume { database_id, name } => {
             client.resume_kafka_connector(&database_id, &name).await?;
-            println!("Connector {} resumed", name);
+            print_success(&format!("Connector {} resumed", name));
         }
         DatabaseConnectorCommands::Restart { database_id, name } => {
             client.restart_kafka_connector(&database_id, &name).await?;
-            println!("Connector {} restarted", name);
+            print_success(&format!("Connector {} restarted", name));
         }
         DatabaseConnectorCommands::RestartTask {
             database_id,
@@ -465,7 +498,7 @@ async fn handle_database_connector(
             client
                 .restart_connector_task(&database_id, &connector_name, &task_id)
                 .await?;
-            println!("Connector task {} restarted", task_id);
+            print_success(&format!("Connector task {} restarted", task_id));
         }
     }
     Ok(())
@@ -507,7 +540,53 @@ async fn handle_database_migration(
         }
         DatabaseMigrationCommands::Detach { database_id } => {
             client.detach_database_migration(&database_id).await?;
-            println!("Migration detached");
+            print_success("Migration detached");
+        }
+    }
+    Ok(())
+}
+
+async fn handle_database_quota(
+    args: DatabaseQuotaArgs,
+    client: &VultrClient,
+    output: OutputFormat,
+    skip_confirm: bool,
+) -> VultrResult<()> {
+    match args.command {
+        DatabaseQuotaCommands::List { database_id } => {
+            let quotas = client.list_database_quotas(&database_id).await?;
+            print_output(&quotas, output);
+        }
+        DatabaseQuotaCommands::Create {
+            database_id,
+            client_id,
+            username,
+            consumer_byte_rate,
+            producer_byte_rate,
+            request_percentage,
+        } => {
+            let request = CreateDatabaseQuotaRequest {
+                client_id,
+                consumer_byte_rate,
+                producer_byte_rate,
+                request_percentage,
+            };
+            client
+                .create_database_quota(&database_id, &username, request)
+                .await?;
+            print_success(&format!("Quota created for user {}", username));
+        }
+        DatabaseQuotaCommands::Delete {
+            database_id,
+            client_id,
+            username,
+        } => {
+            if skip_confirm || confirm_delete("database quota", &format!("{}/{}", client_id, username))? {
+                client
+                    .delete_database_quota(&database_id, &client_id, &username)
+                    .await?;
+                print_success(&format!("Quota deleted for {}/{}", client_id, username));
+            }
         }
     }
     Ok(())

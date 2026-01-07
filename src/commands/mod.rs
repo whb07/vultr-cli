@@ -61,9 +61,23 @@ pub enum Commands {
     /// Manage snapshots
     Snapshot(SnapshotArgs),
 
+    /// Manage backups
+    Backup(BackupArgs),
+
+    /// Manage bare metal servers
+    #[command(alias = "bm")]
+    BareMetal(BareMetalArgs),
+
+    /// Manage ISOs
+    Iso(IsoArgs),
+
     /// Manage block storage
     #[command(alias = "block", alias = "storage")]
     BlockStorage(BlockStorageArgs),
+
+    /// Manage object storage (S3-compatible)
+    #[command(alias = "obj", alias = "s3")]
+    ObjectStorage(ObjectStorageArgs),
 
     /// Manage firewall groups and rules
     #[command(alias = "fw")]
@@ -72,13 +86,35 @@ pub enum Commands {
     /// Manage VPCs (Virtual Private Clouds)
     Vpc(VpcArgs),
 
+    /// Manage VPC 2.0 networks
+    Vpc2(Vpc2Args),
+
     /// Manage Kubernetes clusters (VKE)
     #[command(alias = "k8s", alias = "vke")]
     Kubernetes(KubernetesArgs),
 
+    /// Manage load balancers
+    #[command(alias = "lb")]
+    LoadBalancer(LoadBalancerArgs),
+
     /// Manage databases (MySQL, PostgreSQL, Valkey, Kafka)
     #[command(alias = "db", alias = "dbaas")]
     Database(DatabaseArgs),
+
+    /// Manage CDN (Content Delivery Network)
+    Cdn(CdnArgs),
+
+    /// Manage DNS domains and records
+    #[command(alias = "domain")]
+    Dns(DnsArgs),
+
+    /// Manage container registries
+    #[command(alias = "cr")]
+    Registry(RegistryArgs),
+
+    /// Manage reserved IPs
+    #[command(alias = "rip")]
+    ReservedIp(ReservedIpArgs),
 
     /// List available regions
     Regions,
@@ -89,8 +125,55 @@ pub enum Commands {
     /// List available operating systems
     Os,
 
+    /// List available applications (one-click and marketplace)
+    #[command(alias = "app", alias = "apps")]
+    Applications,
+
+    /// Manage account information
+    Account(AccountArgs),
+
+    /// Manage billing and invoices
+    Billing(BillingArgs),
+
+    /// Manage users and API keys
+    User(UserArgs),
+
+    /// Manage CLI configuration
+    #[command(alias = "cfg")]
+    Config(ConfigArgs),
+
     /// Generate shell completions
     Completions(CompletionsArgs),
+}
+
+// ==================
+// Config Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct ConfigArgs {
+    #[command(subcommand)]
+    pub command: ConfigCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum ConfigCommands {
+    /// Show current configuration
+    Show,
+    /// Get a specific configuration value
+    Get {
+        /// Config key (e.g., "output_format", "default_profile")
+        key: String,
+    },
+    /// Set a configuration value
+    Set {
+        /// Config key (e.g., "output_format", "default_profile")
+        key: String,
+        /// Value to set
+        value: String,
+    },
+    /// Show current profile settings
+    Profile,
 }
 
 // ==================
@@ -118,6 +201,428 @@ pub struct AuthLoginArgs {
     /// API key to store (will prompt if not provided)
     #[arg(long)]
     pub api_key: Option<String>,
+}
+
+// ==================
+// Bare Metal Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BareMetalArgs {
+    #[command(subcommand)]
+    pub command: BareMetalCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum BareMetalCommands {
+    /// List all bare metal servers
+    List(ListArgs),
+
+    /// Get bare metal server details
+    Get {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Create a new bare metal server
+    Create(BareMetalCreateArgs),
+
+    /// Update a bare metal server
+    Update(BareMetalUpdateArgs),
+
+    /// Delete a bare metal server
+    Delete {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Start a bare metal server
+    Start {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Stop/halt a bare metal server
+    #[command(alias = "halt")]
+    Stop {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Reboot a bare metal server
+    Reboot {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Reinstall a bare metal server
+    Reinstall {
+        /// Bare metal ID
+        id: String,
+        /// New hostname
+        #[arg(long)]
+        hostname: Option<String>,
+    },
+
+    /// Get bare metal bandwidth usage
+    Bandwidth {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Get available upgrades for a bare metal server
+    Upgrades {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Get bare metal user data
+    UserData {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Get VNC URL for a bare metal server
+    Vnc {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Manage bare metal IPv4 addresses
+    Ipv4(BareMetalIpv4Args),
+
+    /// Manage bare metal IPv6 addresses
+    Ipv6(BareMetalIpv6Args),
+
+    /// Manage bare metal VPC attachments
+    Vpc(BareMetalVpcArgs),
+
+    /// Manage bare metal VPC2 attachments
+    Vpc2(BareMetalVpc2Args),
+
+    /// Bulk operations on multiple bare metal servers
+    Bulk(BareMetalBulkArgs),
+}
+
+// ==================
+// Bare Metal IPv4 Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BareMetalIpv4Args {
+    #[command(subcommand)]
+    pub command: BareMetalIpv4Commands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum BareMetalIpv4Commands {
+    /// List IPv4 addresses
+    List {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Set reverse DNS for IPv4
+    Reverse {
+        /// Bare metal ID
+        id: String,
+        /// IPv4 address
+        #[arg(long)]
+        ip: String,
+        /// Reverse DNS hostname
+        #[arg(long)]
+        reverse: String,
+    },
+
+    /// Set default reverse DNS for IPv4
+    DefaultReverse {
+        /// Bare metal ID
+        id: String,
+        /// IPv4 address
+        #[arg(long)]
+        ip: String,
+    },
+}
+
+// ==================
+// Bare Metal IPv6 Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BareMetalIpv6Args {
+    #[command(subcommand)]
+    pub command: BareMetalIpv6Commands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum BareMetalIpv6Commands {
+    /// List IPv6 addresses
+    List {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Set reverse DNS for IPv6
+    Reverse {
+        /// Bare metal ID
+        id: String,
+        /// IPv6 address
+        #[arg(long)]
+        ip: String,
+        /// Reverse DNS hostname
+        #[arg(long)]
+        reverse: String,
+    },
+
+    /// Delete reverse DNS for IPv6
+    DeleteReverse {
+        /// Bare metal ID
+        id: String,
+        /// IPv6 address
+        #[arg(long)]
+        ip: String,
+    },
+}
+
+// ==================
+// Bare Metal VPC Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BareMetalVpcArgs {
+    #[command(subcommand)]
+    pub command: BareMetalVpcCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum BareMetalVpcCommands {
+    /// List attached VPCs
+    List {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Attach a VPC
+    Attach {
+        /// Bare metal ID
+        id: String,
+        /// VPC ID
+        #[arg(long)]
+        vpc_id: String,
+    },
+
+    /// Detach a VPC
+    Detach {
+        /// Bare metal ID
+        id: String,
+        /// VPC ID
+        #[arg(long)]
+        vpc_id: String,
+    },
+}
+
+// ==================
+// Bare Metal VPC2 Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BareMetalVpc2Args {
+    #[command(subcommand)]
+    pub command: BareMetalVpc2Commands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum BareMetalVpc2Commands {
+    /// List attached VPC2s
+    List {
+        /// Bare metal ID
+        id: String,
+    },
+
+    /// Attach a VPC2
+    Attach {
+        /// Bare metal ID
+        id: String,
+        /// VPC2 ID
+        #[arg(long)]
+        vpc_id: String,
+        /// IP address to assign
+        #[arg(long)]
+        ip_address: Option<String>,
+    },
+
+    /// Detach a VPC2
+    Detach {
+        /// Bare metal ID
+        id: String,
+        /// VPC2 ID
+        #[arg(long)]
+        vpc_id: String,
+    },
+}
+
+// ==================
+// Bare Metal Bulk Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BareMetalBulkArgs {
+    #[command(subcommand)]
+    pub command: BareMetalBulkCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum BareMetalBulkCommands {
+    /// Start multiple bare metal servers
+    Start {
+        /// Bare metal IDs (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        ids: Vec<String>,
+    },
+
+    /// Stop/halt multiple bare metal servers
+    #[command(alias = "halt")]
+    Stop {
+        /// Bare metal IDs (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        ids: Vec<String>,
+    },
+
+    /// Reboot multiple bare metal servers
+    Reboot {
+        /// Bare metal IDs (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        ids: Vec<String>,
+    },
+}
+
+// ==================
+// Bare Metal Create Arguments
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BareMetalCreateArgs {
+    /// Region ID (e.g., "ewr", "lax")
+    #[arg(long)]
+    pub region: String,
+
+    /// Plan ID (e.g., "vbm-4c-32gb")
+    #[arg(long)]
+    pub plan: String,
+
+    /// Operating system ID
+    #[arg(long)]
+    pub os_id: Option<i32>,
+
+    /// Snapshot ID to deploy from
+    #[arg(long)]
+    pub snapshot_id: Option<String>,
+
+    /// Application ID
+    #[arg(long)]
+    pub app_id: Option<i32>,
+
+    /// Application image ID
+    #[arg(long)]
+    pub image_id: Option<String>,
+
+    /// SSH key IDs (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub sshkey_id: Option<Vec<String>>,
+
+    /// Startup script ID
+    #[arg(long)]
+    pub script_id: Option<String>,
+
+    /// Instance label
+    #[arg(long)]
+    pub label: Option<String>,
+
+    /// Enable IPv6
+    #[arg(long)]
+    pub enable_ipv6: bool,
+
+    /// VPC IDs to attach (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub attach_vpc: Option<Vec<String>>,
+
+    /// VPC2 IDs to attach (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub attach_vpc2: Option<Vec<String>>,
+
+    /// Tags (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub tags: Option<Vec<String>>,
+
+    /// User data (cloud-init, base64 encoded)
+    #[arg(long)]
+    pub user_data: Option<String>,
+
+    /// Reserved IPv4 address
+    #[arg(long)]
+    pub reserved_ipv4: Option<String>,
+
+    /// Enable persistent PXE
+    #[arg(long)]
+    pub persistent_pxe: bool,
+
+    /// Send activation email
+    #[arg(long)]
+    pub activation_email: bool,
+
+    /// Hostname
+    #[arg(long)]
+    pub hostname: Option<String>,
+
+    /// Mdisk mode
+    #[arg(long)]
+    pub mdisk_mode: Option<String>,
+
+    /// User scheme (root or limited)
+    #[arg(long)]
+    pub user_scheme: Option<String>,
+}
+
+// ==================
+// Bare Metal Update Arguments
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BareMetalUpdateArgs {
+    /// Bare metal ID
+    pub id: String,
+
+    /// Instance label
+    #[arg(long)]
+    pub label: Option<String>,
+
+    /// Enable IPv6
+    #[arg(long)]
+    pub enable_ipv6: Option<bool>,
+
+    /// User data (cloud-init, base64 encoded)
+    #[arg(long)]
+    pub user_data: Option<String>,
+
+    /// Tags (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub tags: Option<Vec<String>>,
+
+    /// VPC IDs to attach (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub attach_vpc: Option<Vec<String>>,
+
+    /// VPC IDs to detach (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub detach_vpc: Option<Vec<String>>,
+
+    /// VPC2 IDs to attach (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub attach_vpc2: Option<Vec<String>>,
+
+    /// VPC2 IDs to detach (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub detach_vpc2: Option<Vec<String>>,
 }
 
 // ==================
@@ -558,9 +1063,17 @@ pub struct InstanceCreateArgs {
     #[arg(long)]
     pub snapshot_id: Option<String>,
 
+    /// ISO ID to deploy from
+    #[arg(long)]
+    pub iso_id: Option<String>,
+
     /// Application ID
     #[arg(long)]
     pub app_id: Option<i32>,
+
+    /// Application image ID
+    #[arg(long)]
+    pub image_id: Option<String>,
 
     /// Instance label
     #[arg(long)]
@@ -582,6 +1095,10 @@ pub struct InstanceCreateArgs {
     #[arg(long)]
     pub enable_ipv6: bool,
 
+    /// Disable public IPv4
+    #[arg(long)]
+    pub disable_public_ipv4: bool,
+
     /// Enable automatic backups
     #[arg(long)]
     pub backups: bool,
@@ -589,6 +1106,10 @@ pub struct InstanceCreateArgs {
     /// Enable DDoS protection
     #[arg(long)]
     pub ddos_protection: bool,
+
+    /// Send activation email
+    #[arg(long)]
+    pub activation_email: bool,
 
     /// VPC IDs to attach (comma-separated)
     #[arg(long, value_delimiter = ',')]
@@ -598,6 +1119,10 @@ pub struct InstanceCreateArgs {
     #[arg(long)]
     pub firewall_group_id: Option<String>,
 
+    /// Reserved IPv4 ID
+    #[arg(long)]
+    pub reserved_ipv4: Option<String>,
+
     /// Tags (comma-separated)
     #[arg(long, value_delimiter = ',')]
     pub tags: Option<Vec<String>>,
@@ -605,6 +1130,10 @@ pub struct InstanceCreateArgs {
     /// User data (base64 encoded)
     #[arg(long)]
     pub user_data: Option<String>,
+
+    /// User scheme (root or limited)
+    #[arg(long)]
+    pub user_scheme: Option<String>,
 }
 
 #[derive(Parser, Debug, Clone)]
@@ -801,6 +1330,66 @@ pub enum SnapshotCommands {
 }
 
 // ==================
+// Backup Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BackupArgs {
+    #[command(subcommand)]
+    pub command: BackupCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum BackupCommands {
+    /// List all backups
+    List(ListArgs),
+
+    /// Get backup details
+    Get {
+        /// Backup ID
+        id: String,
+    },
+}
+
+// ==================
+// ISO Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct IsoArgs {
+    #[command(subcommand)]
+    pub command: IsoCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum IsoCommands {
+    /// List all ISOs
+    List(ListArgs),
+
+    /// Get ISO details
+    Get {
+        /// ISO ID
+        id: String,
+    },
+
+    /// Create an ISO from URL
+    Create {
+        /// URL of the ISO to download
+        #[arg(long)]
+        url: String,
+    },
+
+    /// Delete an ISO
+    Delete {
+        /// ISO ID
+        id: String,
+    },
+
+    /// List public ISOs
+    Public,
+}
+
+// ==================
 // Block Storage Commands
 // ==================
 
@@ -874,6 +1463,72 @@ pub enum BlockStorageCommands {
         /// Live detach (without reboot)
         #[arg(long)]
         live: bool,
+    },
+}
+
+// ==================
+// Object Storage Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct ObjectStorageArgs {
+    #[command(subcommand)]
+    pub command: ObjectStorageCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum ObjectStorageCommands {
+    /// List all object storages
+    List(ListArgs),
+
+    /// Get object storage details
+    Get {
+        /// Object storage ID
+        id: String,
+    },
+
+    /// Create a new object storage
+    Create {
+        /// Cluster ID
+        #[arg(long)]
+        cluster_id: i32,
+        /// Tier ID
+        #[arg(long)]
+        tier_id: i32,
+        /// Label
+        #[arg(long)]
+        label: Option<String>,
+    },
+
+    /// Update object storage
+    Update {
+        /// Object storage ID
+        id: String,
+        /// New label
+        #[arg(long)]
+        label: String,
+    },
+
+    /// Delete object storage
+    Delete {
+        /// Object storage ID
+        id: String,
+    },
+
+    /// Regenerate S3 access keys
+    RegenerateKeys {
+        /// Object storage ID
+        id: String,
+    },
+
+    /// List available object storage clusters
+    Clusters(ListArgs),
+
+    /// List available object storage tiers
+    Tiers {
+        /// Filter by cluster ID (optional)
+        #[arg(long)]
+        cluster_id: Option<i32>,
     },
 }
 
@@ -1052,6 +1707,85 @@ pub enum VpcCommands {
     Delete {
         /// VPC ID
         id: String,
+    },
+}
+
+// ==================
+// VPC 2.0 Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct Vpc2Args {
+    #[command(subcommand)]
+    pub command: Vpc2Commands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum Vpc2Commands {
+    /// List all VPC 2.0 networks
+    List(ListArgs),
+
+    /// Get VPC 2.0 details
+    Get {
+        /// VPC 2.0 ID
+        id: String,
+    },
+
+    /// Create a new VPC 2.0 network
+    Create {
+        /// Region ID
+        #[arg(long)]
+        region: String,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// IP block (e.g., "10.99.0.0")
+        #[arg(long)]
+        ip_block: Option<String>,
+        /// Prefix length (CIDR bits, e.g., 24)
+        #[arg(long)]
+        prefix_length: Option<i32>,
+    },
+
+    /// Update a VPC 2.0 network
+    Update {
+        /// VPC 2.0 ID
+        id: String,
+        /// New description
+        #[arg(long)]
+        description: String,
+    },
+
+    /// Delete a VPC 2.0 network
+    Delete {
+        /// VPC 2.0 ID
+        id: String,
+    },
+
+    /// List nodes attached to a VPC 2.0 network
+    Nodes {
+        /// VPC 2.0 ID
+        id: String,
+        #[command(flatten)]
+        list: ListArgs,
+    },
+
+    /// Attach nodes to a VPC 2.0 network
+    Attach {
+        /// VPC 2.0 ID
+        id: String,
+        /// Node IDs to attach (comma-separated instance IDs)
+        #[arg(long, value_delimiter = ',')]
+        nodes: Vec<String>,
+    },
+
+    /// Detach nodes from a VPC 2.0 network
+    Detach {
+        /// VPC 2.0 ID
+        id: String,
+        /// Node IDs to detach (comma-separated instance IDs)
+        #[arg(long, value_delimiter = ',')]
+        nodes: Vec<String>,
     },
 }
 
@@ -1271,6 +2005,54 @@ pub enum KubernetesNodePoolCommands {
         /// Node pool ID
         id: String,
     },
+
+    /// List labels for a node pool
+    ListLabels {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        #[arg(long)]
+        nodepool_id: String,
+    },
+
+    /// Add a label to a node pool
+    AddLabel {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        #[arg(long)]
+        nodepool_id: String,
+        /// Label key
+        #[arg(long)]
+        key: String,
+        /// Label value
+        #[arg(long)]
+        value: String,
+    },
+
+    /// Delete a label from a node pool
+    DeleteLabel {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        #[arg(long)]
+        nodepool_id: String,
+        /// Label ID
+        label_id: String,
+    },
+
+    /// List taints for a node pool
+    ListTaints {
+        /// Cluster ID (VKE ID)
+        #[arg(long)]
+        cluster_id: String,
+        /// Node pool ID
+        #[arg(long)]
+        nodepool_id: String,
+    },
 }
 
 // Node subcommands
@@ -1327,6 +2109,424 @@ pub enum KubernetesNodeCommands {
         nodepool_id: String,
         /// Node ID
         id: String,
+    },
+}
+
+// ==================
+// Load Balancer Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct LoadBalancerArgs {
+    #[command(subcommand)]
+    pub command: LoadBalancerCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum LoadBalancerCommands {
+    /// List all load balancers
+    List(ListArgs),
+
+    /// Get load balancer details
+    Get {
+        /// Load Balancer ID
+        id: String,
+    },
+
+    /// Create a new load balancer
+    Create(LoadBalancerCreateArgs),
+
+    /// Update a load balancer
+    Update(LoadBalancerUpdateArgs),
+
+    /// Delete a load balancer
+    Delete {
+        /// Load Balancer ID
+        id: String,
+    },
+
+    /// Manage SSL certificates
+    Ssl(LoadBalancerSslArgs),
+
+    /// Manage forwarding rules
+    #[command(alias = "rule", alias = "rules")]
+    ForwardingRule(LoadBalancerForwardingRuleArgs),
+
+    /// Manage firewall rules
+    #[command(alias = "fw")]
+    FirewallRule(LoadBalancerFirewallRuleArgs),
+
+    /// Manage reverse DNS
+    #[command(alias = "rdns")]
+    ReverseDns(LoadBalancerReverseDnsArgs),
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct LoadBalancerCreateArgs {
+    /// Region ID
+    #[arg(long)]
+    pub region: String,
+
+    /// Label for the load balancer
+    #[arg(long)]
+    pub label: Option<String>,
+
+    /// Balancing algorithm (roundrobin, leastconn)
+    #[arg(long)]
+    pub balancing_algorithm: Option<String>,
+
+    /// Enable SSL redirect
+    #[arg(long)]
+    pub ssl_redirect: bool,
+
+    /// Enable HTTP2
+    #[arg(long)]
+    pub http2: bool,
+
+    /// Enable HTTP3/QUIC
+    #[arg(long)]
+    pub http3: bool,
+
+    /// Number of nodes (1-99, must be odd)
+    #[arg(long)]
+    pub nodes: Option<i32>,
+
+    /// Enable proxy protocol
+    #[arg(long)]
+    pub proxy_protocol: bool,
+
+    /// Connection timeout in seconds
+    #[arg(long)]
+    pub timeout: Option<i32>,
+
+    /// VPC ID
+    #[arg(long)]
+    pub vpc: Option<String>,
+
+    /// Health check protocol (http, https, tcp)
+    #[arg(long)]
+    pub health_check_protocol: Option<String>,
+
+    /// Health check port
+    #[arg(long)]
+    pub health_check_port: Option<i32>,
+
+    /// Health check path
+    #[arg(long)]
+    pub health_check_path: Option<String>,
+
+    /// Health check interval (seconds)
+    #[arg(long)]
+    pub health_check_interval: Option<i32>,
+
+    /// Health check response timeout (seconds)
+    #[arg(long)]
+    pub health_check_timeout: Option<i32>,
+
+    /// Health check unhealthy threshold
+    #[arg(long)]
+    pub health_check_unhealthy_threshold: Option<i32>,
+
+    /// Health check healthy threshold
+    #[arg(long)]
+    pub health_check_healthy_threshold: Option<i32>,
+
+    /// Sticky session cookie name
+    #[arg(long)]
+    pub sticky_session_cookie: Option<String>,
+
+    /// Instance IDs to attach (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub instances: Option<Vec<String>>,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct LoadBalancerUpdateArgs {
+    /// Load Balancer ID
+    #[arg(long)]
+    pub id: String,
+
+    /// Label for the load balancer
+    #[arg(long)]
+    pub label: Option<String>,
+
+    /// Balancing algorithm (roundrobin, leastconn)
+    #[arg(long)]
+    pub balancing_algorithm: Option<String>,
+
+    /// Enable SSL redirect
+    #[arg(long)]
+    pub ssl_redirect: Option<bool>,
+
+    /// Enable HTTP2
+    #[arg(long)]
+    pub http2: Option<bool>,
+
+    /// Enable HTTP3/QUIC
+    #[arg(long)]
+    pub http3: Option<bool>,
+
+    /// Number of nodes (1-99, must be odd)
+    #[arg(long)]
+    pub nodes: Option<i32>,
+
+    /// Enable proxy protocol
+    #[arg(long)]
+    pub proxy_protocol: Option<bool>,
+
+    /// Connection timeout in seconds
+    #[arg(long)]
+    pub timeout: Option<i32>,
+
+    /// VPC ID
+    #[arg(long)]
+    pub vpc: Option<String>,
+
+    /// Health check protocol (http, https, tcp)
+    #[arg(long)]
+    pub health_check_protocol: Option<String>,
+
+    /// Health check port
+    #[arg(long)]
+    pub health_check_port: Option<i32>,
+
+    /// Health check path
+    #[arg(long)]
+    pub health_check_path: Option<String>,
+
+    /// Health check interval (seconds)
+    #[arg(long)]
+    pub health_check_interval: Option<i32>,
+
+    /// Health check response timeout (seconds)
+    #[arg(long)]
+    pub health_check_timeout: Option<i32>,
+
+    /// Health check unhealthy threshold
+    #[arg(long)]
+    pub health_check_unhealthy_threshold: Option<i32>,
+
+    /// Health check healthy threshold
+    #[arg(long)]
+    pub health_check_healthy_threshold: Option<i32>,
+
+    /// Sticky session cookie name
+    #[arg(long)]
+    pub sticky_session_cookie: Option<String>,
+
+    /// Instance IDs to attach (comma-separated, replaces existing)
+    #[arg(long, value_delimiter = ',')]
+    pub instances: Option<Vec<String>>,
+}
+
+// ==================
+// Load Balancer SSL Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct LoadBalancerSslArgs {
+    #[command(subcommand)]
+    pub command: LoadBalancerSslCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum LoadBalancerSslCommands {
+    /// Add SSL certificate
+    Add {
+        /// Load Balancer ID
+        #[arg(long)]
+        lb_id: String,
+
+        /// Private key (file path or base64)
+        #[arg(long)]
+        private_key: Option<String>,
+
+        /// SSL certificate (file path or base64)
+        #[arg(long)]
+        certificate: Option<String>,
+
+        /// Certificate chain (file path or base64)
+        #[arg(long)]
+        chain: Option<String>,
+
+        /// Private key (base64 encoded)
+        #[arg(long)]
+        private_key_b64: Option<String>,
+
+        /// SSL certificate (base64 encoded)
+        #[arg(long)]
+        certificate_b64: Option<String>,
+
+        /// Certificate chain (base64 encoded)
+        #[arg(long)]
+        chain_b64: Option<String>,
+    },
+
+    /// Delete SSL certificate
+    Delete {
+        /// Load Balancer ID
+        lb_id: String,
+    },
+
+    /// Disable auto SSL
+    DisableAutoSsl {
+        /// Load Balancer ID
+        lb_id: String,
+    },
+}
+
+// ==================
+// Load Balancer Forwarding Rule Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct LoadBalancerForwardingRuleArgs {
+    #[command(subcommand)]
+    pub command: LoadBalancerForwardingRuleCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum LoadBalancerForwardingRuleCommands {
+    /// List forwarding rules
+    List {
+        /// Load Balancer ID
+        lb_id: String,
+    },
+
+    /// Get forwarding rule details
+    Get {
+        /// Load Balancer ID
+        #[arg(long)]
+        lb_id: String,
+        /// Forwarding Rule ID
+        #[arg(long)]
+        rule_id: String,
+    },
+
+    /// Create a forwarding rule
+    Create {
+        /// Load Balancer ID
+        #[arg(long)]
+        lb_id: String,
+        /// Frontend protocol (http, https, tcp)
+        #[arg(long)]
+        frontend_protocol: String,
+        /// Frontend port
+        #[arg(long)]
+        frontend_port: i32,
+        /// Backend protocol (http, https, tcp)
+        #[arg(long)]
+        backend_protocol: String,
+        /// Backend port
+        #[arg(long)]
+        backend_port: i32,
+    },
+
+    /// Delete a forwarding rule
+    Delete {
+        /// Load Balancer ID
+        #[arg(long)]
+        lb_id: String,
+        /// Forwarding Rule ID
+        #[arg(long)]
+        rule_id: String,
+    },
+}
+
+// ==================
+// Load Balancer Firewall Rule Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct LoadBalancerFirewallRuleArgs {
+    #[command(subcommand)]
+    pub command: LoadBalancerFirewallRuleCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum LoadBalancerFirewallRuleCommands {
+    /// List firewall rules
+    List {
+        /// Load Balancer ID
+        lb_id: String,
+    },
+
+    /// Get firewall rule details
+    Get {
+        /// Load Balancer ID
+        #[arg(long)]
+        lb_id: String,
+        /// Firewall Rule ID
+        #[arg(long)]
+        rule_id: String,
+    },
+
+    /// Create a firewall rule
+    Create {
+        /// Load Balancer ID
+        #[arg(long)]
+        lb_id: String,
+        /// Port number
+        #[arg(long)]
+        port: i32,
+        /// Source IP/CIDR or "cloudflare"
+        #[arg(long)]
+        source: String,
+        /// IP type (v4, v6)
+        #[arg(long)]
+        ip_type: String,
+    },
+
+    /// Delete a firewall rule
+    Delete {
+        /// Load Balancer ID
+        #[arg(long)]
+        lb_id: String,
+        /// Firewall Rule ID
+        #[arg(long)]
+        rule_id: String,
+    },
+}
+
+// ==================
+// Load Balancer Reverse DNS Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct LoadBalancerReverseDnsArgs {
+    #[command(subcommand)]
+    pub command: LoadBalancerReverseDnsCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum LoadBalancerReverseDnsCommands {
+    /// Get reverse DNS
+    Get {
+        /// Load Balancer ID
+        lb_id: String,
+    },
+
+    /// Update IPv4 reverse DNS
+    UpdateIpv4 {
+        /// Load Balancer ID
+        #[arg(long)]
+        lb_id: String,
+        /// Domain for reverse DNS
+        #[arg(long)]
+        domain: String,
+    },
+
+    /// Create IPv6 reverse DNS entry
+    CreateIpv6 {
+        /// Load Balancer ID
+        #[arg(long)]
+        lb_id: String,
+        /// IPv6 address
+        #[arg(long)]
+        ip: String,
+        /// Domain for reverse DNS
+        #[arg(long)]
+        domain: String,
     },
 }
 
@@ -1477,6 +2677,19 @@ pub enum DatabaseCommands {
         /// Database ID
         id: String,
     },
+
+    /// Set advanced options (JSON format)
+    SetAdvancedOptions {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// JSON string with advanced options
+        #[arg(long)]
+        options: String,
+    },
+
+    /// Kafka quota management
+    Quota(DatabaseQuotaArgs),
 }
 
 #[derive(Parser, Debug, Clone)]
@@ -1714,6 +2927,28 @@ pub enum DatabaseUserCommands {
         database_id: String,
         /// Username
         username: String,
+    },
+
+    /// Update user access control (Valkey ACLs)
+    AccessControl {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Username
+        #[arg(long)]
+        username: String,
+        /// ACL categories (comma-separated, e.g., "+@all,-@dangerous")
+        #[arg(long)]
+        acl_categories: Option<String>,
+        /// ACL channels (comma-separated)
+        #[arg(long)]
+        acl_channels: Option<String>,
+        /// ACL commands (comma-separated, e.g., "+get,+set,-del")
+        #[arg(long)]
+        acl_commands: Option<String>,
+        /// ACL keys (comma-separated patterns, e.g., "prefix:*,other:*")
+        #[arg(long)]
+        acl_keys: Option<String>,
     },
 }
 
@@ -2078,6 +3313,953 @@ pub enum DatabaseMigrationCommands {
     },
 }
 
+// Database Quota Commands (Kafka)
+
+#[derive(Parser, Debug, Clone)]
+pub struct DatabaseQuotaArgs {
+    #[command(subcommand)]
+    pub command: DatabaseQuotaCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DatabaseQuotaCommands {
+    /// List database quotas
+    List {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+    },
+
+    /// Create a database quota
+    Create {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Client ID
+        #[arg(long)]
+        client_id: String,
+        /// Username
+        #[arg(long)]
+        username: String,
+        /// Consumer byte rate (optional)
+        #[arg(long)]
+        consumer_byte_rate: Option<i64>,
+        /// Producer byte rate (optional)
+        #[arg(long)]
+        producer_byte_rate: Option<i64>,
+        /// Request percentage (optional)
+        #[arg(long)]
+        request_percentage: Option<i32>,
+    },
+
+    /// Delete a database quota
+    Delete {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Client ID
+        #[arg(long)]
+        client_id: String,
+        /// Username
+        #[arg(long)]
+        username: String,
+    },
+}
+
+// ==================
+// CDN Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct CdnArgs {
+    #[command(subcommand)]
+    pub command: CdnCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum CdnCommands {
+    /// Manage CDN Pull Zones
+    #[command(alias = "pull")]
+    PullZone(CdnPullZoneArgs),
+
+    /// Manage CDN Push Zones
+    #[command(alias = "push")]
+    PushZone(CdnPushZoneArgs),
+}
+
+// CDN Pull Zone Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct CdnPullZoneArgs {
+    #[command(subcommand)]
+    pub command: CdnPullZoneCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum CdnPullZoneCommands {
+    /// List all CDN Pull Zones
+    List(ListArgs),
+
+    /// Get CDN Pull Zone details
+    Get {
+        /// Pull Zone ID
+        id: String,
+    },
+
+    /// Create a new CDN Pull Zone
+    Create {
+        /// Label for the pull zone
+        #[arg(long)]
+        label: String,
+        /// Origin domain to pull content from
+        #[arg(long)]
+        origin_domain: String,
+        /// Origin scheme (http or https)
+        #[arg(long, default_value = "https")]
+        origin_scheme: String,
+        /// Custom vanity domain
+        #[arg(long)]
+        vanity_domain: Option<String>,
+        /// Enable CORS
+        #[arg(long)]
+        cors: bool,
+        /// Enable gzip compression
+        #[arg(long)]
+        gzip: bool,
+        /// Block AI bots
+        #[arg(long)]
+        block_ai: bool,
+        /// Block bad bots
+        #[arg(long)]
+        block_bad_bots: bool,
+        /// Regions (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        regions: Option<Vec<String>>,
+    },
+
+    /// Update a CDN Pull Zone
+    Update {
+        /// Pull Zone ID
+        id: String,
+        /// New label
+        #[arg(long)]
+        label: Option<String>,
+        /// Origin domain
+        #[arg(long)]
+        origin_domain: Option<String>,
+        /// Origin scheme (http or https)
+        #[arg(long)]
+        origin_scheme: Option<String>,
+        /// Custom vanity domain
+        #[arg(long)]
+        vanity_domain: Option<String>,
+        /// Enable CORS
+        #[arg(long)]
+        cors: Option<bool>,
+        /// Enable gzip compression
+        #[arg(long)]
+        gzip: Option<bool>,
+        /// Block AI bots
+        #[arg(long)]
+        block_ai: Option<bool>,
+        /// Block bad bots
+        #[arg(long)]
+        block_bad_bots: Option<bool>,
+        /// Regions (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        regions: Option<Vec<String>>,
+    },
+
+    /// Delete a CDN Pull Zone
+    Delete {
+        /// Pull Zone ID
+        id: String,
+    },
+
+    /// Purge cache for a CDN Pull Zone
+    Purge {
+        /// Pull Zone ID
+        id: String,
+    },
+}
+
+// CDN Push Zone Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct CdnPushZoneArgs {
+    #[command(subcommand)]
+    pub command: CdnPushZoneCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum CdnPushZoneCommands {
+    /// List all CDN Push Zones
+    List(ListArgs),
+
+    /// Get CDN Push Zone details
+    Get {
+        /// Push Zone ID
+        id: String,
+    },
+
+    /// Create a new CDN Push Zone
+    Create {
+        /// Label for the push zone
+        #[arg(long)]
+        label: String,
+        /// Custom vanity domain
+        #[arg(long)]
+        vanity_domain: Option<String>,
+        /// Enable CORS
+        #[arg(long)]
+        cors: bool,
+        /// Enable gzip compression
+        #[arg(long)]
+        gzip: bool,
+        /// Block AI bots
+        #[arg(long)]
+        block_ai: bool,
+        /// Block bad bots
+        #[arg(long)]
+        block_bad_bots: bool,
+        /// Regions (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        regions: Option<Vec<String>>,
+    },
+
+    /// Update a CDN Push Zone
+    Update {
+        /// Push Zone ID
+        id: String,
+        /// New label
+        #[arg(long)]
+        label: Option<String>,
+        /// Custom vanity domain
+        #[arg(long)]
+        vanity_domain: Option<String>,
+        /// Enable CORS
+        #[arg(long)]
+        cors: Option<bool>,
+        /// Enable gzip compression
+        #[arg(long)]
+        gzip: Option<bool>,
+        /// Block AI bots
+        #[arg(long)]
+        block_ai: Option<bool>,
+        /// Block bad bots
+        #[arg(long)]
+        block_bad_bots: Option<bool>,
+        /// Regions (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        regions: Option<Vec<String>>,
+    },
+
+    /// Delete a CDN Push Zone
+    Delete {
+        /// Push Zone ID
+        id: String,
+    },
+
+    /// Manage files in a CDN Push Zone
+    File(CdnPushZoneFileArgs),
+}
+
+// CDN Push Zone File Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct CdnPushZoneFileArgs {
+    #[command(subcommand)]
+    pub command: CdnPushZoneFileCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum CdnPushZoneFileCommands {
+    /// List files in a CDN Push Zone
+    List {
+        /// Push Zone ID
+        #[arg(long)]
+        pushzone_id: String,
+        #[command(flatten)]
+        list: ListArgs,
+    },
+
+    /// Get file details
+    Get {
+        /// Push Zone ID
+        #[arg(long)]
+        pushzone_id: String,
+        /// File name
+        file_name: String,
+    },
+
+    /// Create a file upload endpoint
+    CreateEndpoint {
+        /// Push Zone ID
+        #[arg(long)]
+        pushzone_id: String,
+        /// File name
+        #[arg(long)]
+        name: String,
+        /// File size in bytes
+        #[arg(long)]
+        size: i64,
+    },
+
+    /// Delete a file from a CDN Push Zone
+    Delete {
+        /// Push Zone ID
+        #[arg(long)]
+        pushzone_id: String,
+        /// File name
+        file_name: String,
+    },
+}
+
+// ==================
+// DNS Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct DnsArgs {
+    #[command(subcommand)]
+    pub command: DnsCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DnsCommands {
+    /// List all DNS domains
+    List(ListArgs),
+
+    /// Get DNS domain details
+    Get {
+        /// Domain name (e.g., example.com)
+        domain: String,
+    },
+
+    /// Create a new DNS domain
+    Create {
+        /// Domain name (e.g., example.com)
+        #[arg(long)]
+        domain: String,
+        /// Default IP address for the domain
+        #[arg(long)]
+        ip: Option<String>,
+        /// Enable DNSSEC (enabled/disabled)
+        #[arg(long)]
+        dns_sec: Option<String>,
+    },
+
+    /// Update a DNS domain
+    Update {
+        /// Domain name (e.g., example.com)
+        domain: String,
+        /// Enable or disable DNSSEC (enabled/disabled)
+        #[arg(long)]
+        dns_sec: String,
+    },
+
+    /// Delete a DNS domain
+    Delete {
+        /// Domain name (e.g., example.com)
+        domain: String,
+    },
+
+    /// Get SOA information for a domain
+    Soa {
+        /// Domain name (e.g., example.com)
+        domain: String,
+    },
+
+    /// Update SOA information for a domain
+    UpdateSoa {
+        /// Domain name (e.g., example.com)
+        domain: String,
+        /// Primary nameserver
+        #[arg(long)]
+        nsprimary: Option<String>,
+        /// Contact email
+        #[arg(long)]
+        email: Option<String>,
+    },
+
+    /// Get DNSSEC information for a domain
+    Dnssec {
+        /// Domain name (e.g., example.com)
+        domain: String,
+    },
+
+    /// Manage DNS records
+    Record(DnsRecordArgs),
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct DnsRecordArgs {
+    #[command(subcommand)]
+    pub command: DnsRecordCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum DnsRecordCommands {
+    /// List DNS records for a domain
+    List {
+        /// Domain name (e.g., example.com)
+        #[arg(long)]
+        domain: String,
+        #[command(flatten)]
+        list: ListArgs,
+    },
+
+    /// Get DNS record details
+    Get {
+        /// Domain name (e.g., example.com)
+        #[arg(long)]
+        domain: String,
+        /// Record ID
+        id: String,
+    },
+
+    /// Create a DNS record
+    Create {
+        /// Domain name (e.g., example.com)
+        #[arg(long)]
+        domain: String,
+        /// Record name/hostname (e.g., www, mail, @)
+        #[arg(long)]
+        name: String,
+        /// Record type (A, AAAA, CNAME, NS, MX, SRV, TXT, CAA, SSHFP)
+        #[arg(long, rename_all = "SCREAMING_SNAKE_CASE")]
+        record_type: String,
+        /// Record data (e.g., IP address, hostname)
+        #[arg(long)]
+        data: String,
+        /// Time to Live in seconds
+        #[arg(long)]
+        ttl: Option<i32>,
+        /// Priority (required for MX and SRV records)
+        #[arg(long)]
+        priority: Option<i32>,
+    },
+
+    /// Update a DNS record
+    Update {
+        /// Domain name (e.g., example.com)
+        #[arg(long)]
+        domain: String,
+        /// Record ID
+        id: String,
+        /// New record name/hostname
+        #[arg(long)]
+        name: Option<String>,
+        /// New record data
+        #[arg(long)]
+        data: Option<String>,
+        /// New TTL in seconds
+        #[arg(long)]
+        ttl: Option<i32>,
+        /// New priority
+        #[arg(long)]
+        priority: Option<i32>,
+    },
+
+    /// Delete a DNS record
+    Delete {
+        /// Domain name (e.g., example.com)
+        #[arg(long)]
+        domain: String,
+        /// Record ID
+        id: String,
+    },
+}
+
+// ==================
+// Container Registry Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct RegistryArgs {
+    #[command(subcommand)]
+    pub command: RegistryCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum RegistryCommands {
+    /// List all container registries
+    List,
+
+    /// Get registry details
+    Get {
+        /// Registry ID
+        id: String,
+    },
+
+    /// Create a new container registry
+    Create {
+        /// Registry name (globally unique)
+        #[arg(long)]
+        name: String,
+        /// Region name (e.g., sjc)
+        #[arg(long)]
+        region: String,
+        /// Plan ID (e.g., start_up, business, premium, enterprise)
+        #[arg(long)]
+        plan: String,
+        /// Make registry public
+        #[arg(long)]
+        public: bool,
+    },
+
+    /// Update a container registry
+    Update {
+        /// Registry ID
+        id: String,
+        /// New plan ID
+        #[arg(long)]
+        plan: Option<String>,
+        /// Make registry public
+        #[arg(long)]
+        public: Option<bool>,
+    },
+
+    /// Delete a container registry
+    Delete {
+        /// Registry ID
+        id: String,
+    },
+
+    /// Manage repositories
+    #[command(alias = "repo")]
+    Repository(RegistryRepositoryArgs),
+
+    /// Manage robot accounts
+    Robot(RegistryRobotArgs),
+
+    /// Manage replications
+    #[command(alias = "repl")]
+    Replication(RegistryReplicationArgs),
+
+    /// Manage retention policies
+    Retention(RegistryRetentionArgs),
+
+    /// Get Docker credentials
+    DockerCredentials {
+        /// Registry ID
+        id: String,
+        /// Credentials expiry in seconds
+        #[arg(long)]
+        expiry_seconds: Option<i64>,
+        /// Request read-write credentials
+        #[arg(long)]
+        read_write: bool,
+    },
+
+    /// Get Kubernetes Docker credentials
+    KubernetesCredentials {
+        /// Registry ID
+        id: String,
+        /// Credentials expiry in seconds
+        #[arg(long)]
+        expiry_seconds: Option<i64>,
+        /// Request read-write credentials
+        #[arg(long)]
+        read_write: bool,
+        /// Base64 encode the output
+        #[arg(long)]
+        base64_encode: bool,
+    },
+
+    /// Update root user password
+    UpdatePassword {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// New password
+        #[arg(long)]
+        password: String,
+    },
+
+    /// List available registry regions
+    Regions,
+
+    /// List available registry plans
+    Plans,
+}
+
+// Registry Repository Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct RegistryRepositoryArgs {
+    #[command(subcommand)]
+    pub command: RegistryRepositoryCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum RegistryRepositoryCommands {
+    /// List repositories in a registry
+    List {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+    },
+
+    /// Get repository details
+    Get {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Repository image name
+        image: String,
+    },
+
+    /// Delete a repository
+    Delete {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Repository image name
+        image: String,
+    },
+
+    /// Manage artifacts
+    Artifact(RegistryArtifactArgs),
+}
+
+// Registry Artifact Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct RegistryArtifactArgs {
+    #[command(subcommand)]
+    pub command: RegistryArtifactCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum RegistryArtifactCommands {
+    /// List artifacts in a repository
+    List {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Repository image name
+        #[arg(long)]
+        image: String,
+    },
+
+    /// Delete an artifact
+    Delete {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Repository image name
+        #[arg(long)]
+        image: String,
+        /// Artifact digest (sha256:...)
+        digest: String,
+    },
+}
+
+// Registry Robot Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct RegistryRobotArgs {
+    #[command(subcommand)]
+    pub command: RegistryRobotCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum RegistryRobotCommands {
+    /// List robot accounts
+    List {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+    },
+
+    /// Get robot account details
+    Get {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Robot name
+        name: String,
+    },
+
+    /// Create a robot account
+    Create {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Robot name
+        #[arg(long)]
+        name: String,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// Duration in seconds (-1 for never expires)
+        #[arg(long, default_value = "-1")]
+        duration: i64,
+        /// Disable the robot account
+        #[arg(long)]
+        disable: bool,
+    },
+
+    /// Update a robot account
+    Update {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Robot name
+        name: String,
+        /// New description
+        #[arg(long)]
+        description: Option<String>,
+        /// New duration in seconds
+        #[arg(long)]
+        duration: Option<i64>,
+        /// Disable/enable the robot account
+        #[arg(long)]
+        disable: Option<bool>,
+    },
+
+    /// Delete a robot account
+    Delete {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Robot name
+        name: String,
+    },
+}
+
+// Registry Replication Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct RegistryReplicationArgs {
+    #[command(subcommand)]
+    pub command: RegistryReplicationCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum RegistryReplicationCommands {
+    /// List replications
+    List {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+    },
+
+    /// Create a replication
+    Create {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Target region
+        #[arg(long)]
+        region: String,
+    },
+
+    /// Delete a replication
+    Delete {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Target region
+        region: String,
+    },
+}
+
+// Registry Retention Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct RegistryRetentionArgs {
+    #[command(subcommand)]
+    pub command: RegistryRetentionCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum RegistryRetentionCommands {
+    /// Manage retention schedule
+    Schedule(RegistryRetentionScheduleArgs),
+
+    /// Manage retention rules
+    Rule(RegistryRetentionRuleArgs),
+
+    /// List retention executions
+    Executions {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+    },
+}
+
+// Registry Retention Schedule Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct RegistryRetentionScheduleArgs {
+    #[command(subcommand)]
+    pub command: RegistryRetentionScheduleCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum RegistryRetentionScheduleCommands {
+    /// Get retention schedule
+    Get {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+    },
+
+    /// Update retention schedule
+    Update {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Schedule type (Hourly, Daily, Weekly, Custom)
+        #[arg(long)]
+        schedule_type: String,
+        /// Cron expression (required for Custom type)
+        #[arg(long)]
+        cron: Option<String>,
+    },
+}
+
+// Registry Retention Rule Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct RegistryRetentionRuleArgs {
+    #[command(subcommand)]
+    pub command: RegistryRetentionRuleCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum RegistryRetentionRuleCommands {
+    /// List retention rules
+    List {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+    },
+
+    /// Create a retention rule
+    Create {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Template (latestPushedK, latestPulledN, nDaysSinceLastPull, nDaysSinceLastPush, always)
+        #[arg(long)]
+        template: String,
+        /// Tag pattern to match
+        #[arg(long, default_value = "**")]
+        tag_pattern: String,
+        /// Repository pattern to match (repoMatches)
+        #[arg(long)]
+        repo_pattern: Option<String>,
+        /// Number of artifacts/days (depends on template)
+        #[arg(long)]
+        count: Option<i64>,
+    },
+
+    /// Update a retention rule
+    Update {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Rule ID
+        rule_id: i64,
+        /// New template
+        #[arg(long)]
+        template: Option<String>,
+        /// Disable/enable the rule
+        #[arg(long)]
+        disabled: Option<bool>,
+        /// Number of artifacts/days
+        #[arg(long)]
+        count: Option<i64>,
+    },
+
+    /// Delete a retention rule
+    Delete {
+        /// Registry ID
+        #[arg(long)]
+        registry_id: String,
+        /// Rule ID
+        rule_id: i64,
+    },
+}
+
+// ==================
+// Reserved IP Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct ReservedIpArgs {
+    #[command(subcommand)]
+    pub command: ReservedIpCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum ReservedIpCommands {
+    /// List all reserved IPs
+    List(ListArgs),
+
+    /// Get reserved IP details
+    Get {
+        /// Reserved IP ID
+        id: String,
+    },
+
+    /// Create a new reserved IP
+    Create {
+        /// Region ID
+        #[arg(long)]
+        region: String,
+        /// IP type (v4 or v6)
+        #[arg(long)]
+        ip_type: String,
+        /// Label for the reserved IP
+        #[arg(long)]
+        label: Option<String>,
+    },
+
+    /// Update a reserved IP
+    Update {
+        /// Reserved IP ID
+        id: String,
+        /// New label
+        #[arg(long)]
+        label: String,
+    },
+
+    /// Delete a reserved IP
+    Delete {
+        /// Reserved IP ID
+        id: String,
+    },
+
+    /// Attach a reserved IP to an instance
+    Attach {
+        /// Reserved IP ID
+        id: String,
+        /// Instance ID to attach to
+        #[arg(long)]
+        instance_id: String,
+    },
+
+    /// Detach a reserved IP from an instance
+    Detach {
+        /// Reserved IP ID
+        id: String,
+    },
+
+    /// Convert an instance IP to a reserved IP
+    Convert {
+        /// IP address to convert
+        #[arg(long)]
+        ip_address: String,
+        /// Label for the reserved IP
+        #[arg(long)]
+        label: Option<String>,
+    },
+}
+
 // ==================
 // Plans Commands
 // ==================
@@ -2119,6 +4301,247 @@ impl From<Shell> for clap_complete::Shell {
             Shell::Elvish => clap_complete::Shell::Elvish,
         }
     }
+}
+
+// ==================
+// Account Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct AccountArgs {
+    #[command(subcommand)]
+    pub command: AccountCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum AccountCommands {
+    /// Get account information
+    Info,
+
+    /// Get BGP information
+    Bgp,
+
+    /// Get account bandwidth usage
+    Bandwidth,
+}
+
+// ==================
+// Billing Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct BillingArgs {
+    #[command(subcommand)]
+    pub command: BillingCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum BillingCommands {
+    /// List billing history
+    History(ListArgs),
+
+    /// List invoices
+    Invoices(ListArgs),
+
+    /// Get invoice details
+    Invoice {
+        /// Invoice ID
+        id: i64,
+    },
+
+    /// List invoice items
+    InvoiceItems(InvoiceItemsArgs),
+
+    /// List pending charges
+    PendingCharges,
+
+    /// Get pending charges as CSV
+    PendingChargesCsv,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct InvoiceItemsArgs {
+    /// Invoice ID
+    #[arg(long)]
+    pub invoice_id: i64,
+
+    #[command(flatten)]
+    pub list_args: ListArgs,
+}
+
+// ==================
+// User Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct UserArgs {
+    #[command(subcommand)]
+    pub command: UserCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum UserCommands {
+    /// List all users
+    List(ListArgs),
+
+    /// Get user details
+    Get {
+        /// User ID
+        id: String,
+    },
+
+    /// Create a new user
+    Create {
+        /// Email address
+        #[arg(long)]
+        email: String,
+        /// User name
+        #[arg(long)]
+        name: String,
+        /// Password
+        #[arg(long)]
+        password: String,
+        /// Enable API access
+        #[arg(long)]
+        api_enabled: Option<bool>,
+        /// Access control list (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        acls: Option<Vec<String>>,
+    },
+
+    /// Update a user
+    Update {
+        /// User ID
+        id: String,
+        /// New name
+        #[arg(long)]
+        name: Option<String>,
+        /// New email
+        #[arg(long)]
+        email: Option<String>,
+        /// New password
+        #[arg(long)]
+        password: Option<String>,
+        /// Enable/disable API access
+        #[arg(long)]
+        api_enabled: Option<bool>,
+        /// Access control list (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        acls: Option<Vec<String>>,
+    },
+
+    /// Delete a user
+    Delete {
+        /// User ID
+        id: String,
+    },
+
+    /// Manage user API keys
+    ApiKeys(UserApiKeyArgs),
+
+    /// Manage user IP whitelist
+    IpWhitelist(UserIpWhitelistArgs),
+}
+
+// User API Key Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct UserApiKeyArgs {
+    #[command(subcommand)]
+    pub command: UserApiKeyCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum UserApiKeyCommands {
+    /// List API keys for a user
+    List(UserApiKeyListArgs),
+
+    /// Create an API key for a user
+    Create {
+        /// User ID
+        #[arg(long)]
+        user_id: String,
+        /// API key name
+        #[arg(long)]
+        name: String,
+    },
+
+    /// Delete an API key
+    Delete {
+        /// User ID
+        #[arg(long)]
+        user_id: String,
+        /// API key ID
+        #[arg(long)]
+        api_key_id: String,
+    },
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct UserApiKeyListArgs {
+    /// User ID
+    #[arg(long)]
+    pub user_id: String,
+
+    #[command(flatten)]
+    pub list_args: ListArgs,
+}
+
+// User IP Whitelist Commands
+
+#[derive(Parser, Debug, Clone)]
+pub struct UserIpWhitelistArgs {
+    #[command(subcommand)]
+    pub command: UserIpWhitelistCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum UserIpWhitelistCommands {
+    /// List IP whitelist entries for a user
+    List {
+        /// User ID
+        #[arg(long)]
+        user_id: String,
+    },
+
+    /// Get IP whitelist entry details
+    Get {
+        /// User ID
+        #[arg(long)]
+        user_id: String,
+        /// Subnet (IP address)
+        #[arg(long)]
+        subnet: String,
+        /// Subnet size (CIDR)
+        #[arg(long)]
+        subnet_size: i32,
+    },
+
+    /// Add an IP to the whitelist
+    Add {
+        /// User ID
+        #[arg(long)]
+        user_id: String,
+        /// Subnet (IP address)
+        #[arg(long)]
+        subnet: String,
+        /// Subnet size (CIDR)
+        #[arg(long)]
+        subnet_size: i32,
+    },
+
+    /// Delete an IP from the whitelist
+    Delete {
+        /// User ID
+        #[arg(long)]
+        user_id: String,
+        /// Subnet (IP address)
+        #[arg(long)]
+        subnet: String,
+        /// Subnet size (CIDR)
+        #[arg(long)]
+        subnet_size: i32,
+    },
 }
 
 #[cfg(test)]
@@ -2168,18 +4591,24 @@ mod tests {
             plan: "vc2-1c-1gb".to_string(),
             os_id: Some(215),
             snapshot_id: None,
+            iso_id: None,
             app_id: None,
+            image_id: None,
             label: Some("test-instance".to_string()),
             hostname: None,
             ssh_keys: Some(vec!["key1".to_string(), "key2".to_string()]),
             script_id: None,
             enable_ipv6: true,
+            disable_public_ipv4: false,
             backups: false,
             ddos_protection: false,
+            activation_email: false,
             vpc: None,
             firewall_group_id: None,
+            reserved_ipv4: None,
             tags: None,
             user_data: None,
+            user_scheme: None,
         };
         assert_eq!(args.ssh_keys.as_ref().unwrap().len(), 2);
         assert!(args.enable_ipv6);
@@ -2253,5 +4682,59 @@ mod tests {
         assert_eq!(description.unwrap(), "Production VPC");
         assert_eq!(subnet.unwrap(), "10.0.0.0");
         assert_eq!(subnet_mask.unwrap(), 16);
+    }
+
+    #[test]
+    fn test_cli_api_key_before_subcommand() {
+        let cli = Cli::try_parse_from(["vultr-cli", "--api-key", "test123", "regions"]).unwrap();
+        assert_eq!(cli.api_key, Some("test123".to_string()));
+    }
+
+    #[test]
+    fn test_cli_api_key_after_subcommand() {
+        let cli = Cli::try_parse_from(["vultr-cli", "regions", "--api-key", "test456"]).unwrap();
+        assert_eq!(cli.api_key, Some("test456".to_string()));
+    }
+
+    #[test]
+    fn test_cli_api_key_with_nested_subcommand() {
+        let cli =
+            Cli::try_parse_from(["vultr-cli", "instance", "list", "--api-key", "test789"]).unwrap();
+        assert_eq!(cli.api_key, Some("test789".to_string()));
+    }
+
+    #[test]
+    fn test_cli_api_key_between_subcommands() {
+        let cli =
+            Cli::try_parse_from(["vultr-cli", "instance", "--api-key", "testabc", "list"]).unwrap();
+        assert_eq!(cli.api_key, Some("testabc".to_string()));
+    }
+
+    #[test]
+    fn test_cli_all_global_flags() {
+        let cli = Cli::try_parse_from([
+            "vultr-cli",
+            "--api-key",
+            "mykey",
+            "--profile",
+            "prod",
+            "--output",
+            "json",
+            "--yes",
+            "--wait",
+            "--wait-timeout",
+            "300",
+            "--poll-interval",
+            "10",
+            "regions",
+        ])
+        .unwrap();
+        assert_eq!(cli.api_key, Some("mykey".to_string()));
+        assert_eq!(cli.profile, "prod");
+        assert_eq!(cli.output, Some(OutputFormat::Json));
+        assert!(cli.yes);
+        assert!(cli.wait);
+        assert_eq!(cli.wait_timeout, Some(300));
+        assert_eq!(cli.poll_interval, Some(10));
     }
 }

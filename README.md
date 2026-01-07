@@ -60,6 +60,10 @@ vultr-cli instance create \
   --ssh-keys key-id-1,key-id-2 \
   --wait
 
+# Other create options
+# - Use one of: --os-id, --iso-id, --snapshot-id, --app-id, --image-id
+# - Optional: --disable-public-ipv4, --activation-email, --reserved-ipv4, --user-scheme
+
 # Get instance details
 vultr-cli instance get <instance-id>
 
@@ -253,10 +257,10 @@ Config file location:
   "default_profile": "default",
   "profiles": {
     "default": {
-      "default_region": "ewr"
+      "output_format": "table"
     },
     "production": {
-      "default_region": "lax"
+      "output_format": "json"
     }
   },
   "settings": {

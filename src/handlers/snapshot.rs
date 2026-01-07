@@ -102,7 +102,9 @@ pub async fn handle_snapshot(
             }
             client.delete_snapshot(&id).await?;
             print_success(&format!("Snapshot {} deletion initiated", id));
-            api::verify_snapshot_deleted(client, &id, wait_opts).await?;
+            if wait {
+                api::verify_snapshot_deleted(client, &id, wait_opts).await?;
+            }
         }
     }
     Ok(())

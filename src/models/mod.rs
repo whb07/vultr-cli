@@ -1,24 +1,50 @@
 //! Data models for the Vultr API
 
+pub mod account;
+pub mod application;
+pub mod backup;
+pub mod bare_metal;
+pub mod billing;
 pub mod block_storage;
+pub mod cdn;
 pub mod common;
 pub mod database;
+pub mod dns;
 pub mod firewall;
 pub mod instance;
+pub mod iso;
 pub mod kubernetes;
+pub mod load_balancer;
+pub mod object_storage;
+pub mod registry;
+pub mod reserved_ip;
 pub mod snapshot;
 pub mod ssh_key;
 pub mod startup_script;
+pub mod user;
 pub mod vpc;
 
 // Re-export commonly used types
+pub use account::*;
+pub use application::*;
+pub use backup::*;
+pub use bare_metal::*;
+pub use billing::*;
 pub use block_storage::*;
+pub use cdn::*;
 pub use common::*;
 pub use database::*;
+pub use dns::*;
 pub use firewall::*;
 pub use instance::*;
+pub use iso::*;
 pub use kubernetes::*;
+pub use load_balancer::*;
+pub use object_storage::*;
+pub use registry::*;
+pub use reserved_ip::*;
 pub use snapshot::*;
 pub use ssh_key::*;
 pub use startup_script::*;
+pub use user::*;
 pub use vpc::*;

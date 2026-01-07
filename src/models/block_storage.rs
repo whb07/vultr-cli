@@ -76,7 +76,7 @@ pub struct BlockStorage {
     /// Mount ID (for /dev/disk/by-id)
     pub mount_id: Option<String>,
     /// Block type
-    pub block_type: Option<String>,
+    pub block_type: Option<BlockType>,
 }
 
 impl BlockStorage {
