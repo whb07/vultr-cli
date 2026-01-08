@@ -4786,6 +4786,10 @@ pub struct LogsArgs {
     /// Resource ID filter
     #[arg(long)]
     pub resource_id: Option<String>,
+
+    /// Continue time for pagination (RFC3339, from previous response)
+    #[arg(long)]
+    pub continue_time: Option<String>,
 }
 
 // ==================

@@ -1615,6 +1615,7 @@ impl VultrClient {
         log_level: Option<&str>,
         resource_type: Option<&str>,
         resource_id: Option<&str>,
+        continue_time: Option<&str>,
     ) -> VultrResult<LogsResponse> {
         let mut serializer = url::form_urlencoded::Serializer::new(String::new());
         if let Some(value) = start_time {
@@ -1631,6 +1632,9 @@ impl VultrClient {
         }
         if let Some(value) = resource_id {
             serializer.append_pair("resource_id", value);
+        }
+        if let Some(value) = continue_time {
+            serializer.append_pair("continue_time", value);
         }
         let query = serializer.finish();
         let path = if query.is_empty() {

@@ -18,6 +18,7 @@ pub async fn handle_logs(
             args.log_level.as_deref(),
             args.resource_type.as_deref(),
             args.resource_id.as_deref(),
+            args.continue_time.as_deref(),
         )
         .await?;
     print_output(&logs, output);

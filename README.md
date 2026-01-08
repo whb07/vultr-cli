@@ -197,6 +197,8 @@ vultr-cli vpc attachments <vpc-id>
 ```bash
 # List private networks
 vultr-cli private-network list
+vultr-cli pnet list
+vultr-cli privnet list
 
 # Create
 vultr-cli private-network create --region ewr --description "Legacy net" --subnet 10.10.0.0 --subnet-mask 24
@@ -230,6 +232,9 @@ vultr-cli inference usage <subscription-id>
 ```bash
 # Filter logs by time window and resource
 vultr-cli logs --start-time 2024-01-01T00:00:00Z --end-time 2024-01-01T01:00:00Z --resource-type instance
+
+# Continue from a prior response
+vultr-cli logs --continue-time 2024-01-01T01:00:00Z
 ```
 
 ### Subaccounts
