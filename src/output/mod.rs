@@ -1517,6 +1517,16 @@ struct OsRow {
     family: String,
 }
 
+#[derive(Tabled)]
+struct OsRowNoArch {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Family")]
+    family: String,
+}
+
 impl From<&Os> for OsRow {
     fn from(o: &Os) -> Self {
         Self {
@@ -1528,15 +1538,50 @@ impl From<&Os> for OsRow {
     }
 }
 
+impl From<&Os> for OsRowNoArch {
+    fn from(o: &Os) -> Self {
+        Self {
+            id: o.id.to_string(),
+            name: o.name.clone().unwrap_or_default(),
+            family: o.family.clone().unwrap_or_default(),
+        }
+    }
+}
+
 impl TableDisplay for Vec<Os> {
     fn print_table(&self) {
         if self.is_empty() {
             println!("{}", "No operating systems found.".yellow());
             return;
         }
-        let rows: Vec<OsRow> = self.iter().map(OsRow::from).collect();
-        let table = Table::new(rows).with(Style::rounded()).to_string();
-        println!("{}", table);
+        let mut uniform_arch: Option<String> = None;
+        let mut all_same = true;
+        for os in self {
+            let value = os
+                .arch
+                .as_deref()
+                .unwrap_or("")
+                .trim()
+                .to_ascii_lowercase();
+            match &uniform_arch {
+                None => uniform_arch = Some(value),
+                Some(existing) if existing == &value => {}
+                Some(_) => {
+                    all_same = false;
+                    break;
+                }
+            }
+        }
+
+        if all_same {
+            let rows: Vec<OsRowNoArch> = self.iter().map(OsRowNoArch::from).collect();
+            let table = Table::new(rows).with(Style::rounded()).to_string();
+            println!("{}", table);
+        } else {
+            let rows: Vec<OsRow> = self.iter().map(OsRow::from).collect();
+            let table = Table::new(rows).with(Style::rounded()).to_string();
+            println!("{}", table);
+        }
     }
 }
 
