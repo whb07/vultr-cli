@@ -22,6 +22,23 @@ pub struct Application {
     pub image_id: String,
 }
 
+/// Marketplace app variable information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppVariable {
+    /// Variable name
+    pub name: Option<String>,
+    /// Variable description
+    pub description: Option<String>,
+    /// Required flag
+    pub required: Option<bool>,
+}
+
+/// Response wrapper for app variables
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppVariablesResponse {
+    pub variables: Vec<AppVariable>,
+}
+
 /// Response wrapper for applications list
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApplicationsResponse {
@@ -107,5 +124,28 @@ mod tests {
         assert!(json.contains("\"id\":1"));
         assert!(json.contains("\"name\":\"LEMP\""));
         assert!(json.contains("\"type\":\"one-click\""));
+    }
+
+    #[test]
+    fn test_app_variable_deserialize() {
+        let json = r#"{
+            "name": "password",
+            "description": "Admin password",
+            "required": true
+        }"#;
+        let var: AppVariable = serde_json::from_str(json).unwrap();
+        assert_eq!(var.name.as_deref(), Some("password"));
+        assert_eq!(var.required, Some(true));
+    }
+
+    #[test]
+    fn test_app_variables_response_deserialize() {
+        let json = r#"{
+            "variables": [
+                {"name": "username", "required": false}
+            ]
+        }"#;
+        let response: AppVariablesResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(response.variables.len(), 1);
     }
 }

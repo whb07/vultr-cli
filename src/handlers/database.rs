@@ -195,6 +195,54 @@ pub async fn handle_database(
                 .await?;
             print_json(&result);
         }
+        DatabaseCommands::AdvancedOptionsKafkaRest { id } => {
+            let options = client.get_kafka_rest_advanced_options(&id).await?;
+            print_json(&options);
+        }
+        DatabaseCommands::SetAdvancedOptionsKafkaRest {
+            database_id,
+            options,
+        } => {
+            let parsed: serde_json::Value = serde_json::from_str(&options).map_err(|e| {
+                crate::error::VultrError::InvalidInput(format!("Invalid JSON: {}", e))
+            })?;
+            let result = client
+                .update_kafka_rest_advanced_options(&database_id, parsed)
+                .await?;
+            print_json(&result);
+        }
+        DatabaseCommands::AdvancedOptionsSchemaRegistry { id } => {
+            let options = client.get_schema_registry_advanced_options(&id).await?;
+            print_json(&options);
+        }
+        DatabaseCommands::SetAdvancedOptionsSchemaRegistry {
+            database_id,
+            options,
+        } => {
+            let parsed: serde_json::Value = serde_json::from_str(&options).map_err(|e| {
+                crate::error::VultrError::InvalidInput(format!("Invalid JSON: {}", e))
+            })?;
+            let result = client
+                .update_schema_registry_advanced_options(&database_id, parsed)
+                .await?;
+            print_json(&result);
+        }
+        DatabaseCommands::AdvancedOptionsKafkaConnect { id } => {
+            let options = client.get_kafka_connect_advanced_options(&id).await?;
+            print_json(&options);
+        }
+        DatabaseCommands::SetAdvancedOptionsKafkaConnect {
+            database_id,
+            options,
+        } => {
+            let parsed: serde_json::Value = serde_json::from_str(&options).map_err(|e| {
+                crate::error::VultrError::InvalidInput(format!("Invalid JSON: {}", e))
+            })?;
+            let result = client
+                .update_kafka_connect_advanced_options(&database_id, parsed)
+                .await?;
+            print_json(&result);
+        }
         DatabaseCommands::Quota(quota_args) => {
             handle_database_quota(quota_args, client, output, skip_confirm).await?;
         }
@@ -277,6 +325,19 @@ async fn handle_database_user(
             };
             let user = client
                 .update_user_access_control(&database_id, &username, request)
+                .await?;
+            print_output(&user, output);
+        }
+        DatabaseUserCommands::Permissions {
+            database_id,
+            username,
+            permission,
+        } => {
+            let request = KafkaPermissions {
+                permission: Some(permission),
+            };
+            let user = client
+                .update_kafka_permissions(&database_id, &username, request)
                 .await?;
             print_output(&user, output);
         }
@@ -448,6 +509,15 @@ async fn handle_database_connector(
         DatabaseConnectorCommands::Available { database_id } => {
             let connectors = client.list_available_connectors(&database_id).await?;
             print_output(&connectors, output);
+        }
+        DatabaseConnectorCommands::ConfigSchema {
+            database_id,
+            connector_class,
+        } => {
+            let schema = client
+                .get_connector_configuration_schema(&database_id, &connector_class)
+                .await?;
+            print_output(&schema, output);
         }
         DatabaseConnectorCommands::List { database_id } => {
             let connectors = client.list_kafka_connectors(&database_id).await?;

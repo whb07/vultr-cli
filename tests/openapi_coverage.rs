@@ -124,7 +124,7 @@ fn schema_aliases() -> HashMap<&'static str, &'static [&'static str]> {
     );
     aliases.insert("nodepool-taint-req", &["NodePoolTaintRequest"][..]);
     aliases.insert("plans-metal", &["BareMetalPlan"][..]);
-    aliases.insert("private-networks", &["Vpc"][..]);
+    aliases.insert("private-networks", &["Network"][..]);
     aliases.insert("pullzone", &["CdnPullZone"][..]);
     aliases.insert("pushzone", &["CdnPushZone"][..]);
     aliases.insert("pushzonefile", &["CdnPushZoneFile"][..]);
@@ -233,18 +233,4 @@ fn openapi_schema_coverage() {
     );
 }
 
-const KNOWN_MISSING_SCHEMAS: &[&str] = &[
-    "app-variable",
-    "inference-subscription",
-    "inference-usage",
-    "kafka-advanced-options",
-    "kafka-connect-advanced-options",
-    "kafka-permissions",
-    "kafka-rest-advanced-options",
-    "log",
-    "log-meta",
-    "mysql-advanced-options",
-    "pg-advanced-options",
-    "schema-registry-advanced-options",
-    "subaccount",
-];
+const KNOWN_MISSING_SCHEMAS: &[&str] = &[];

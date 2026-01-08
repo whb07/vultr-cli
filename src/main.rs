@@ -108,11 +108,18 @@ async fn run(cli: Cli) -> VultrResult<()> {
                 Commands::ObjectStorage(args) => {
                     handle_object_storage(args, &client, output, skip_confirm).await
                 }
+                Commands::StorageGateway(args) => {
+                    handle_storage_gateway(args, &client, output, skip_confirm).await
+                }
+                Commands::Vfs(args) => handle_vfs(args, &client, output, skip_confirm).await,
                 Commands::Firewall(args) => {
                     handle_firewall(args, &client, output, skip_confirm, cli.wait, &wait_opts).await
                 }
                 Commands::Vpc(args) => handle_vpc(args, &client, output, skip_confirm).await,
                 Commands::Vpc2(args) => handle_vpc2(args, &client, output, skip_confirm).await,
+                Commands::PrivateNetwork(args) => {
+                    handle_private_network(args, &client, output, skip_confirm).await
+                }
                 Commands::Kubernetes(args) => {
                     handle_kubernetes(args, &client, output, skip_confirm).await
                 }
@@ -143,10 +150,17 @@ async fn run(cli: Cli) -> VultrResult<()> {
                     .await
                 }
                 Commands::Os => handle_os(&client, output).await,
-                Commands::Applications => handle_applications(&client, output).await,
+                Commands::Applications(args) => handle_applications(args, &client, output).await,
+                Commands::Inference(args) => {
+                    handle_inference(args, &client, output, skip_confirm).await
+                }
+                Commands::Logs(args) => handle_logs(args, &client, output).await,
                 Commands::Account(args) => handle_account(args, &client, output).await,
                 Commands::Billing(args) => handle_billing(args, &client, output).await,
                 Commands::User(args) => handle_user(args, &client, output, skip_confirm).await,
+                Commands::Subaccount(args) => {
+                    handle_subaccount(args, &client, output, skip_confirm).await
+                }
                 _ => unreachable!(),
             }
         }

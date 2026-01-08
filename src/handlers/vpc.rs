@@ -64,6 +64,29 @@ pub async fn handle_vpc(
             client.delete_vpc(&id).await?;
             print_success(&format!("VPC {} deleted", id));
         }
+
+        VpcCommands::Attachments { id, list } => {
+            if list.all {
+                let mut all = Vec::new();
+                let mut cursor: Option<String> = None;
+                loop {
+                    let (page, meta) = client
+                        .list_vpc_attachments(&id, Some(list.per_page), cursor.as_deref())
+                        .await?;
+                    all.extend(page);
+                    cursor = meta.and_then(|m| m.links.and_then(|l| l.next));
+                    if cursor.is_none() {
+                        break;
+                    }
+                }
+                print_output(&all, output);
+            } else {
+                let (attachments, _) = client
+                    .list_vpc_attachments(&id, Some(list.per_page), list.cursor.as_deref())
+                    .await?;
+                print_output(&attachments, output);
+            }
+        }
     }
     Ok(())
 }

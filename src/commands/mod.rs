@@ -79,6 +79,13 @@ pub enum Commands {
     #[command(alias = "obj", alias = "s3")]
     ObjectStorage(ObjectStorageArgs),
 
+    /// Manage storage gateways
+    #[command(alias = "sgw")]
+    StorageGateway(StorageGatewayArgs),
+
+    /// Manage Vultr File System (VFS)
+    Vfs(VfsArgs),
+
     /// Manage firewall groups and rules
     #[command(alias = "fw")]
     Firewall(FirewallArgs),
@@ -88,6 +95,10 @@ pub enum Commands {
 
     /// Manage VPC 2.0 networks
     Vpc2(Vpc2Args),
+
+    /// Manage private networks (legacy)
+    #[command(alias = "pnet", alias = "privnet")]
+    PrivateNetwork(PrivateNetworkArgs),
 
     /// Manage Kubernetes clusters (VKE)
     #[command(alias = "k8s", alias = "vke")]
@@ -127,7 +138,13 @@ pub enum Commands {
 
     /// List available applications (one-click and marketplace)
     #[command(alias = "app", alias = "apps")]
-    Applications,
+    Applications(ApplicationsArgs),
+
+    /// Manage inference subscriptions
+    Inference(InferenceArgs),
+
+    /// List account logs
+    Logs(LogsArgs),
 
     /// Manage account information
     Account(AccountArgs),
@@ -137,6 +154,9 @@ pub enum Commands {
 
     /// Manage users and API keys
     User(UserArgs),
+
+    /// Manage subaccounts
+    Subaccount(SubaccountArgs),
 
     /// Manage CLI configuration
     #[command(alias = "cfg")]
@@ -1533,6 +1553,253 @@ pub enum ObjectStorageCommands {
 }
 
 // ==================
+// Storage Gateway Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct StorageGatewayArgs {
+    #[command(subcommand)]
+    pub command: StorageGatewayCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum StorageGatewayCommands {
+    /// List storage gateways
+    List(ListArgs),
+
+    /// Get storage gateway details
+    Get {
+        /// Storage gateway ID
+        id: String,
+    },
+
+    /// Create a storage gateway
+    Create(StorageGatewayCreateArgs),
+
+    /// Update a storage gateway
+    Update {
+        /// Storage gateway ID
+        id: String,
+        /// New label
+        #[arg(long)]
+        label: String,
+    },
+
+    /// Delete a storage gateway
+    Delete {
+        /// Storage gateway ID
+        id: String,
+    },
+
+    /// Manage exports
+    Export(StorageGatewayExportArgs),
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct StorageGatewayCreateArgs {
+    /// Storage gateway label
+    #[arg(long)]
+    pub label: String,
+
+    /// Storage gateway type (e.g., nfs4)
+    #[arg(long = "type")]
+    pub gateway_type: String,
+
+    /// Region ID
+    #[arg(long)]
+    pub region: String,
+
+    /// Export label
+    #[arg(long)]
+    pub export_label: String,
+
+    /// VFS UUID
+    #[arg(long)]
+    pub export_vfs_uuid: String,
+
+    /// Export pseudo root path
+    #[arg(long)]
+    pub export_pseudo_root_path: Option<String>,
+
+    /// Export allowed IPs (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub export_allowed_ips: Option<Vec<String>>,
+
+    /// Enable public IPv4 on the primary network
+    #[arg(long)]
+    pub ipv4_public_enabled: Option<bool>,
+
+    /// Enable public IPv6 on the primary network
+    #[arg(long)]
+    pub ipv6_public_enabled: Option<bool>,
+
+    /// Attach to VPC UUID
+    #[arg(long)]
+    pub vpc_id: Option<String>,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct StorageGatewayExportArgs {
+    #[command(subcommand)]
+    pub command: StorageGatewayExportCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum StorageGatewayExportCommands {
+    /// Add an export
+    Add {
+        /// Storage gateway ID
+        #[arg(long)]
+        gateway_id: String,
+        /// Export label
+        #[arg(long)]
+        label: String,
+        /// VFS UUID
+        #[arg(long)]
+        vfs_uuid: String,
+        /// Export pseudo root path
+        #[arg(long)]
+        pseudo_root_path: Option<String>,
+        /// Export allowed IPs (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        allowed_ips: Option<Vec<String>>,
+    },
+
+    /// Delete an export
+    Delete {
+        /// Storage gateway ID
+        #[arg(long)]
+        gateway_id: String,
+        /// Export ID
+        #[arg(long)]
+        export_id: String,
+    },
+}
+
+// ==================
+// VFS Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct VfsArgs {
+    #[command(subcommand)]
+    pub command: VfsCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum VfsCommands {
+    /// List VFS subscriptions
+    List,
+
+    /// List available VFS regions
+    Regions,
+
+    /// Get VFS details
+    Get {
+        /// VFS ID
+        id: String,
+    },
+
+    /// Create a VFS subscription
+    Create(VfsCreateArgs),
+
+    /// Update a VFS subscription
+    Update(VfsUpdateArgs),
+
+    /// Delete a VFS subscription
+    Delete {
+        /// VFS ID
+        id: String,
+    },
+
+    /// Manage VFS attachments
+    Attachment(VfsAttachmentArgs),
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct VfsCreateArgs {
+    /// Region ID
+    #[arg(long)]
+    pub region: String,
+
+    /// VFS label
+    #[arg(long)]
+    pub label: String,
+
+    /// Storage size in GB
+    #[arg(long)]
+    pub size_gb: i32,
+
+    /// Disk type (e.g., nvme, hdd)
+    #[arg(long)]
+    pub disk_type: Option<String>,
+
+    /// Tags (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub tags: Option<Vec<String>>,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct VfsUpdateArgs {
+    /// VFS ID
+    pub id: String,
+
+    /// New label
+    #[arg(long)]
+    pub label: Option<String>,
+
+    /// New storage size in GB
+    #[arg(long)]
+    pub size_gb: Option<i32>,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub struct VfsAttachmentArgs {
+    #[command(subcommand)]
+    pub command: VfsAttachmentCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum VfsAttachmentCommands {
+    /// List VFS attachments
+    List {
+        /// VFS ID
+        #[arg(long)]
+        vfs_id: String,
+    },
+
+    /// Get VFS attachment
+    Get {
+        /// VFS ID
+        #[arg(long)]
+        vfs_id: String,
+        /// VPS ID
+        #[arg(long)]
+        vps_id: String,
+    },
+
+    /// Attach a VPS to VFS
+    Attach {
+        /// VFS ID
+        #[arg(long)]
+        vfs_id: String,
+        /// VPS ID
+        #[arg(long)]
+        vps_id: String,
+    },
+
+    /// Detach a VPS from VFS
+    Detach {
+        /// VFS ID
+        #[arg(long)]
+        vfs_id: String,
+        /// VPS ID
+        #[arg(long)]
+        vps_id: String,
+    },
+}
+
+// ==================
 // Firewall Commands
 // ==================
 
@@ -1708,6 +1975,14 @@ pub enum VpcCommands {
         /// VPC ID
         id: String,
     },
+
+    /// List VPC attachments
+    Attachments {
+        /// VPC ID
+        id: String,
+        #[command(flatten)]
+        list: ListArgs,
+    },
 }
 
 // ==================
@@ -1786,6 +2061,59 @@ pub enum Vpc2Commands {
         /// Node IDs to detach (comma-separated instance IDs)
         #[arg(long, value_delimiter = ',')]
         nodes: Vec<String>,
+    },
+}
+
+// ==================
+// Private Network Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct PrivateNetworkArgs {
+    #[command(subcommand)]
+    pub command: PrivateNetworkCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum PrivateNetworkCommands {
+    /// List all private networks
+    List(ListArgs),
+
+    /// Get private network details
+    Get {
+        /// Network ID
+        id: String,
+    },
+
+    /// Create a private network
+    Create {
+        /// Region ID
+        #[arg(long)]
+        region: String,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// IPv4 subnet (e.g., "10.0.0.0")
+        #[arg(long)]
+        subnet: Option<String>,
+        /// Subnet mask (CIDR bits, e.g., 24)
+        #[arg(long)]
+        subnet_mask: Option<i32>,
+    },
+
+    /// Update a private network
+    Update {
+        /// Network ID
+        id: String,
+        /// New description
+        #[arg(long)]
+        description: String,
+    },
+
+    /// Delete a private network
+    Delete {
+        /// Network ID
+        id: String,
     },
 }
 
@@ -2688,6 +3016,54 @@ pub enum DatabaseCommands {
         options: String,
     },
 
+    /// Get Kafka REST advanced options
+    AdvancedOptionsKafkaRest {
+        /// Database ID
+        id: String,
+    },
+
+    /// Set Kafka REST advanced options (JSON format)
+    SetAdvancedOptionsKafkaRest {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// JSON string with advanced options
+        #[arg(long)]
+        options: String,
+    },
+
+    /// Get schema registry advanced options
+    AdvancedOptionsSchemaRegistry {
+        /// Database ID
+        id: String,
+    },
+
+    /// Set schema registry advanced options (JSON format)
+    SetAdvancedOptionsSchemaRegistry {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// JSON string with advanced options
+        #[arg(long)]
+        options: String,
+    },
+
+    /// Get Kafka connect advanced options
+    AdvancedOptionsKafkaConnect {
+        /// Database ID
+        id: String,
+    },
+
+    /// Set Kafka connect advanced options (JSON format)
+    SetAdvancedOptionsKafkaConnect {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// JSON string with advanced options
+        #[arg(long)]
+        options: String,
+    },
+
     /// Kafka quota management
     Quota(DatabaseQuotaArgs),
 }
@@ -2950,6 +3326,19 @@ pub enum DatabaseUserCommands {
         #[arg(long)]
         acl_keys: Option<String>,
     },
+
+    /// Update Kafka user permissions
+    Permissions {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Username
+        #[arg(long)]
+        username: String,
+        /// Permission (admin, read, write, readwrite)
+        #[arg(long)]
+        permission: String,
+    },
 }
 
 // Logical Database Commands (MySQL/PostgreSQL)
@@ -3168,6 +3557,16 @@ pub enum DatabaseConnectorCommands {
         /// Database ID
         #[arg(long)]
         database_id: String,
+    },
+
+    /// Get connector configuration schema
+    ConfigSchema {
+        /// Database ID
+        #[arg(long)]
+        database_id: String,
+        /// Connector class
+        #[arg(long)]
+        connector_class: String,
     },
 
     /// List connectors
@@ -4290,6 +4689,106 @@ pub enum PriceMode {
 }
 
 // ==================
+// Applications Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct ApplicationsArgs {
+    #[command(subcommand)]
+    pub command: Option<ApplicationsCommands>,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum ApplicationsCommands {
+    /// List available applications
+    List,
+
+    /// List required variables for a marketplace app
+    Variables {
+        /// Marketplace image ID
+        #[arg(long, alias = "app-id")]
+        image_id: String,
+    },
+}
+
+// ==================
+// Inference Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct InferenceArgs {
+    #[command(subcommand)]
+    pub command: InferenceCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum InferenceCommands {
+    /// List inference subscriptions
+    List,
+
+    /// Get inference subscription details
+    Get {
+        /// Subscription ID
+        id: String,
+    },
+
+    /// Create an inference subscription
+    Create {
+        /// Subscription label
+        #[arg(long)]
+        label: String,
+    },
+
+    /// Update an inference subscription
+    Update {
+        /// Subscription ID
+        id: String,
+        /// New label
+        #[arg(long)]
+        label: String,
+    },
+
+    /// Delete an inference subscription
+    Delete {
+        /// Subscription ID
+        id: String,
+    },
+
+    /// Get inference usage metrics
+    Usage {
+        /// Subscription ID
+        id: String,
+    },
+}
+
+// ==================
+// Logs Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct LogsArgs {
+    /// Start time (RFC3339)
+    #[arg(long)]
+    pub start_time: Option<String>,
+
+    /// End time (RFC3339)
+    #[arg(long)]
+    pub end_time: Option<String>,
+
+    /// Log level (e.g., info, warning, error)
+    #[arg(long)]
+    pub log_level: Option<String>,
+
+    /// Resource type filter (e.g., instance, baremetal)
+    #[arg(long)]
+    pub resource_type: Option<String>,
+
+    /// Resource ID filter
+    #[arg(long)]
+    pub resource_id: Option<String>,
+}
+
+// ==================
 // Completions Commands
 // ==================
 
@@ -4559,6 +5058,35 @@ pub enum UserIpWhitelistCommands {
         /// Subnet size (CIDR)
         #[arg(long)]
         subnet_size: i32,
+    },
+}
+
+// ==================
+// Subaccount Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct SubaccountArgs {
+    #[command(subcommand)]
+    pub command: SubaccountCommands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum SubaccountCommands {
+    /// List subaccounts
+    List(ListArgs),
+
+    /// Create a subaccount
+    Create {
+        /// Email address
+        #[arg(long)]
+        email: String,
+        /// Subaccount name
+        #[arg(long)]
+        name: Option<String>,
+        /// Subaccount ID
+        #[arg(long)]
+        subaccount_id: Option<String>,
     },
 }
 

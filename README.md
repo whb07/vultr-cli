@@ -187,6 +187,109 @@ vultr-cli vpc create --region ewr --description "Production" --subnet 10.0.0.0 -
 
 # Delete
 vultr-cli vpc delete <vpc-id>
+
+# List VPC attachments
+vultr-cli vpc attachments <vpc-id>
+```
+
+### Private Networks (Legacy)
+
+```bash
+# List private networks
+vultr-cli private-network list
+
+# Create
+vultr-cli private-network create --region ewr --description "Legacy net" --subnet 10.10.0.0 --subnet-mask 24
+```
+
+### Applications (Marketplace Variables)
+
+```bash
+# List applications
+vultr-cli applications list
+
+# Show required variables for a marketplace app
+vultr-cli applications variables --image-id <image-id>
+```
+
+### Inference
+
+```bash
+# List subscriptions
+vultr-cli inference list
+
+# Create a subscription
+vultr-cli inference create --label "prod"
+
+# Usage
+vultr-cli inference usage <subscription-id>
+```
+
+### Logs
+
+```bash
+# Filter logs by time window and resource
+vultr-cli logs --start-time 2024-01-01T00:00:00Z --end-time 2024-01-01T01:00:00Z --resource-type instance
+```
+
+### Subaccounts
+
+```bash
+# List subaccounts
+vultr-cli subaccount list
+
+# Create a subaccount
+vultr-cli subaccount create --email "sub@acme.co" --name "Acme Widgets LLC"
+```
+
+### Storage Gateways
+
+```bash
+# List storage gateways
+vultr-cli storage-gateway list
+
+# Create a storage gateway
+vultr-cli storage-gateway create \
+  --label "my_storage_gateway" \
+  --type nfs4 \
+  --region ewr \
+  --export-label "my_export_1" \
+  --export-vfs-uuid <vfs-uuid> \
+  --export-pseudo-root-path "/" \
+  --export-allowed-ips 192.0.2.123 \
+  --ipv4-public-enabled true
+
+# Add an export
+vultr-cli storage-gateway export add --gateway-id <id> --label "export2" --vfs-uuid <vfs-uuid>
+```
+
+### VFS
+
+```bash
+# List VFS
+vultr-cli vfs list
+
+# Create VFS
+vultr-cli vfs create --region ewr --label "prod-vfs" --size-gb 100 --disk-type nvme
+
+# Attach a VPS to VFS
+vultr-cli vfs attachment attach --vfs-id <vfs-id> --vps-id <instance-id>
+```
+
+### Databases (Advanced Options / Kafka)
+
+```bash
+# Get advanced options
+vultr-cli database advanced-options <db-id>
+
+# Set Kafka REST advanced options
+vultr-cli database set-advanced-options-kafka-rest --database-id <db-id> --options '{"producer_acks":"1"}'
+
+# Kafka user permissions
+vultr-cli database user permissions --database-id <db-id> --username <user> --permission read
+
+# Connector configuration schema
+vultr-cli database connector config-schema --database-id <db-id> --connector-class <class>
 ```
 
 ### Reference Data

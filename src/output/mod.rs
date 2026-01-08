@@ -2609,6 +2609,25 @@ impl TableDisplay for ConnectionPool {
     }
 }
 
+impl TableDisplay for ConnectionPoolsResponse {
+    fn print_table(&self) {
+        if let Some(connections) = &self.connections {
+            println!("{}", "Connection Pool Summary:".cyan());
+            if let Some(used) = connections.used {
+                println!("  {}: {}", "Used".green(), used);
+            }
+            if let Some(available) = connections.available {
+                println!("  {}: {}", "Available".green(), available);
+            }
+            if let Some(max) = connections.max {
+                println!("  {}: {}", "Max".green(), max);
+            }
+            println!();
+        }
+        self.connection_pools.print_table();
+    }
+}
+
 /// Table row for Kafka topics
 #[derive(Tabled)]
 pub struct KafkaTopicRow {
@@ -4555,6 +4574,724 @@ impl TableDisplay for Vec<IpWhitelistEntry> {
     }
 }
 
+// =====================
+// Marketplace App Variables
+// =====================
+
+#[derive(Tabled)]
+struct AppVariableRow {
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Required")]
+    required: String,
+    #[tabled(rename = "Description")]
+    description: String,
+}
+
+impl From<&AppVariable> for AppVariableRow {
+    fn from(v: &AppVariable) -> Self {
+        Self {
+            name: v.name.clone().unwrap_or_default(),
+            required: v
+                .required
+                .map(|r| r.to_string())
+                .unwrap_or_else(|| "-".to_string()),
+            description: v.description.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<AppVariable> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No app variables found.".yellow());
+            return;
+        }
+        let rows: Vec<AppVariableRow> = self.iter().map(AppVariableRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+// =====================
+// Inference
+// =====================
+
+#[derive(Tabled)]
+struct InferenceSubscriptionRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "Created")]
+    date_created: String,
+    #[tabled(rename = "API Key")]
+    api_key: String,
+}
+
+impl From<&InferenceSubscription> for InferenceSubscriptionRow {
+    fn from(s: &InferenceSubscription) -> Self {
+        Self {
+            id: s.id.clone().unwrap_or_default(),
+            label: s.label.clone().unwrap_or_default(),
+            date_created: s.date_created.clone().unwrap_or_default(),
+            api_key: s.api_key.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for InferenceSubscription {
+    fn print_table(&self) {
+        let rows = vec![InferenceSubscriptionRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vec<InferenceSubscription> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No inference subscriptions found.".yellow());
+            return;
+        }
+        let rows: Vec<InferenceSubscriptionRow> =
+            self.iter().map(InferenceSubscriptionRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for InferenceUsage {
+    fn print_table(&self) {
+        println!("{}", "Inference Usage:".cyan());
+        if let Some(chat) = &self.chat {
+            println!("  {}:", "Chat".green());
+            if let Some(tokens) = &chat.current_tokens {
+                println!("    {}: {}", "Current Tokens".cyan(), tokens);
+            }
+            if let Some(allotment) = &chat.monthly_allotment {
+                println!("    {}: {}", "Monthly Allotment".cyan(), allotment);
+            }
+            if let Some(overage) = &chat.overage {
+                println!("    {}: {}", "Overage".cyan(), overage);
+            }
+        }
+        if let Some(audio) = &self.audio {
+            println!("  {}:", "Audio".green());
+            if let Some(chars) = &audio.tts_characters {
+                println!("    {}: {}", "TTS Characters".cyan(), chars);
+            }
+            if let Some(chars) = &audio.tts_sm_characters {
+                println!("    {}: {}", "TTS SM Characters".cyan(), chars);
+            }
+        }
+    }
+}
+
+// =====================
+// Logs
+// =====================
+
+#[derive(Tabled)]
+struct LogRow {
+    #[tabled(rename = "Timestamp")]
+    timestamp: String,
+    #[tabled(rename = "Level")]
+    level: String,
+    #[tabled(rename = "Resource Type")]
+    resource_type: String,
+    #[tabled(rename = "Resource ID")]
+    resource_id: String,
+    #[tabled(rename = "Message")]
+    message: String,
+}
+
+impl From<&Log> for LogRow {
+    fn from(l: &Log) -> Self {
+        Self {
+            timestamp: l.timestamp.clone().unwrap_or_default(),
+            level: l.log_level.clone().unwrap_or_default(),
+            resource_type: l.resource_type.clone().unwrap_or_default(),
+            resource_id: l.resource_id.clone().unwrap_or_default(),
+            message: l.message.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<Log> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No logs found.".yellow());
+            return;
+        }
+        let rows: Vec<LogRow> = self.iter().map(LogRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for LogsResponse {
+    fn print_table(&self) {
+        println!("{}", "Log Summary:".cyan());
+        println!(
+            "  {}: {} / {}",
+            "Returned".green(),
+            self.meta.returned_count,
+            self.meta.total_count
+        );
+        if self.meta.unreturned_count > 0 {
+            println!(
+                "  {}: {}",
+                "Remaining".green(),
+                self.meta.unreturned_count
+            );
+        }
+        if !self.meta.next_page_url.is_empty() {
+            println!("  {}: {}", "Next Page".green(), self.meta.next_page_url);
+        }
+        if !self.meta.continue_time.is_empty() {
+            println!(
+                "  {}: {}",
+                "Continue Time".green(),
+                self.meta.continue_time
+            );
+        }
+        println!();
+        self.logs.print_table();
+    }
+}
+
+// =====================
+// Subaccounts
+// =====================
+
+#[derive(Tabled)]
+struct SubaccountRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Email")]
+    email: String,
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Subaccount ID")]
+    subaccount_id: String,
+    #[tabled(rename = "Activated")]
+    activated: String,
+    #[tabled(rename = "Balance")]
+    balance: String,
+    #[tabled(rename = "Pending Charges")]
+    pending_charges: String,
+}
+
+impl From<&Subaccount> for SubaccountRow {
+    fn from(s: &Subaccount) -> Self {
+        Self {
+            id: s.id.clone().unwrap_or_default(),
+            email: s.email.clone().unwrap_or_default(),
+            name: s.subaccount_name.clone().unwrap_or_default(),
+            subaccount_id: s.subaccount_id.clone().unwrap_or_default(),
+            activated: s
+                .activated
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "-".to_string()),
+            balance: s
+                .balance
+                .map(|v| format!("{:.2}", v))
+                .unwrap_or_default(),
+            pending_charges: s
+                .pending_charges
+                .map(|v| format!("{:.2}", v))
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<Subaccount> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No subaccounts found.".yellow());
+            return;
+        }
+        let rows: Vec<SubaccountRow> = self.iter().map(SubaccountRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Subaccount {
+    fn print_table(&self) {
+        let rows = vec![SubaccountRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+// =====================
+// Private Networks
+// =====================
+
+#[derive(Tabled)]
+struct NetworkRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Region")]
+    region: String,
+    #[tabled(rename = "CIDR")]
+    cidr: String,
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Created")]
+    date_created: String,
+}
+
+impl From<&Network> for NetworkRow {
+    fn from(n: &Network) -> Self {
+        Self {
+            id: n.id.clone(),
+            region: n.region.clone().unwrap_or_default(),
+            cidr: n.cidr().unwrap_or_default(),
+            description: n.description.clone().unwrap_or_default(),
+            date_created: n.date_created.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<Network> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No private networks found.".yellow());
+            return;
+        }
+        let rows: Vec<NetworkRow> = self.iter().map(NetworkRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Network {
+    fn print_table(&self) {
+        let rows = vec![NetworkRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+// =====================
+// VPC Attachments
+// =====================
+
+#[derive(Tabled)]
+struct VpcAttachmentRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Type")]
+    attachment_type: String,
+    #[tabled(rename = "MAC")]
+    mac_address: String,
+    #[tabled(rename = "IPv4")]
+    ipv4: String,
+    #[tabled(rename = "Date Added")]
+    date_added: String,
+}
+
+impl From<&VpcAttachment> for VpcAttachmentRow {
+    fn from(a: &VpcAttachment) -> Self {
+        Self {
+            id: a.id.clone().unwrap_or_default(),
+            attachment_type: a.attachment_type.clone().unwrap_or_default(),
+            mac_address: a.mac_address.clone().unwrap_or_default(),
+            ipv4: a.ip.as_ref().and_then(|ip| ip.v4.clone()).unwrap_or_default(),
+            date_added: a.date_added.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<VpcAttachment> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VPC attachments found.".yellow());
+            return;
+        }
+        let rows: Vec<VpcAttachmentRow> = self.iter().map(VpcAttachmentRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+// =====================
+// Storage Gateways
+// =====================
+
+#[derive(Tabled)]
+struct StorageGatewayRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "Type")]
+    gateway_type: String,
+    #[tabled(rename = "Status")]
+    status: String,
+    #[tabled(rename = "Health")]
+    health: String,
+    #[tabled(rename = "Pending")]
+    pending_charges: String,
+}
+
+impl From<&StorageGateway> for StorageGatewayRow {
+    fn from(g: &StorageGateway) -> Self {
+        Self {
+            id: g.id.clone().unwrap_or_default(),
+            label: g.label.clone().unwrap_or_default(),
+            gateway_type: g.gateway_type.clone().unwrap_or_default(),
+            status: g.status.clone().unwrap_or_default(),
+            health: g.health.clone().unwrap_or_default(),
+            pending_charges: g
+                .pending_charges
+                .map(|v| format!("{:.2}", v))
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<StorageGateway> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No storage gateways found.".yellow());
+            return;
+        }
+        let rows: Vec<StorageGatewayRow> = self.iter().map(StorageGatewayRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for StorageGateway {
+    fn print_table(&self) {
+        let rows = vec![StorageGatewayRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+#[derive(Tabled)]
+struct StorageGatewayExportRow {
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "VFS UUID")]
+    vfs_uuid: String,
+    #[tabled(rename = "Pseudo Root")]
+    pseudo_root_path: String,
+    #[tabled(rename = "Allowed IPs")]
+    allowed_ips: String,
+}
+
+impl From<&StorageGatewayExport> for StorageGatewayExportRow {
+    fn from(e: &StorageGatewayExport) -> Self {
+        Self {
+            label: e.label.clone().unwrap_or_default(),
+            vfs_uuid: e.vfs_uuid.clone().unwrap_or_default(),
+            pseudo_root_path: e.pseudo_root_path.clone().unwrap_or_default(),
+            allowed_ips: e
+                .allowed_ips
+                .as_ref()
+                .map(|ips| ips.join(", "))
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<StorageGatewayExport> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No storage gateway exports found.".yellow());
+            return;
+        }
+        let rows: Vec<StorageGatewayExportRow> =
+            self.iter().map(StorageGatewayExportRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for StorageGatewayExport {
+    fn print_table(&self) {
+        let rows = vec![StorageGatewayExportRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+// =====================
+// VFS
+// =====================
+
+#[derive(Tabled)]
+struct VfsRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Label")]
+    label: String,
+    #[tabled(rename = "Region")]
+    region: String,
+    #[tabled(rename = "Status")]
+    status: String,
+    #[tabled(rename = "Size (GB)")]
+    size_gb: String,
+    #[tabled(rename = "Used (GB)")]
+    used_gb: String,
+    #[tabled(rename = "Disk")]
+    disk_type: String,
+}
+
+impl From<&Vfs> for VfsRow {
+    fn from(v: &Vfs) -> Self {
+        Self {
+            id: v.id.clone().unwrap_or_default(),
+            label: v.label.clone().unwrap_or_default(),
+            region: v.region.clone().unwrap_or_default(),
+            status: v.status.clone().unwrap_or_default(),
+            size_gb: v
+                .storage_size
+                .as_ref()
+                .and_then(|s| s.gb)
+                .map(|g| g.to_string())
+                .unwrap_or_default(),
+            used_gb: v
+                .storage_used
+                .as_ref()
+                .and_then(|s| s.gb)
+                .map(|g| g.to_string())
+                .unwrap_or_default(),
+            disk_type: v.disk_type.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<Vfs> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VFS subscriptions found.".yellow());
+            return;
+        }
+        let rows: Vec<VfsRow> = self.iter().map(VfsRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for Vfs {
+    fn print_table(&self) {
+        let rows = vec![VfsRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+#[derive(Tabled)]
+struct VfsRegionRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "Description")]
+    description: String,
+    #[tabled(rename = "Country")]
+    country: String,
+    #[tabled(rename = "NVMe $/GB")]
+    nvme_price: String,
+    #[tabled(rename = "HDD $/GB")]
+    hdd_price: String,
+    #[tabled(rename = "Min NVMe (GB)")]
+    min_nvme: String,
+    #[tabled(rename = "Min HDD (GB)")]
+    min_hdd: String,
+}
+
+impl From<&VfsRegion> for VfsRegionRow {
+    fn from(r: &VfsRegion) -> Self {
+        Self {
+            id: r.id.clone().unwrap_or_default(),
+            description: r.description.clone().unwrap_or_default(),
+            country: r.country.clone().unwrap_or_default(),
+            nvme_price: r
+                .price_per_gb
+                .as_ref()
+                .and_then(|p| p.nvme)
+                .map(|v| format!("{:.2}", v))
+                .unwrap_or_default(),
+            hdd_price: r
+                .price_per_gb
+                .as_ref()
+                .and_then(|p| p.hdd)
+                .map(|v| format!("{:.2}", v))
+                .unwrap_or_default(),
+            min_nvme: r
+                .min_size_gb
+                .as_ref()
+                .and_then(|m| m.nvme)
+                .map(|v| v.to_string())
+                .unwrap_or_default(),
+            min_hdd: r
+                .min_size_gb
+                .as_ref()
+                .and_then(|m| m.hdd)
+                .map(|v| v.to_string())
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<VfsRegion> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VFS regions found.".yellow());
+            return;
+        }
+        let rows: Vec<VfsRegionRow> = self.iter().map(VfsRegionRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+#[derive(Tabled)]
+struct VfsAttachmentRow {
+    #[tabled(rename = "Target ID")]
+    target_id: String,
+    #[tabled(rename = "State")]
+    state: String,
+    #[tabled(rename = "Mount Tag")]
+    mount_tag: String,
+}
+
+impl From<&VfsAttachment> for VfsAttachmentRow {
+    fn from(a: &VfsAttachment) -> Self {
+        Self {
+            target_id: a.target_id.clone().unwrap_or_default(),
+            state: a.state.clone().unwrap_or_default(),
+            mount_tag: a
+                .mount_tag
+                .map(|v| v.to_string())
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<VfsAttachment> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No VFS attachments found.".yellow());
+            return;
+        }
+        let rows: Vec<VfsAttachmentRow> =
+            self.iter().map(VfsAttachmentRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+impl TableDisplay for VfsAttachment {
+    fn print_table(&self) {
+        let rows = vec![VfsAttachmentRow::from(self)];
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+// =====================
+// Database Connector Configuration
+// =====================
+
+#[derive(Tabled)]
+struct ConnectorConfigRow {
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Type")]
+    option_type: String,
+    #[tabled(rename = "Required")]
+    required: String,
+    #[tabled(rename = "Default")]
+    default_value: String,
+    #[tabled(rename = "Description")]
+    description: String,
+}
+
+impl From<&DatabaseConnectorConfigurationSchema> for ConnectorConfigRow {
+    fn from(c: &DatabaseConnectorConfigurationSchema) -> Self {
+        Self {
+            name: c.name.clone().unwrap_or_default(),
+            option_type: c.option_type.clone().unwrap_or_default(),
+            required: c
+                .required
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "-".to_string()),
+            default_value: c.default_value.clone().unwrap_or_default(),
+            description: c.description.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<DatabaseConnectorConfigurationSchema> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No connector configuration options found.".yellow());
+            return;
+        }
+        let rows: Vec<ConnectorConfigRow> =
+            self.iter().map(ConnectorConfigRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
+// =====================
+// Database Available Options
+// =====================
+
+#[derive(Tabled)]
+struct DatabaseAvailableOptionRow {
+    #[tabled(rename = "Name")]
+    name: String,
+    #[tabled(rename = "Type")]
+    option_type: String,
+    #[tabled(rename = "Min")]
+    min: String,
+    #[tabled(rename = "Max")]
+    max: String,
+    #[tabled(rename = "Units")]
+    units: String,
+    #[tabled(rename = "Enumerals")]
+    enumerals: String,
+}
+
+impl From<&DatabaseAvailableOption> for DatabaseAvailableOptionRow {
+    fn from(o: &DatabaseAvailableOption) -> Self {
+        Self {
+            name: o.name.clone().unwrap_or_default(),
+            option_type: o.option_type.clone().unwrap_or_default(),
+            min: o.min_value.map(|v| v.to_string()).unwrap_or_default(),
+            max: o.max_value.map(|v| v.to_string()).unwrap_or_default(),
+            units: o.units.clone().unwrap_or_default(),
+            enumerals: o
+                .enumerals
+                .as_ref()
+                .map(|vals| vals.join(", "))
+                .unwrap_or_default(),
+        }
+    }
+}
+
+impl TableDisplay for Vec<DatabaseAvailableOption> {
+    fn print_table(&self) {
+        if self.is_empty() {
+            println!("{}", "No available options found.".yellow());
+            return;
+        }
+        let rows: Vec<DatabaseAvailableOptionRow> =
+            self.iter().map(DatabaseAvailableOptionRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -4768,6 +5505,7 @@ mod tests {
             v4_subnet: Some("10.0.0.0".to_string()),
             v4_subnet_mask: Some(16),
             date_created: Some("2024-01-01".to_string()),
+            internet: None,
         };
         let row = VpcRow::from(&vpc);
         assert_eq!(row.id, "vpc-123");

@@ -163,6 +163,17 @@ pub struct ConnectionPool {
     pub size: Option<i32>,
 }
 
+/// Database connection counts
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DatabaseConnections {
+    /// Used connections
+    pub used: Option<i32>,
+    /// Available connections
+    pub available: Option<i32>,
+    /// Max connections
+    pub max: Option<i32>,
+}
+
 /// Kafka topic
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KafkaTopic {
@@ -189,6 +200,13 @@ pub struct KafkaConnector {
     pub topics: Option<String>,
     /// Connector configuration
     pub config: Option<serde_json::Value>,
+}
+
+/// Kafka user permissions
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KafkaPermissions {
+    /// Permission level (admin, read, write, readwrite)
+    pub permission: Option<String>,
 }
 
 /// Connector status
@@ -231,6 +249,52 @@ pub struct AvailableConnector {
     pub version: Option<String>,
 }
 
+/// Connector configuration schema entry
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DatabaseConnectorConfigurationSchema {
+    /// Option name
+    pub name: Option<String>,
+    /// Option type
+    #[serde(rename = "type")]
+    pub option_type: Option<String>,
+    /// Required flag
+    pub required: Option<bool>,
+    /// Default value
+    pub default_value: Option<String>,
+    /// Description
+    pub description: Option<String>,
+}
+
+/// Available advanced option descriptor
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DatabaseAvailableOption {
+    /// Option name
+    pub name: Option<String>,
+    /// Option type
+    #[serde(rename = "type")]
+    pub option_type: Option<String>,
+    /// Allowed enumerals
+    pub enumerals: Option<Vec<String>>,
+    /// Minimum value
+    pub min_value: Option<f64>,
+    /// Maximum value
+    pub max_value: Option<f64>,
+    /// Alternate values
+    pub alt_values: Option<Vec<i64>>,
+    /// Units
+    pub units: Option<String>,
+}
+
+/// Alias for OpenAPI schema name `dbaas-available-options`
+pub type DbaasAvailableOptions = DatabaseAvailableOption;
+
+/// DBaaS meta wrapper (total only)
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct DbaasMeta {
+    /// Total objects available
+    pub total: Option<i32>,
+}
+
 /// Database plan
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DatabasePlan {
@@ -256,6 +320,62 @@ pub struct DatabasePlan {
     /// Available locations
     #[serde(default)]
     pub locations: Vec<String>,
+}
+
+/// PostgreSQL advanced options
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct PgAdvancedOptions {
+    #[serde(flatten)]
+    pub options: HashMap<String, serde_json::Value>,
+}
+
+/// MySQL advanced options
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct MysqlAdvancedOptions {
+    #[serde(flatten)]
+    pub options: HashMap<String, serde_json::Value>,
+}
+
+/// Kafka advanced options
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct KafkaAdvancedOptions {
+    #[serde(flatten)]
+    pub options: HashMap<String, serde_json::Value>,
+}
+
+/// Kafka REST advanced options
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct KafkaRestAdvancedOptions {
+    #[serde(flatten)]
+    pub options: HashMap<String, serde_json::Value>,
+}
+
+/// Schema registry advanced options
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SchemaRegistryAdvancedOptions {
+    #[serde(flatten)]
+    pub options: HashMap<String, serde_json::Value>,
+}
+
+/// Kafka Connect advanced options
+#[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct KafkaConnectAdvancedOptions {
+    #[serde(flatten)]
+    pub options: HashMap<String, serde_json::Value>,
+}
+
+/// Advanced options response wrapper
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DatabaseAdvancedOptionsResponse {
+    pub configured_options: serde_json::Value,
+    #[serde(default)]
+    pub available_options: Vec<DbaasAvailableOptions>,
 }
 
 /// Database alert
@@ -380,6 +500,8 @@ pub struct MaintenanceSchedule {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabasesResponse {
     pub databases: Vec<Database>,
+    #[allow(dead_code)]
+    pub meta: Option<DbaasMeta>,
 }
 
 /// Response wrapper for single database
@@ -398,6 +520,8 @@ pub struct DatabasePlansResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabaseUsersResponse {
     pub users: Vec<DatabaseUser>,
+    #[allow(dead_code)]
+    pub meta: Option<DbaasMeta>,
 }
 
 /// Response for single database user
@@ -410,6 +534,8 @@ pub struct DatabaseUserResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct LogicalDatabasesResponse {
     pub dbs: Vec<LogicalDatabase>,
+    #[allow(dead_code)]
+    pub meta: Option<DbaasMeta>,
 }
 
 /// Response for single logical database
@@ -419,9 +545,12 @@ pub struct LogicalDatabaseResponse {
 }
 
 /// Response for connection pools
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConnectionPoolsResponse {
+    pub connections: Option<DatabaseConnections>,
     pub connection_pools: Vec<ConnectionPool>,
+    #[allow(dead_code)]
+    pub meta: Option<DbaasMeta>,
 }
 
 /// Response for single connection pool
@@ -434,6 +563,8 @@ pub struct ConnectionPoolResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct KafkaTopicsResponse {
     pub topics: Vec<KafkaTopic>,
+    #[allow(dead_code)]
+    pub meta: Option<DbaasMeta>,
 }
 
 /// Response for single Kafka topic
@@ -446,6 +577,8 @@ pub struct KafkaTopicResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct KafkaConnectorsResponse {
     pub connectors: Vec<KafkaConnector>,
+    #[allow(dead_code)]
+    pub meta: Option<DbaasMeta>,
 }
 
 /// Response for single Kafka connector
@@ -464,12 +597,16 @@ pub struct ConnectorStatusResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct AvailableConnectorsResponse {
     pub available_connectors: Vec<AvailableConnector>,
+    #[allow(dead_code)]
+    pub meta: Option<DbaasMeta>,
 }
 
 /// Response for database alerts
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabaseAlertsResponse {
     pub alerts: Vec<DatabaseAlert>,
+    #[allow(dead_code)]
+    pub meta: Option<DbaasMeta>,
 }
 
 /// Response for database migration
@@ -488,6 +625,8 @@ pub struct DatabaseUsageResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabaseQuotasResponse {
     pub quotas: Vec<DatabaseQuota>,
+    #[allow(dead_code)]
+    pub meta: Option<DbaasMeta>,
 }
 
 /// Response for database backups
@@ -507,6 +646,12 @@ pub struct MaintenanceResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabaseVersionsResponse {
     pub available_versions: Vec<String>,
+}
+
+/// Response for connector configuration schema
+#[derive(Debug, Clone, Deserialize)]
+pub struct DatabaseConnectorConfigurationSchemaResponse {
+    pub configuration_schema: Vec<DatabaseConnectorConfigurationSchema>,
 }
 
 // Request types

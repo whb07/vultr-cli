@@ -1372,6 +1372,28 @@ impl VultrClient {
         Ok(response.vpc)
     }
 
+    /// List VPC attachments
+    pub async fn list_vpc_attachments(
+        &self,
+        vpc_id: &str,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<VpcAttachment>, Option<Meta>)> {
+        let mut path = format!("/vpcs/{}/attachments", vpc_id);
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: VpcAttachmentsResponse = self.get(&path).await?;
+        Ok((response.attachments, response.meta))
+    }
+
     /// Create a new VPC
     pub async fn create_vpc(&self, request: CreateVpcRequest) -> VultrResult<Vpc> {
         let response: VpcResponse = self.post("/vpcs", request).await?;
@@ -1519,6 +1541,104 @@ impl VultrClient {
     pub async fn list_applications(&self) -> VultrResult<Vec<Application>> {
         let response: ApplicationsResponse = self.get("/applications").await?;
         Ok(response.applications)
+    }
+
+    /// List marketplace app variables for an image ID
+    pub async fn list_app_variables(&self, image_id: &str) -> VultrResult<Vec<AppVariable>> {
+        let response: AppVariablesResponse = self
+            .get(&format!("/marketplace/apps/{}/variables", image_id))
+            .await?;
+        Ok(response.variables)
+    }
+
+    // =====================
+    // Serverless Inference
+    // =====================
+
+    /// List inference subscriptions
+    pub async fn list_inference(&self) -> VultrResult<Vec<InferenceSubscription>> {
+        let response: InferenceListResponse = self.get("/inference").await?;
+        Ok(response.subscriptions)
+    }
+
+    /// Get inference subscription
+    pub async fn get_inference(&self, inference_id: &str) -> VultrResult<InferenceSubscription> {
+        let response: InferenceResponse = self
+            .get(&format!("/inference/{}", inference_id))
+            .await?;
+        Ok(response.subscription)
+    }
+
+    /// Create inference subscription
+    pub async fn create_inference(
+        &self,
+        request: CreateInferenceRequest,
+    ) -> VultrResult<InferenceSubscription> {
+        let response: InferenceResponse = self.post("/inference", request).await?;
+        Ok(response.subscription)
+    }
+
+    /// Update inference subscription
+    pub async fn update_inference(
+        &self,
+        inference_id: &str,
+        request: UpdateInferenceRequest,
+    ) -> VultrResult<InferenceSubscription> {
+        let response: InferenceResponse = self
+            .patch(&format!("/inference/{}", inference_id), request)
+            .await?;
+        Ok(response.subscription)
+    }
+
+    /// Delete inference subscription
+    pub async fn delete_inference(&self, inference_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/inference/{}", inference_id)).await
+    }
+
+    /// Get inference usage
+    pub async fn get_inference_usage(&self, inference_id: &str) -> VultrResult<InferenceUsage> {
+        let response: InferenceUsageResponse = self
+            .get(&format!("/inference/{}/usage", inference_id))
+            .await?;
+        Ok(response.usage)
+    }
+
+    // =====================
+    // Logs
+    // =====================
+
+    /// List logs with optional filters
+    pub async fn list_logs(
+        &self,
+        start_time: Option<&str>,
+        end_time: Option<&str>,
+        log_level: Option<&str>,
+        resource_type: Option<&str>,
+        resource_id: Option<&str>,
+    ) -> VultrResult<LogsResponse> {
+        let mut serializer = url::form_urlencoded::Serializer::new(String::new());
+        if let Some(value) = start_time {
+            serializer.append_pair("start_time", value);
+        }
+        if let Some(value) = end_time {
+            serializer.append_pair("end_time", value);
+        }
+        if let Some(value) = log_level {
+            serializer.append_pair("log_level", value);
+        }
+        if let Some(value) = resource_type {
+            serializer.append_pair("resource_type", value);
+        }
+        if let Some(value) = resource_id {
+            serializer.append_pair("resource_id", value);
+        }
+        let query = serializer.finish();
+        let path = if query.is_empty() {
+            "/logs".to_string()
+        } else {
+            format!("/logs?{}", query)
+        };
+        self.get(&path).await
     }
 
     // =====================
@@ -2098,6 +2218,25 @@ impl VultrClient {
         Ok(response.user)
     }
 
+    /// Update Kafka user permissions
+    pub async fn update_kafka_permissions(
+        &self,
+        database_id: &str,
+        username: &str,
+        request: KafkaPermissions,
+    ) -> VultrResult<DatabaseUser> {
+        let response: DatabaseUserResponse = self
+            .put(
+                &format!(
+                    "/databases/{}/users/{}/access-control",
+                    database_id, username
+                ),
+                request,
+            )
+            .await?;
+        Ok(response.user)
+    }
+
     // Logical Databases
 
     /// List logical databases
@@ -2150,11 +2289,11 @@ impl VultrClient {
     pub async fn list_connection_pools(
         &self,
         database_id: &str,
-    ) -> VultrResult<Vec<ConnectionPool>> {
+    ) -> VultrResult<ConnectionPoolsResponse> {
         let response: ConnectionPoolsResponse = self
             .get(&format!("/databases/{}/connection-pools", database_id))
             .await?;
-        Ok(response.connection_pools)
+        Ok(response)
     }
 
     /// Get a connection pool
@@ -2283,6 +2422,21 @@ impl VultrClient {
             .get(&format!("/databases/{}/available-connectors", database_id))
             .await?;
         Ok(response.available_connectors)
+    }
+
+    /// Get connector configuration schema
+    pub async fn get_connector_configuration_schema(
+        &self,
+        database_id: &str,
+        connector_class: &str,
+    ) -> VultrResult<Vec<DatabaseConnectorConfigurationSchema>> {
+        let response: DatabaseConnectorConfigurationSchemaResponse = self
+            .get(&format!(
+                "/databases/{}/available-connectors/{}/configuration",
+                database_id, connector_class
+            ))
+            .await?;
+        Ok(response.configuration_schema)
     }
 
     /// List Kafka connectors
@@ -2463,7 +2617,7 @@ impl VultrClient {
     pub async fn get_database_advanced_options(
         &self,
         database_id: &str,
-    ) -> VultrResult<serde_json::Value> {
+    ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
         self.get(&format!("/databases/{}/advanced-options", database_id))
             .await
     }
@@ -2473,9 +2627,90 @@ impl VultrClient {
         &self,
         database_id: &str,
         options: serde_json::Value,
-    ) -> VultrResult<serde_json::Value> {
+    ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
         self.put(
             &format!("/databases/{}/advanced-options", database_id),
+            options,
+        )
+        .await
+    }
+
+    /// Get Kafka REST advanced options
+    pub async fn get_kafka_rest_advanced_options(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
+        self.get(&format!(
+            "/databases/{}/advanced-options/kafka-rest",
+            database_id
+        ))
+        .await
+    }
+
+    /// Update Kafka REST advanced options
+    pub async fn update_kafka_rest_advanced_options(
+        &self,
+        database_id: &str,
+        options: serde_json::Value,
+    ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
+        self.put(
+            &format!("/databases/{}/advanced-options/kafka-rest", database_id),
+            options,
+        )
+        .await
+    }
+
+    /// Get schema registry advanced options
+    pub async fn get_schema_registry_advanced_options(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
+        self.get(&format!(
+            "/databases/{}/advanced-options/schema-registry",
+            database_id
+        ))
+        .await
+    }
+
+    /// Update schema registry advanced options
+    pub async fn update_schema_registry_advanced_options(
+        &self,
+        database_id: &str,
+        options: serde_json::Value,
+    ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
+        self.put(
+            &format!(
+                "/databases/{}/advanced-options/schema-registry",
+                database_id
+            ),
+            options,
+        )
+        .await
+    }
+
+    /// Get Kafka Connect advanced options
+    pub async fn get_kafka_connect_advanced_options(
+        &self,
+        database_id: &str,
+    ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
+        self.get(&format!(
+            "/databases/{}/advanced-options/kafka-connect",
+            database_id
+        ))
+        .await
+    }
+
+    /// Update Kafka Connect advanced options
+    pub async fn update_kafka_connect_advanced_options(
+        &self,
+        database_id: &str,
+        options: serde_json::Value,
+    ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
+        self.put(
+            &format!(
+                "/databases/{}/advanced-options/kafka-connect",
+                database_id
+            ),
             options,
         )
         .await
@@ -3878,6 +4113,40 @@ impl VultrClient {
     }
 
     // =====================
+    // Subaccount Operations
+    // =====================
+
+    /// List subaccounts
+    pub async fn list_subaccounts(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Subaccount>, Option<Meta>)> {
+        let mut path = "/subaccounts".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: SubaccountsResponse = self.get(&path).await?;
+        Ok((response.subaccounts, response.meta))
+    }
+
+    /// Create a subaccount
+    pub async fn create_subaccount(
+        &self,
+        request: CreateSubaccountRequest,
+    ) -> VultrResult<Subaccount> {
+        let response: SubaccountResponse = self.post("/subaccounts", request).await?;
+        Ok(response.subaccount)
+    }
+
+    // =====================
     // User Operations
     // =====================
 
@@ -4011,6 +4280,218 @@ impl VultrClient {
         request: DeleteIpWhitelistRequest,
     ) -> VultrResult<()> {
         self.delete_with_body(&format!("/users/{}/ip-whitelist/entry", user_id), request)
+            .await
+    }
+
+    // =====================
+    // Private Network Operations (deprecated)
+    // =====================
+
+    /// List private networks
+    pub async fn list_networks(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<Network>, Option<Meta>)> {
+        let mut path = "/private-networks".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: NetworksResponse = self.get(&path).await?;
+        Ok((response.networks, Some(response.meta)))
+    }
+
+    /// Get a private network
+    pub async fn get_network(&self, network_id: &str) -> VultrResult<Network> {
+        let response: NetworkResponse = self
+            .get(&format!("/private-networks/{}", network_id))
+            .await?;
+        Ok(response.network)
+    }
+
+    /// Create a private network
+    pub async fn create_network(&self, request: CreateNetworkRequest) -> VultrResult<Network> {
+        let response: NetworkResponse = self.post("/private-networks", request).await?;
+        Ok(response.network)
+    }
+
+    /// Update a private network
+    pub async fn update_network(
+        &self,
+        network_id: &str,
+        request: UpdateNetworkRequest,
+    ) -> VultrResult<()> {
+        self.put::<serde_json::Value>(&format!("/private-networks/{}", network_id), request)
+            .await?;
+        Ok(())
+    }
+
+    /// Delete a private network
+    pub async fn delete_network(&self, network_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/private-networks/{}", network_id))
+            .await
+    }
+
+    // =====================
+    // Storage Gateway Operations
+    // =====================
+
+    /// List storage gateways
+    pub async fn list_storage_gateways(
+        &self,
+        per_page: Option<u32>,
+        cursor: Option<&str>,
+    ) -> VultrResult<(Vec<StorageGateway>, Meta)> {
+        let mut path = "/storage-gateways".to_string();
+        let mut params = vec![];
+        if let Some(pp) = per_page {
+            params.push(format!("per_page={}", pp));
+        }
+        if let Some(c) = cursor {
+            params.push(format!("cursor={}", c));
+        }
+        if !params.is_empty() {
+            path = format!("{}?{}", path, params.join("&"));
+        }
+        let response: StorageGatewaysResponse = self.get(&path).await?;
+        Ok((response.storage_gateway, response.meta))
+    }
+
+    /// Get a storage gateway
+    pub async fn get_storage_gateway(&self, gateway_id: &str) -> VultrResult<StorageGateway> {
+        let response: StorageGatewayResponse = self
+            .get(&format!("/storage-gateways/{}", gateway_id))
+            .await?;
+        Ok(response.storage_gateway)
+    }
+
+    /// Create a storage gateway
+    pub async fn create_storage_gateway(
+        &self,
+        request: CreateStorageGatewayRequest,
+    ) -> VultrResult<StorageGateway> {
+        let response: StorageGatewayResponse = self.post("/storage-gateways", request).await?;
+        Ok(response.storage_gateway)
+    }
+
+    /// Update a storage gateway
+    pub async fn update_storage_gateway(
+        &self,
+        gateway_id: &str,
+        request: UpdateStorageGatewayRequest,
+    ) -> VultrResult<()> {
+        self.put_no_content(&format!("/storage-gateways/{}", gateway_id), request)
+            .await
+    }
+
+    /// Delete a storage gateway
+    pub async fn delete_storage_gateway(&self, gateway_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/storage-gateways/{}", gateway_id))
+            .await
+    }
+
+    /// Add export to storage gateway
+    pub async fn add_storage_gateway_export(
+        &self,
+        gateway_id: &str,
+        exports: Vec<StorageGatewayExport>,
+    ) -> VultrResult<StorageGatewayExport> {
+        let response: StorageGatewayExportResponse = self
+            .post(
+                &format!("/storage-gateways/{}/exports", gateway_id),
+                exports,
+            )
+            .await?;
+        Ok(response.export)
+    }
+
+    /// Delete storage gateway export
+    pub async fn delete_storage_gateway_export(
+        &self,
+        gateway_id: &str,
+        export_id: &str,
+    ) -> VultrResult<()> {
+        self.delete(&format!(
+            "/storage-gateways/{}/exports/{}",
+            gateway_id, export_id
+        ))
+        .await
+    }
+
+    // =====================
+    // Vultr File System (VFS) Operations
+    // =====================
+
+    /// List VFS regions
+    pub async fn list_vfs_regions(&self) -> VultrResult<Vec<VfsRegion>> {
+        let response: VfsRegionsResponse = self.get("/vfs/regions").await?;
+        Ok(response.regions)
+    }
+
+    /// List VFS subscriptions
+    pub async fn list_vfs(&self) -> VultrResult<Vec<Vfs>> {
+        let response: VfsListResponse = self.get("/vfs").await?;
+        Ok(response.vfs)
+    }
+
+    /// Get a VFS subscription
+    pub async fn get_vfs(&self, vfs_id: &str) -> VultrResult<Vfs> {
+        self.get(&format!("/vfs/{}", vfs_id)).await
+    }
+
+    /// Create a VFS subscription
+    pub async fn create_vfs(&self, request: CreateVfsRequest) -> VultrResult<Vfs> {
+        self.post("/vfs", request).await
+    }
+
+    /// Update a VFS subscription
+    pub async fn update_vfs(&self, vfs_id: &str, request: UpdateVfsRequest) -> VultrResult<Vfs> {
+        self.put(&format!("/vfs/{}", vfs_id), request).await
+    }
+
+    /// Delete a VFS subscription
+    pub async fn delete_vfs(&self, vfs_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/vfs/{}", vfs_id)).await
+    }
+
+    /// List VFS attachments
+    pub async fn list_vfs_attachments(&self, vfs_id: &str) -> VultrResult<Vec<VfsAttachment>> {
+        let response: VfsAttachmentsResponse = self
+            .get(&format!("/vfs/{}/attachments", vfs_id))
+            .await?;
+        Ok(response.attachments)
+    }
+
+    /// Get a VFS attachment
+    pub async fn get_vfs_attachment(
+        &self,
+        vfs_id: &str,
+        vps_id: &str,
+    ) -> VultrResult<VfsAttachment> {
+        self.get(&format!("/vfs/{}/attachments/{}", vfs_id, vps_id))
+            .await
+    }
+
+    /// Attach a VFS to a VPS
+    pub async fn create_vfs_attachment(
+        &self,
+        vfs_id: &str,
+        vps_id: &str,
+    ) -> VultrResult<VfsAttachment> {
+        self.put(&format!("/vfs/{}/attachments/{}", vfs_id, vps_id), serde_json::json!({}))
+            .await
+    }
+
+    /// Delete a VFS attachment
+    pub async fn delete_vfs_attachment(&self, vfs_id: &str, vps_id: &str) -> VultrResult<()> {
+        self.delete(&format!("/vfs/{}/attachments/{}", vfs_id, vps_id))
             .await
     }
 }

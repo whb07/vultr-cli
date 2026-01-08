@@ -17,6 +17,8 @@ pub struct Vpc {
     pub v4_subnet: Option<String>,
     /// IPv4 subnet mask (CIDR bits)
     pub v4_subnet_mask: Option<i32>,
+    /// Internet connectivity
+    pub internet: Option<VpcInternet>,
 }
 
 impl Vpc {
@@ -27,6 +29,16 @@ impl Vpc {
             _ => None,
         }
     }
+}
+
+/// VPC internet connectivity details
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VpcInternet {
+    /// Whether internet connectivity is enabled
+    pub connectivity: Option<bool>,
+    /// Connectivity types
+    #[serde(default)]
+    pub types: Vec<String>,
 }
 
 /// VPC 2.0 (newer VPC version)
@@ -44,6 +56,48 @@ pub struct Vpc2 {
     pub ip_block: Option<String>,
     /// Prefix length (CIDR bits)
     pub prefix_length: Option<i32>,
+}
+
+/// VPC attachment IP information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VpcAttachmentIp {
+    /// IPv4 address
+    pub v4: Option<String>,
+}
+
+/// VPC attachment linked subscription
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VpcAttachmentLinkedSubscription {
+    /// Subscription ID
+    pub id: Option<String>,
+    /// Subscription type
+    #[serde(rename = "type")]
+    pub subscription_type: Option<String>,
+}
+
+/// VPC attachment information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VpcAttachment {
+    /// Attachment ID
+    pub id: Option<String>,
+    /// Attachment type (vps/baremetal)
+    #[serde(rename = "type")]
+    pub attachment_type: Option<String>,
+    /// MAC address
+    pub mac_address: Option<String>,
+    /// Date added
+    pub date_added: Option<String>,
+    /// Attachment IP
+    pub ip: Option<VpcAttachmentIp>,
+    /// Linked subscription
+    pub linked_subscription: Option<VpcAttachmentLinkedSubscription>,
+}
+
+/// Response wrapper for VPC attachments
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VpcAttachmentsResponse {
+    pub attachments: Vec<VpcAttachment>,
+    pub meta: Option<crate::models::Meta>,
 }
 
 impl Vpc2 {
@@ -182,6 +236,7 @@ mod tests {
             description: Some("Test VPC".to_string()),
             v4_subnet: Some("10.0.0.0".to_string()),
             v4_subnet_mask: Some(16),
+            internet: None,
         };
         assert_eq!(vpc.cidr().unwrap(), "10.0.0.0/16");
     }
@@ -195,6 +250,7 @@ mod tests {
             description: None,
             v4_subnet: None,
             v4_subnet_mask: None,
+            internet: None,
         };
         assert!(vpc.cidr().is_none());
     }
@@ -208,6 +264,7 @@ mod tests {
             description: None,
             v4_subnet: Some("10.0.0.0".to_string()),
             v4_subnet_mask: None,
+            internet: None,
         };
         assert!(vpc.cidr().is_none());
     }
