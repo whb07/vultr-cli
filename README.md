@@ -313,6 +313,8 @@ vultr-cli plans --bare-metal --region ewr
 
 # List operating systems
 vultr-cli os
+vultr-cli os --family ubuntu
+vultr-cli os --name "Ubuntu 22.04"
 ```
 
 ## Global Options

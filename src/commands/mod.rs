@@ -134,7 +134,7 @@ pub enum Commands {
     Plans(PlansArgs),
 
     /// List available operating systems
-    Os,
+    Os(OsArgs),
 
     /// List available applications (one-click and marketplace)
     #[command(alias = "app", alias = "apps")]
@@ -4686,6 +4686,29 @@ pub struct PlansArgs {
 pub enum PriceMode {
     Hourly,
     Monthly,
+}
+
+// ==================
+// OS Commands
+// ==================
+
+#[derive(Parser, Debug, Clone)]
+pub struct OsArgs {
+    /// Filter by OS family (e.g., ubuntu, debian, centos, windows)
+    #[arg(long)]
+    pub family: Option<String>,
+
+    /// Filter by name (substring match)
+    #[arg(long)]
+    pub name: Option<String>,
+
+    /// Filter by architecture (e.g., x64)
+    #[arg(long)]
+    pub arch: Option<String>,
+
+    /// Filter by OS ID
+    #[arg(long)]
+    pub id: Option<i32>,
 }
 
 // ==================

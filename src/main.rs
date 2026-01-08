@@ -165,7 +165,7 @@ async fn run(cli: Cli) -> VultrResult<()> {
                     )
                     .await
                 }
-                Commands::Os => handle_os(&client, output).await,
+                Commands::Os(args) => handle_os(args, &client, output).await,
                 Commands::Applications(args) => handle_applications(args, &client, output).await,
                 Commands::Inference(args) => {
                     handle_inference(args, &client, output, skip_confirm).await
@@ -187,7 +187,7 @@ fn is_public_command(command: &Commands) -> bool {
     match command {
         Commands::Regions => true,
         Commands::Plans(_) => true,
-        Commands::Os => true,
+        Commands::Os(_) => true,
         Commands::Applications(args) => {
             matches!(args.command, None | Some(ApplicationsCommands::List))
         }
