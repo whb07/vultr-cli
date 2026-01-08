@@ -323,7 +323,6 @@ pub struct DatabasePlan {
 }
 
 /// PostgreSQL advanced options
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct PgAdvancedOptions {
     #[serde(flatten)]
@@ -331,7 +330,6 @@ pub struct PgAdvancedOptions {
 }
 
 /// MySQL advanced options
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct MysqlAdvancedOptions {
     #[serde(flatten)]
@@ -339,7 +337,6 @@ pub struct MysqlAdvancedOptions {
 }
 
 /// Kafka advanced options
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct KafkaAdvancedOptions {
     #[serde(flatten)]
@@ -347,7 +344,6 @@ pub struct KafkaAdvancedOptions {
 }
 
 /// Kafka REST advanced options
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct KafkaRestAdvancedOptions {
     #[serde(flatten)]
@@ -355,7 +351,6 @@ pub struct KafkaRestAdvancedOptions {
 }
 
 /// Schema registry advanced options
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SchemaRegistryAdvancedOptions {
     #[serde(flatten)]
@@ -363,7 +358,6 @@ pub struct SchemaRegistryAdvancedOptions {
 }
 
 /// Kafka Connect advanced options
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct KafkaConnectAdvancedOptions {
     #[serde(flatten)]
@@ -500,7 +494,6 @@ pub struct MaintenanceSchedule {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabasesResponse {
     pub databases: Vec<Database>,
-    #[allow(dead_code)]
     pub meta: Option<DbaasMeta>,
 }
 
@@ -520,7 +513,6 @@ pub struct DatabasePlansResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabaseUsersResponse {
     pub users: Vec<DatabaseUser>,
-    #[allow(dead_code)]
     pub meta: Option<DbaasMeta>,
 }
 
@@ -534,7 +526,6 @@ pub struct DatabaseUserResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct LogicalDatabasesResponse {
     pub dbs: Vec<LogicalDatabase>,
-    #[allow(dead_code)]
     pub meta: Option<DbaasMeta>,
 }
 
@@ -549,7 +540,6 @@ pub struct LogicalDatabaseResponse {
 pub struct ConnectionPoolsResponse {
     pub connections: Option<DatabaseConnections>,
     pub connection_pools: Vec<ConnectionPool>,
-    #[allow(dead_code)]
     pub meta: Option<DbaasMeta>,
 }
 
@@ -563,7 +553,6 @@ pub struct ConnectionPoolResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct KafkaTopicsResponse {
     pub topics: Vec<KafkaTopic>,
-    #[allow(dead_code)]
     pub meta: Option<DbaasMeta>,
 }
 
@@ -577,7 +566,6 @@ pub struct KafkaTopicResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct KafkaConnectorsResponse {
     pub connectors: Vec<KafkaConnector>,
-    #[allow(dead_code)]
     pub meta: Option<DbaasMeta>,
 }
 
@@ -597,7 +585,6 @@ pub struct ConnectorStatusResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct AvailableConnectorsResponse {
     pub available_connectors: Vec<AvailableConnector>,
-    #[allow(dead_code)]
     pub meta: Option<DbaasMeta>,
 }
 
@@ -605,7 +592,6 @@ pub struct AvailableConnectorsResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabaseAlertsResponse {
     pub alerts: Vec<DatabaseAlert>,
-    #[allow(dead_code)]
     pub meta: Option<DbaasMeta>,
 }
 
@@ -625,7 +611,6 @@ pub struct DatabaseUsageResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabaseQuotasResponse {
     pub quotas: Vec<DatabaseQuota>,
-    #[allow(dead_code)]
     pub meta: Option<DbaasMeta>,
 }
 

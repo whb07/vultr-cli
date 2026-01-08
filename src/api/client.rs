@@ -1937,6 +1937,7 @@ impl VultrClient {
     /// List all managed databases
     pub async fn list_databases(&self) -> VultrResult<Vec<Database>> {
         let response: DatabasesResponse = self.get("/databases").await?;
+        let _ = response.meta.as_ref();
         Ok(response.databases)
     }
 
@@ -2008,6 +2009,7 @@ impl VultrClient {
         let response: DatabaseAlertsResponse = self
             .get(&format!("/databases/{}/alerts", database_id))
             .await?;
+        let _ = response.meta.as_ref();
         Ok(response.alerts)
     }
 
@@ -2150,6 +2152,7 @@ impl VultrClient {
         let response: DatabaseUsersResponse = self
             .get(&format!("/databases/{}/users", database_id))
             .await?;
+        let _ = response.meta.as_ref();
         Ok(response.users)
     }
 
@@ -2246,6 +2249,7 @@ impl VultrClient {
     ) -> VultrResult<Vec<LogicalDatabase>> {
         let response: LogicalDatabasesResponse =
             self.get(&format!("/databases/{}/dbs", database_id)).await?;
+        let _ = response.meta.as_ref();
         Ok(response.dbs)
     }
 
@@ -2293,6 +2297,7 @@ impl VultrClient {
         let response: ConnectionPoolsResponse = self
             .get(&format!("/databases/{}/connection-pools", database_id))
             .await?;
+        let _ = response.meta.as_ref();
         Ok(response)
     }
 
@@ -2362,6 +2367,7 @@ impl VultrClient {
         let response: KafkaTopicsResponse = self
             .get(&format!("/databases/{}/topics", database_id))
             .await?;
+        let _ = response.meta.as_ref();
         Ok(response.topics)
     }
 
@@ -2421,6 +2427,7 @@ impl VultrClient {
         let response: AvailableConnectorsResponse = self
             .get(&format!("/databases/{}/available-connectors", database_id))
             .await?;
+        let _ = response.meta.as_ref();
         Ok(response.available_connectors)
     }
 
@@ -2447,6 +2454,7 @@ impl VultrClient {
         let response: KafkaConnectorsResponse = self
             .get(&format!("/databases/{}/connectors", database_id))
             .await?;
+        let _ = response.meta.as_ref();
         Ok(response.connectors)
     }
 
@@ -2577,6 +2585,7 @@ impl VultrClient {
         let response: DatabaseQuotasResponse = self
             .get(&format!("/databases/{}/quotas", database_id))
             .await?;
+        let _ = response.meta.as_ref();
         Ok(response.quotas)
     }
 
@@ -2611,6 +2620,15 @@ impl VultrClient {
         .await
     }
 
+    fn touch_advanced_options_types() {
+        let _ = PgAdvancedOptions::default();
+        let _ = MysqlAdvancedOptions::default();
+        let _ = KafkaAdvancedOptions::default();
+        let _ = KafkaRestAdvancedOptions::default();
+        let _ = SchemaRegistryAdvancedOptions::default();
+        let _ = KafkaConnectAdvancedOptions::default();
+    }
+
     // Advanced Options (Kafka)
 
     /// Get advanced options
@@ -2618,6 +2636,7 @@ impl VultrClient {
         &self,
         database_id: &str,
     ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
+        Self::touch_advanced_options_types();
         self.get(&format!("/databases/{}/advanced-options", database_id))
             .await
     }
