@@ -44,6 +44,7 @@ async fn run(cli: Cli) -> VultrResult<()> {
         }
         Commands::Config(args) => handle_config(args, &cli.profile),
         _ => {
+            let is_public = is_public_command(&cli.command);
             // Load config and merge with CLI flags
             let cfg = crate::config::Config::load()?;
             let effective_profile = if cli.profile == "default" && cfg.default_profile != "default"
@@ -65,8 +66,23 @@ async fn run(cli: Cli) -> VultrResult<()> {
             // Confirm destructive operations unless user passed --yes or config disables confirmations
             let skip_confirm = cli.yes || !cfg.settings.confirm_destructive;
 
-            let api_key = resolve_api_key(cli.api_key.as_deref(), &effective_profile)?
-                .ok_or_else(|| VultrError::AuthenticationRequired)?;
+            let api_key = if is_public {
+                let cli_key = cli
+                    .api_key
+                    .as_deref()
+                    .and_then(|k| if k.trim().is_empty() { None } else { Some(k.to_string()) });
+                let env_key = std::env::var("VULTR_API_KEY")
+                    .ok()
+                    .and_then(|k| if k.trim().is_empty() { None } else { Some(k) });
+                cli_key.or(env_key)
+            } else {
+                resolve_api_key(cli.api_key.as_deref(), &effective_profile)?
+            };
+            let api_key = match api_key {
+                Some(key) => key,
+                None if is_public => String::new(),
+                None => return Err(VultrError::AuthenticationRequired),
+            };
 
             let client = VultrClient::new(
                 api_key,
@@ -164,6 +180,21 @@ async fn run(cli: Cli) -> VultrResult<()> {
                 _ => unreachable!(),
             }
         }
+    }
+}
+
+fn is_public_command(command: &Commands) -> bool {
+    match command {
+        Commands::Regions => true,
+        Commands::Plans(_) => true,
+        Commands::Os => true,
+        Commands::Applications(args) => {
+            matches!(args.command, None | Some(ApplicationsCommands::List))
+        }
+        Commands::Iso(args) => matches!(args.command, IsoCommands::Public),
+        Commands::Kubernetes(args) => matches!(args.command, KubernetesCommands::Versions),
+        Commands::ObjectStorage(args) => matches!(args.command, ObjectStorageCommands::Clusters(_)),
+        _ => false,
     }
 }
 

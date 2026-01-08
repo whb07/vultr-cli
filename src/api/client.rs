@@ -2,7 +2,7 @@
 
 use crate::error::{ApiErrorResponse, VultrError, VultrResult};
 use crate::models::*;
-use reqwest::{header::RETRY_AFTER, Client, Method, Response, StatusCode};
+use reqwest::{header::RETRY_AFTER, Client, Method, RequestBuilder, Response, StatusCode};
 use serde::{de::DeserializeOwned, Serialize};
 use std::time::Duration;
 
@@ -44,7 +44,7 @@ impl VultrClient {
         })
     }
 
-    /// Make an authenticated request to the Vultr API
+    /// Make a request to the Vultr API
     async fn request<T: DeserializeOwned>(
         &self,
         method: Method,
@@ -54,10 +54,7 @@ impl VultrClient {
         let url = format!("{}{}", API_BASE_URL, path);
 
         let make_request = || {
-            let mut req = self
-                .client
-                .request(method.clone(), &url)
-                .header("Authorization", format!("Bearer {}", self.api_key));
+            let mut req = self.with_auth(self.client.request(method.clone(), &url));
             if let Some(ref b) = body {
                 req = req.json(b);
             }
@@ -91,14 +88,20 @@ impl VultrClient {
             .await
     }
 
+    fn with_auth(&self, req: RequestBuilder) -> RequestBuilder {
+        if self.api_key.trim().is_empty() {
+            req
+        } else {
+            req.header("Authorization", format!("Bearer {}", self.api_key))
+        }
+    }
+
     /// Make a DELETE request
     async fn delete(&self, path: &str) -> VultrResult<()> {
         let url = format!("{}{}", API_BASE_URL, path);
 
         let make_request = || {
-            self.client
-                .delete(&url)
-                .header("Authorization", format!("Bearer {}", self.api_key))
+            self.with_auth(self.client.delete(&url))
         };
 
         let response = self.send_with_retry(make_request).await?;
@@ -115,10 +118,7 @@ impl VultrClient {
         let body_value = serde_json::to_value(body)?;
 
         let make_request = || {
-            self.client
-                .delete(&url)
-                .header("Authorization", format!("Bearer {}", self.api_key))
-                .json(&body_value)
+            self.with_auth(self.client.delete(&url)).json(&body_value)
         };
 
         let response = self.send_with_retry(make_request).await?;
@@ -135,10 +135,7 @@ impl VultrClient {
         let body_value = serde_json::to_value(body)?;
 
         let make_request = || {
-            self.client
-                .post(&url)
-                .header("Authorization", format!("Bearer {}", self.api_key))
-                .json(&body_value)
+            self.with_auth(self.client.post(&url)).json(&body_value)
         };
 
         let response = self.send_with_retry(make_request).await?;
@@ -155,10 +152,7 @@ impl VultrClient {
         let body_value = serde_json::to_value(body)?;
 
         let make_request = || {
-            self.client
-                .put(&url)
-                .header("Authorization", format!("Bearer {}", self.api_key))
-                .json(&body_value)
+            self.with_auth(self.client.put(&url)).json(&body_value)
         };
 
         let response = self.send_with_retry(make_request).await?;
@@ -175,10 +169,7 @@ impl VultrClient {
         let body_value = serde_json::to_value(body)?;
 
         let make_request = || {
-            self.client
-                .patch(&url)
-                .header("Authorization", format!("Bearer {}", self.api_key))
-                .json(&body_value)
+            self.with_auth(self.client.patch(&url)).json(&body_value)
         };
 
         let response = self.send_with_retry(make_request).await?;
@@ -4121,12 +4112,7 @@ impl VultrClient {
     /// Get pending charges as CSV
     pub async fn get_pending_charges_csv(&self) -> VultrResult<String> {
         let url = format!("{}/billing/pending-charges/csv", API_BASE_URL);
-        let response = self
-            .client
-            .get(&url)
-            .header("Authorization", format!("Bearer {}", self.api_key))
-            .send()
-            .await?;
+        let response = self.with_auth(self.client.get(&url)).send().await?;
 
         if response.status().is_success() {
             Ok(response.text().await?)
