@@ -1554,9 +1554,20 @@ impl TableDisplay for Vec<Os> {
             println!("{}", "No operating systems found.".yellow());
             return;
         }
+        let mut sorted: Vec<&Os> = self.iter().collect();
+        sorted.sort_by(|a, b| {
+            let family_a = a.family.as_deref().unwrap_or("").to_ascii_lowercase();
+            let family_b = b.family.as_deref().unwrap_or("").to_ascii_lowercase();
+            let name_a = a.name.as_deref().unwrap_or("").to_ascii_lowercase();
+            let name_b = b.name.as_deref().unwrap_or("").to_ascii_lowercase();
+            family_a
+                .cmp(&family_b)
+                .then_with(|| name_a.cmp(&name_b))
+                .then_with(|| a.id.cmp(&b.id))
+        });
         let mut uniform_arch: Option<String> = None;
         let mut all_same = true;
-        for os in self {
+        for os in &sorted {
             let value = os
                 .arch
                 .as_deref()
@@ -1574,11 +1585,11 @@ impl TableDisplay for Vec<Os> {
         }
 
         if all_same {
-            let rows: Vec<OsRowNoArch> = self.iter().map(OsRowNoArch::from).collect();
+            let rows: Vec<OsRowNoArch> = sorted.iter().map(|os| OsRowNoArch::from(*os)).collect();
             let table = Table::new(rows).with(Style::rounded()).to_string();
             println!("{}", table);
         } else {
-            let rows: Vec<OsRow> = self.iter().map(OsRow::from).collect();
+            let rows: Vec<OsRow> = sorted.iter().map(|os| OsRow::from(*os)).collect();
             let table = Table::new(rows).with(Style::rounded()).to_string();
             println!("{}", table);
         }
