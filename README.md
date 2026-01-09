@@ -386,9 +386,21 @@ Config file location:
 }
 ```
 
+## Support
+
+Please use GitHub Issues for bug reports and feature requests.
+
+## Releasing
+
+This project follows Keep a Changelog and Semantic Versioning.
+
+1. Update `CHANGELOG.md` (move items from Unreleased to a new version).
+2. Bump the version in `Cargo.toml`.
+3. Commit, tag `vX.Y.Z`, and push.
+
 ## License
 
-MIT
+MIT. See `LICENSE`.
 
 
 ## Secrets storage
