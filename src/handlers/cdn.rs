@@ -84,10 +84,10 @@ async fn handle_pull_zone(
                     vanity_domain,
                     ssl_cert: None,
                     ssl_cert_key: None,
-                    cors: if cors { Some(true) } else { None },
-                    gzip: if gzip { Some(true) } else { None },
-                    block_ai: if block_ai { Some(true) } else { None },
-                    block_bad_bots: if block_bad_bots { Some(true) } else { None },
+                    cors: cors.then_some(true),
+                    gzip: gzip.then_some(true),
+                    block_ai: block_ai.then_some(true),
+                    block_bad_bots: block_bad_bots.then_some(true),
                     regions,
                 })
                 .await?;
@@ -195,10 +195,10 @@ async fn handle_push_zone(
                     vanity_domain,
                     ssl_cert: None,
                     ssl_cert_key: None,
-                    cors: if cors { Some(true) } else { None },
-                    gzip: if gzip { Some(true) } else { None },
-                    block_ai: if block_ai { Some(true) } else { None },
-                    block_bad_bots: if block_bad_bots { Some(true) } else { None },
+                    cors: cors.then_some(true),
+                    gzip: gzip.then_some(true),
+                    block_ai: block_ai.then_some(true),
+                    block_bad_bots: block_bad_bots.then_some(true),
                     regions,
                 })
                 .await?;

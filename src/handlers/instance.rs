@@ -72,31 +72,11 @@ pub async fn handle_instance(
                 hostname: create_args.hostname,
                 sshkey_id: create_args.ssh_keys,
                 script_id: create_args.script_id,
-                enable_ipv6: if create_args.enable_ipv6 {
-                    Some(true)
-                } else {
-                    None
-                },
-                disable_public_ipv4: if create_args.disable_public_ipv4 {
-                    Some(true)
-                } else {
-                    None
-                },
-                backups: if create_args.backups {
-                    Some("enabled".into())
-                } else {
-                    None
-                },
-                ddos_protection: if create_args.ddos_protection {
-                    Some(true)
-                } else {
-                    None
-                },
-                activation_email: if create_args.activation_email {
-                    Some(true)
-                } else {
-                    None
-                },
+                enable_ipv6: create_args.enable_ipv6.then_some(true),
+                disable_public_ipv4: create_args.disable_public_ipv4.then_some(true),
+                backups: create_args.backups.then(|| "enabled".into()),
+                ddos_protection: create_args.ddos_protection.then_some(true),
+                activation_email: create_args.activation_email.then_some(true),
                 attach_vpc: create_args.vpc,
                 firewall_group_id: create_args.firewall_group_id,
                 reserved_ipv4: create_args.reserved_ipv4,
@@ -300,7 +280,7 @@ async fn handle_instance_ipv4(
                 .create_instance_ipv4(
                     &id,
                     CreateIpv4Request {
-                        reboot: if reboot { Some(true) } else { None },
+                        reboot: reboot.then_some(true),
                     },
                 )
                 .await?;
@@ -398,14 +378,13 @@ async fn handle_instance_iso(
 
         InstanceIsoCommands::Attach { id, iso_id } => {
             let status = client
-                .attach_instance_iso(
-                    &id,
-                    AttachIsoRequest {
-                        iso_id: iso_id.clone(),
-                    },
-                )
+                .attach_instance_iso(&id, AttachIsoRequest { iso_id })
                 .await?;
-            print_success(&format!("ISO {} attached to instance {}", iso_id, id));
+            print_success(&format!(
+                "ISO {} attached to instance {}",
+                status.iso_id.as_deref().unwrap_or("unknown"),
+                id
+            ));
             print_output(&status, output);
         }
 
@@ -465,27 +444,19 @@ async fn handle_instance_vpc(
         }
 
         InstanceVpcCommands::Attach { id, vpc_id } => {
+            let vpc = vpc_id.clone();
             client
-                .attach_instance_vpc(
-                    &id,
-                    AttachVpcRequest {
-                        vpc_id: vpc_id.clone(),
-                    },
-                )
+                .attach_instance_vpc(&id, AttachVpcRequest { vpc_id })
                 .await?;
-            print_success(&format!("VPC {} attached to instance {}", vpc_id, id));
+            print_success(&format!("VPC {} attached to instance {}", vpc, id));
         }
 
         InstanceVpcCommands::Detach { id, vpc_id } => {
+            let vpc = vpc_id.clone();
             client
-                .detach_instance_vpc(
-                    &id,
-                    DetachVpcRequest {
-                        vpc_id: vpc_id.clone(),
-                    },
-                )
+                .detach_instance_vpc(&id, DetachVpcRequest { vpc_id })
                 .await?;
-            print_success(&format!("VPC {} detached from instance {}", vpc_id, id));
+            print_success(&format!("VPC {} detached from instance {}", vpc, id));
         }
     }
     Ok(())
@@ -507,28 +478,19 @@ async fn handle_instance_vpc2(
             vpc_id,
             ip_address,
         } => {
+            let vpc = vpc_id.clone();
             client
-                .attach_instance_vpc2(
-                    &id,
-                    AttachVpc2Request {
-                        vpc_id: vpc_id.clone(),
-                        ip_address,
-                    },
-                )
+                .attach_instance_vpc2(&id, AttachVpc2Request { vpc_id, ip_address })
                 .await?;
-            print_success(&format!("VPC2 {} attached to instance {}", vpc_id, id));
+            print_success(&format!("VPC2 {} attached to instance {}", vpc, id));
         }
 
         InstanceVpc2Commands::Detach { id, vpc_id } => {
+            let vpc = vpc_id.clone();
             client
-                .detach_instance_vpc2(
-                    &id,
-                    DetachVpc2Request {
-                        vpc_id: vpc_id.clone(),
-                    },
-                )
+                .detach_instance_vpc2(&id, DetachVpc2Request { vpc_id })
                 .await?;
-            print_success(&format!("VPC2 {} detached from instance {}", vpc_id, id));
+            print_success(&format!("VPC2 {} detached from instance {}", vpc, id));
         }
     }
     Ok(())
@@ -537,30 +499,27 @@ async fn handle_instance_vpc2(
 async fn handle_instance_bulk(cmd: InstanceBulkCommands, client: &VultrClient) -> VultrResult<()> {
     match cmd {
         InstanceBulkCommands::Start { ids } => {
+            let count = ids.len();
             client
-                .bulk_start_instances(BulkInstancesRequest {
-                    instance_ids: ids.clone(),
-                })
+                .bulk_start_instances(BulkInstancesRequest { instance_ids: ids })
                 .await?;
-            print_success(&format!("Start initiated for {} instances", ids.len()));
+            print_success(&format!("Start initiated for {} instances", count));
         }
 
         InstanceBulkCommands::Stop { ids } => {
+            let count = ids.len();
             client
-                .bulk_halt_instances(BulkInstancesRequest {
-                    instance_ids: ids.clone(),
-                })
+                .bulk_halt_instances(BulkInstancesRequest { instance_ids: ids })
                 .await?;
-            print_success(&format!("Stop initiated for {} instances", ids.len()));
+            print_success(&format!("Stop initiated for {} instances", count));
         }
 
         InstanceBulkCommands::Reboot { ids } => {
+            let count = ids.len();
             client
-                .bulk_reboot_instances(BulkInstancesRequest {
-                    instance_ids: ids.clone(),
-                })
+                .bulk_reboot_instances(BulkInstancesRequest { instance_ids: ids })
                 .await?;
-            print_success(&format!("Reboot initiated for {} instances", ids.len()));
+            print_success(&format!("Reboot initiated for {} instances", count));
         }
     }
     Ok(())

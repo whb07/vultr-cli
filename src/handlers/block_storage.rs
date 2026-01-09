@@ -107,7 +107,7 @@ pub async fn handle_block_storage(
                     &id,
                     AttachBlockStorageRequest {
                         instance_id: instance_id.clone(),
-                        live: if live { Some(true) } else { None },
+                        live: live.then_some(true),
                     },
                 )
                 .await?;
@@ -119,7 +119,7 @@ pub async fn handle_block_storage(
                 .detach_block_storage(
                     &id,
                     DetachBlockStorageRequest {
-                        live: if live { Some(true) } else { None },
+                        live: live.then_some(true),
                     },
                 )
                 .await?;

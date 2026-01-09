@@ -45,7 +45,7 @@ pub async fn handle_registry(
                 name: name.clone(),
                 region,
                 plan,
-                public: if public { Some(true) } else { None },
+                public: public.then_some(true),
             };
             let registry = client.create_registry(request).await?;
             print_success(&format!("Container registry {} created", name));
@@ -92,7 +92,7 @@ pub async fn handle_registry(
                 .get_registry_docker_credentials(
                     &id,
                     expiry_seconds,
-                    if read_write { Some(true) } else { None },
+                    read_write.then_some(true),
                 )
                 .await?;
             print_output(&creds, output);
@@ -108,8 +108,8 @@ pub async fn handle_registry(
                 .get_registry_kubernetes_credentials(
                     &id,
                     expiry_seconds,
-                    if read_write { Some(true) } else { None },
-                    if base64_encode { Some(true) } else { None },
+                    read_write.then_some(true),
+                    base64_encode.then_some(true),
                 )
                 .await?;
             print_output(&creds, output);

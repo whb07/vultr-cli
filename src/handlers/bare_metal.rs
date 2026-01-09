@@ -68,11 +68,7 @@ pub async fn handle_bare_metal(
                 sshkey_id: create_args.sshkey_id,
                 script_id: create_args.script_id,
                 label: create_args.label,
-                enable_ipv6: if create_args.enable_ipv6 {
-                    Some(true)
-                } else {
-                    None
-                },
+                enable_ipv6: create_args.enable_ipv6.then_some(true),
                 attach_vpc: create_args.attach_vpc,
                 attach_vpc2: create_args.attach_vpc2,
                 tags: create_args.tags,
@@ -87,16 +83,8 @@ pub async fn handle_bare_metal(
                     })
                     .transpose()?,
                 reserved_ipv4: create_args.reserved_ipv4,
-                persistent_pxe: if create_args.persistent_pxe {
-                    Some(true)
-                } else {
-                    None
-                },
-                activation_email: if create_args.activation_email {
-                    Some(true)
-                } else {
-                    None
-                },
+                persistent_pxe: create_args.persistent_pxe.then_some(true),
+                activation_email: create_args.activation_email.then_some(true),
                 hostname: create_args.hostname,
                 mdisk_mode: create_args.mdisk_mode,
                 user_scheme: create_args.user_scheme,

@@ -266,11 +266,7 @@ impl From<&Backup> for BackupRow {
                 .as_ref()
                 .map(|st| st.to_string())
                 .unwrap_or_default(),
-            ready: if b.is_ready() {
-                "Yes".to_string()
-            } else {
-                "No".to_string()
-            },
+            ready: if b.is_ready() { "Yes" } else { "No" }.to_string(),
             date_created: b.date_created.clone().unwrap_or_default(),
         }
     }
@@ -595,11 +591,7 @@ impl From<&Iso> for IsoRow {
                 .as_ref()
                 .map(|st| st.to_string())
                 .unwrap_or_default(),
-            ready: if i.is_ready() {
-                "Yes".to_string()
-            } else {
-                "No".to_string()
-            },
+            ready: if i.is_ready() { "Yes" } else { "No" }.to_string(),
             date_created: i.date_created.clone().unwrap_or_default(),
         }
     }

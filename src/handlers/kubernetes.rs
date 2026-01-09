@@ -199,7 +199,7 @@ async fn handle_node_pool(
                 label: label.clone(),
                 plan,
                 tag,
-                auto_scaler: if auto_scaler { Some(true) } else { None },
+                auto_scaler: auto_scaler.then_some(true),
                 min_nodes,
                 max_nodes,
                 labels: None,

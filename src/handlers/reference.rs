@@ -20,14 +20,9 @@ pub async fn handle_plans(
     price: PriceMode,
     region: Option<&str>,
 ) -> VultrResult<()> {
-    let region = region.and_then(|value| {
-        let trimmed = value.trim();
-        if trimmed.is_empty() {
-            None
-        } else {
-            Some(trimmed)
-        }
-    });
+    let region = region
+        .map(str::trim)
+        .filter(|s| !s.is_empty());
 
     if bare_metal {
         let mut plans = client.list_bare_metal_plans().await?;
