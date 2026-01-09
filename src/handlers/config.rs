@@ -49,7 +49,7 @@ pub fn handle_config(args: ConfigArgs, current_profile: &str) -> VultrResult<()>
                 "output_format" => {
                     config.settings.output_format = value
                         .parse::<OutputFormat>()
-                        .map_err(|e| VultrError::InvalidInput(e))?;
+                        .map_err(VultrError::InvalidInput)?;
                 }
                 "confirm_destructive" => {
                     config.settings.confirm_destructive = value.parse::<bool>().map_err(|_| {

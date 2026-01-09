@@ -223,60 +223,6 @@ where
     Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::sync::atomic::{AtomicBool, Ordering};
-
-    #[tokio::test]
-    async fn test_delete_bare_metal_wait_calls_wait_fn() {
-        let delete_called = AtomicBool::new(false);
-        let wait_called = AtomicBool::new(false);
-
-        let result = delete_bare_metal_impl(
-            "bm-123",
-            || async {
-                delete_called.store(true, Ordering::SeqCst);
-                Ok(())
-            },
-            true,
-            || async {
-                wait_called.store(true, Ordering::SeqCst);
-                Ok(())
-            },
-        )
-        .await;
-
-        assert!(result.is_ok());
-        assert!(delete_called.load(Ordering::SeqCst));
-        assert!(wait_called.load(Ordering::SeqCst));
-    }
-
-    #[tokio::test]
-    async fn test_delete_bare_metal_no_wait_skips_wait_fn() {
-        let delete_called = AtomicBool::new(false);
-        let wait_called = AtomicBool::new(false);
-
-        let result = delete_bare_metal_impl(
-            "bm-123",
-            || async {
-                delete_called.store(true, Ordering::SeqCst);
-                Ok(())
-            },
-            false,
-            || async {
-                wait_called.store(true, Ordering::SeqCst);
-                Ok(())
-            },
-        )
-        .await;
-
-        assert!(result.is_ok());
-        assert!(delete_called.load(Ordering::SeqCst));
-        assert!(!wait_called.load(Ordering::SeqCst));
-    }
-}
-
 async fn handle_bare_metal_ipv4(
     command: BareMetalIpv4Commands,
     client: &VultrClient,
@@ -415,4 +361,58 @@ async fn handle_bare_metal_bulk(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicBool, Ordering};
+
+    #[tokio::test]
+    async fn test_delete_bare_metal_wait_calls_wait_fn() {
+        let delete_called = AtomicBool::new(false);
+        let wait_called = AtomicBool::new(false);
+
+        let result = delete_bare_metal_impl(
+            "bm-123",
+            || async {
+                delete_called.store(true, Ordering::SeqCst);
+                Ok(())
+            },
+            true,
+            || async {
+                wait_called.store(true, Ordering::SeqCst);
+                Ok(())
+            },
+        )
+        .await;
+
+        assert!(result.is_ok());
+        assert!(delete_called.load(Ordering::SeqCst));
+        assert!(wait_called.load(Ordering::SeqCst));
+    }
+
+    #[tokio::test]
+    async fn test_delete_bare_metal_no_wait_skips_wait_fn() {
+        let delete_called = AtomicBool::new(false);
+        let wait_called = AtomicBool::new(false);
+
+        let result = delete_bare_metal_impl(
+            "bm-123",
+            || async {
+                delete_called.store(true, Ordering::SeqCst);
+                Ok(())
+            },
+            false,
+            || async {
+                wait_called.store(true, Ordering::SeqCst);
+                Ok(())
+            },
+        )
+        .await;
+
+        assert!(result.is_ok());
+        assert!(delete_called.load(Ordering::SeqCst));
+        assert!(!wait_called.load(Ordering::SeqCst));
+    }
 }

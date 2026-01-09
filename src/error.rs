@@ -210,7 +210,7 @@ mod tests {
 
     #[test]
     fn test_dialoguer_error_conversion() {
-        let io_err = std::io::Error::new(std::io::ErrorKind::Other, "test error");
+        let io_err = std::io::Error::other("test error");
         let dialoguer_err = dialoguer::Error::IO(io_err);
         let vultr_err: VultrError = dialoguer_err.into();
         match vultr_err {

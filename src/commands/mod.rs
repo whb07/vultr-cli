@@ -667,10 +667,10 @@ pub enum InstanceCommands {
     },
 
     /// Create a new instance
-    Create(InstanceCreateArgs),
+    Create(Box<InstanceCreateArgs>),
 
     /// Update an instance
-    Update(InstanceUpdateArgs),
+    Update(Box<InstanceUpdateArgs>),
 
     /// Delete an instance
     Delete {
@@ -4831,7 +4831,8 @@ pub enum Shell {
     Bash,
     Zsh,
     Fish,
-    PowerShell,
+    #[value(name = "powershell")]
+    Power,
     Elvish,
 }
 
@@ -4841,7 +4842,7 @@ impl From<Shell> for clap_complete::Shell {
             Shell::Bash => clap_complete::Shell::Bash,
             Shell::Zsh => clap_complete::Shell::Zsh,
             Shell::Fish => clap_complete::Shell::Fish,
-            Shell::PowerShell => clap_complete::Shell::PowerShell,
+            Shell::Power => clap_complete::Shell::PowerShell,
             Shell::Elvish => clap_complete::Shell::Elvish,
         }
     }
@@ -5136,7 +5137,7 @@ mod tests {
             clap_complete::Shell::Fish
         );
         assert_eq!(
-            clap_complete::Shell::from(Shell::PowerShell),
+            clap_complete::Shell::from(Shell::Power),
             clap_complete::Shell::PowerShell
         );
         assert_eq!(
@@ -5195,7 +5196,7 @@ mod tests {
             price: PriceMode::Hourly,
             region: None,
         };
-        assert_eq!(args.plan_type.unwrap(), "vc2");
+        assert_eq!(args.plan_type, Some("vc2".to_string()));
     }
 
     #[test]
@@ -5209,7 +5210,7 @@ mod tests {
         let args = AuthLoginArgs {
             api_key: Some("test-key".to_string()),
         };
-        assert_eq!(args.api_key.unwrap(), "test-key");
+        assert_eq!(args.api_key.as_deref(), Some("test-key"));
     }
 
     #[test]
@@ -5225,8 +5226,8 @@ mod tests {
 
         assert_eq!(group_id, "fw-123");
         assert_eq!(subnet_size, 0);
-        assert_eq!(port.unwrap(), "443");
-        assert_eq!(notes.unwrap(), "HTTPS traffic");
+        assert_eq!(port.as_deref(), Some("443"));
+        assert_eq!(notes.as_deref(), Some("HTTPS traffic"));
         assert_eq!(ip_type, "v4");
         assert_eq!(protocol, "TCP");
         assert_eq!(subnet, "0.0.0.0");
@@ -5242,9 +5243,9 @@ mod tests {
 
         assert_eq!(region, "ewr");
         assert_eq!(size, 100);
-        assert!(size >= 10 && size <= 40000);
-        assert_eq!(label.unwrap(), "my-storage");
-        assert_eq!(block_type.unwrap(), "high_perf");
+        assert!((10..=40000).contains(&size));
+        assert_eq!(label, Some("my-storage"));
+        assert_eq!(block_type, Some("high_perf"));
     }
 
     #[test]
@@ -5255,9 +5256,9 @@ mod tests {
         let subnet_mask = Some(16);
 
         assert_eq!(region, "ewr");
-        assert_eq!(description.unwrap(), "Production VPC");
-        assert_eq!(subnet.unwrap(), "10.0.0.0");
-        assert_eq!(subnet_mask.unwrap(), 16);
+        assert_eq!(description.as_deref(), Some("Production VPC"));
+        assert_eq!(subnet.as_deref(), Some("10.0.0.0"));
+        assert_eq!(subnet_mask, Some(16));
     }
 
     #[test]

@@ -59,6 +59,7 @@ pub async fn handle_instance(
         }
 
         InstanceCommands::Create(create_args) => {
+            let create_args = *create_args;
             let request = CreateInstanceRequest {
                 region: create_args.region,
                 plan: create_args.plan,
@@ -127,6 +128,7 @@ pub async fn handle_instance(
         }
 
         InstanceCommands::Update(update_args) => {
+            let update_args = *update_args;
             let request = UpdateInstanceRequest {
                 label: update_args.label,
                 plan: update_args.plan,

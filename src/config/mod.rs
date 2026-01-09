@@ -443,8 +443,10 @@ mod tests {
 
     #[test]
     fn test_config_current_profile_with_named_default() {
-        let mut config = Config::default();
-        config.default_profile = "production".to_string();
+        let mut config = Config {
+            default_profile: "production".to_string(),
+            ..Default::default()
+        };
         let profile = Profile {
             output_format: None,
         };
@@ -501,8 +503,10 @@ mod tests {
 
     #[test]
     fn test_config_serialize_deserialize() {
-        let mut config = Config::default();
-        config.default_profile = "production".to_string();
+        let mut config = Config {
+            default_profile: "production".to_string(),
+            ..Default::default()
+        };
 
         let profile = Profile {
             output_format: Some(OutputFormat::Json),
@@ -544,7 +548,7 @@ mod tests {
     #[test]
     fn test_output_format_clone() {
         let format = OutputFormat::Json;
-        let cloned = format.clone();
+        let cloned = format;
         assert_eq!(cloned, OutputFormat::Json);
     }
 

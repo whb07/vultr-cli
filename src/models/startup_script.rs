@@ -243,7 +243,7 @@ mod tests {
         let req = UpdateStartupScriptRequest::default().with_raw_script("#!/bin/bash");
         assert!(req.script.is_some());
         let decoded = base64::engine::general_purpose::STANDARD
-            .decode(&req.script.unwrap())
+            .decode(req.script.unwrap())
             .unwrap();
         assert_eq!(String::from_utf8(decoded).unwrap(), "#!/bin/bash");
     }

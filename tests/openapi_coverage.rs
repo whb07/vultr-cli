@@ -45,7 +45,7 @@ fn collect_rust_types() -> HashSet<String> {
 fn to_pascal_case(name: &str) -> String {
     name.split(|c: char| !c.is_ascii_alphanumeric())
         .filter(|part| !part.is_empty())
-        .map(|part| segment_case(part))
+        .map(segment_case)
         .collect::<Vec<_>>()
         .join("")
 }
