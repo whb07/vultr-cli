@@ -3,6 +3,7 @@
 use base64::Engine;
 
 use crate::api::VultrClient;
+use crate::api::{self, WaitOptions};
 use crate::commands::{
     BareMetalArgs, BareMetalBulkCommands, BareMetalCommands, BareMetalIpv4Commands,
     BareMetalIpv6Commands, BareMetalVpc2Commands, BareMetalVpcCommands,
@@ -23,6 +24,8 @@ pub async fn handle_bare_metal(
     client: &VultrClient,
     output: OutputFormat,
     skip_confirm: bool,
+    wait: bool,
+    wait_opts: &WaitOptions,
 ) -> VultrResult<()> {
     match args.command {
         BareMetalCommands::List(list_args) => {
@@ -125,7 +128,10 @@ pub async fn handle_bare_metal(
                 return Err(VultrError::Cancelled);
             }
             client.delete_bare_metal(&id).await?;
-            print_success(&format!("Bare metal server {} deleted", id));
+            print_success(&format!("Bare metal server {} deletion initiated", id));
+            if wait {
+                api::verify_bare_metal_deleted(client, &id, wait_opts).await?;
+            }
         }
 
         BareMetalCommands::Start { id } => {

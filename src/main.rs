@@ -114,7 +114,8 @@ async fn run(cli: Cli) -> VultrResult<()> {
                 }
                 Commands::Backup(args) => handle_backup(args, &client, output).await,
                 Commands::BareMetal(args) => {
-                    handle_bare_metal(args, &client, output, skip_confirm).await
+                    handle_bare_metal(args, &client, output, skip_confirm, cli.wait, &wait_opts)
+                        .await
                 }
                 Commands::Iso(args) => handle_iso(args, &client, output, skip_confirm).await,
                 Commands::BlockStorage(args) => {

@@ -452,6 +452,24 @@ pub async fn verify_block_storage_deleted(
     }
 }
 
+/// Verify a bare metal server was deleted
+pub async fn verify_bare_metal_deleted(
+    client: &VultrClient,
+    bare_metal_id: &str,
+    options: &WaitOptions,
+) -> VultrResult<()> {
+    verify_deleted_generic(
+        options,
+        format!(
+            "Verifying bare metal server {} was deleted...",
+            bare_metal_id
+        ),
+        format!("✓ Bare metal server {} has been deleted", bare_metal_id),
+        || async { client.get_bare_metal(bare_metal_id).await.map(|_| ()) },
+    )
+    .await
+}
+
 /// Verify an SSH key was deleted
 pub async fn verify_ssh_key_deleted(
     client: &VultrClient,
