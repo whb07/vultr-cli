@@ -93,9 +93,9 @@ fn build_storage_gateway_request(
     let primary = StorageGatewayNetworkPrimary {
         ipv4_public_enabled: create_args.ipv4_public_enabled,
         ipv6_public_enabled: create_args.ipv6_public_enabled,
-        vpc: create_args.vpc_id.map(|id| StorageGatewayVpc {
-            vpc_uuid: Some(id),
-        }),
+        vpc: create_args
+            .vpc_id
+            .map(|id| StorageGatewayVpc { vpc_uuid: Some(id) }),
     };
 
     Ok(CreateStorageGatewayRequest {

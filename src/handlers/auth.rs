@@ -14,10 +14,9 @@ pub async fn handle_auth(args: AuthArgs, profile: &str) -> VultrResult<()> {
             let api_key = if let Some(key) = login_args.api_key {
                 key
             } else {
-                let key = dialoguer::Password::new()
+                let key = dialoguer::Input::<String>::new()
                     .with_prompt("Enter your Vultr API key")
-                    .allow_empty_password(false)
-                    .interact()?;
+                    .interact_text()?;
                 key.trim().to_string()
             };
 

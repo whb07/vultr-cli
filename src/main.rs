@@ -67,13 +67,20 @@ async fn run(cli: Cli) -> VultrResult<()> {
             let skip_confirm = cli.yes || !cfg.settings.confirm_destructive;
 
             let api_key = if is_public {
-                let cli_key = cli
-                    .api_key
-                    .as_deref()
-                    .and_then(|k| if k.trim().is_empty() { None } else { Some(k.to_string()) });
-                let env_key = std::env::var("VULTR_API_KEY")
-                    .ok()
-                    .and_then(|k| if k.trim().is_empty() { None } else { Some(k) });
+                let cli_key = cli.api_key.as_deref().and_then(|k| {
+                    if k.trim().is_empty() {
+                        None
+                    } else {
+                        Some(k.to_string())
+                    }
+                });
+                let env_key = std::env::var("VULTR_API_KEY").ok().and_then(|k| {
+                    if k.trim().is_empty() {
+                        None
+                    } else {
+                        Some(k)
+                    }
+                });
                 cli_key.or(env_key)
             } else {
                 resolve_api_key(cli.api_key.as_deref(), &effective_profile)?

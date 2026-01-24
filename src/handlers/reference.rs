@@ -20,9 +20,7 @@ pub async fn handle_plans(
     price: PriceMode,
     region: Option<&str>,
 ) -> VultrResult<()> {
-    let region = region
-        .map(str::trim)
-        .filter(|s| !s.is_empty());
+    let region = region.map(str::trim).filter(|s| !s.is_empty());
 
     if bare_metal {
         let mut plans = client.list_bare_metal_plans().await?;
@@ -48,7 +46,11 @@ pub async fn handle_plans(
     Ok(())
 }
 
-pub async fn handle_os(args: OsArgs, client: &VultrClient, output: OutputFormat) -> VultrResult<()> {
+pub async fn handle_os(
+    args: OsArgs,
+    client: &VultrClient,
+    output: OutputFormat,
+) -> VultrResult<()> {
     let mut os_list = client.list_os().await?;
 
     if let Some(id) = args.id {
@@ -57,25 +59,13 @@ pub async fn handle_os(args: OsArgs, client: &VultrClient, output: OutputFormat)
     if let Some(ref family) = args.family {
         let needle = family.trim().to_ascii_lowercase();
         if !needle.is_empty() {
-            os_list.retain(|os| {
-                os.family
-                    .as_deref()
-                    .unwrap_or("")
-                    .to_ascii_lowercase()
-                    == needle
-            });
+            os_list.retain(|os| os.family.as_deref().unwrap_or("").to_ascii_lowercase() == needle);
         }
     }
     if let Some(ref arch) = args.arch {
         let needle = arch.trim().to_ascii_lowercase();
         if !needle.is_empty() {
-            os_list.retain(|os| {
-                os.arch
-                    .as_deref()
-                    .unwrap_or("")
-                    .to_ascii_lowercase()
-                    == needle
-            });
+            os_list.retain(|os| os.arch.as_deref().unwrap_or("").to_ascii_lowercase() == needle);
         }
     }
     if let Some(ref name) = args.name {

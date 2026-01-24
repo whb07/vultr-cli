@@ -89,11 +89,7 @@ pub async fn handle_registry(
             read_write,
         } => {
             let creds = client
-                .get_registry_docker_credentials(
-                    &id,
-                    expiry_seconds,
-                    read_write.then_some(true),
-                )
+                .get_registry_docker_credentials(&id, expiry_seconds, read_write.then_some(true))
                 .await?;
             print_output(&creds, output);
         }

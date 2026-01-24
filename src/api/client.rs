@@ -100,9 +100,7 @@ impl VultrClient {
     async fn delete(&self, path: &str) -> VultrResult<()> {
         let url = format!("{}{}", API_BASE_URL, path);
 
-        let make_request = || {
-            self.with_auth(self.client.delete(&url))
-        };
+        let make_request = || self.with_auth(self.client.delete(&url));
 
         let response = self.send_with_retry(make_request).await?;
         if response.status().is_success() {
@@ -117,9 +115,7 @@ impl VultrClient {
         let url = format!("{}{}", API_BASE_URL, path);
         let body_value = serde_json::to_value(body)?;
 
-        let make_request = || {
-            self.with_auth(self.client.delete(&url)).json(&body_value)
-        };
+        let make_request = || self.with_auth(self.client.delete(&url)).json(&body_value);
 
         let response = self.send_with_retry(make_request).await?;
         if response.status().is_success() {
@@ -134,9 +130,7 @@ impl VultrClient {
         let url = format!("{}{}", API_BASE_URL, path);
         let body_value = serde_json::to_value(body)?;
 
-        let make_request = || {
-            self.with_auth(self.client.post(&url)).json(&body_value)
-        };
+        let make_request = || self.with_auth(self.client.post(&url)).json(&body_value);
 
         let response = self.send_with_retry(make_request).await?;
         if response.status().is_success() {
@@ -151,9 +145,7 @@ impl VultrClient {
         let url = format!("{}{}", API_BASE_URL, path);
         let body_value = serde_json::to_value(body)?;
 
-        let make_request = || {
-            self.with_auth(self.client.put(&url)).json(&body_value)
-        };
+        let make_request = || self.with_auth(self.client.put(&url)).json(&body_value);
 
         let response = self.send_with_retry(make_request).await?;
         if response.status().is_success() {
@@ -168,9 +160,7 @@ impl VultrClient {
         let url = format!("{}{}", API_BASE_URL, path);
         let body_value = serde_json::to_value(body)?;
 
-        let make_request = || {
-            self.with_auth(self.client.patch(&url)).json(&body_value)
-        };
+        let make_request = || self.with_auth(self.client.patch(&url)).json(&body_value);
 
         let response = self.send_with_retry(make_request).await?;
         if response.status().is_success() {
@@ -1554,9 +1544,7 @@ impl VultrClient {
 
     /// Get inference subscription
     pub async fn get_inference(&self, inference_id: &str) -> VultrResult<InferenceSubscription> {
-        let response: InferenceResponse = self
-            .get(&format!("/inference/{}", inference_id))
-            .await?;
+        let response: InferenceResponse = self.get(&format!("/inference/{}", inference_id)).await?;
         Ok(response.subscription)
     }
 
@@ -2721,10 +2709,7 @@ impl VultrClient {
         options: serde_json::Value,
     ) -> VultrResult<DatabaseAdvancedOptionsResponse> {
         self.put(
-            &format!(
-                "/databases/{}/advanced-options/kafka-connect",
-                database_id
-            ),
+            &format!("/databases/{}/advanced-options/kafka-connect", database_id),
             options,
         )
         .await
@@ -4472,9 +4457,8 @@ impl VultrClient {
 
     /// List VFS attachments
     pub async fn list_vfs_attachments(&self, vfs_id: &str) -> VultrResult<Vec<VfsAttachment>> {
-        let response: VfsAttachmentsResponse = self
-            .get(&format!("/vfs/{}/attachments", vfs_id))
-            .await?;
+        let response: VfsAttachmentsResponse =
+            self.get(&format!("/vfs/{}/attachments", vfs_id)).await?;
         Ok(response.attachments)
     }
 
@@ -4494,8 +4478,11 @@ impl VultrClient {
         vfs_id: &str,
         vps_id: &str,
     ) -> VultrResult<VfsAttachment> {
-        self.put(&format!("/vfs/{}/attachments/{}", vfs_id, vps_id), serde_json::json!({}))
-            .await
+        self.put(
+            &format!("/vfs/{}/attachments/{}", vfs_id, vps_id),
+            serde_json::json!({}),
+        )
+        .await
     }
 
     /// Delete a VFS attachment

@@ -106,7 +106,10 @@ fn schema_aliases() -> HashMap<&'static str, &'static [&'static str]> {
     aliases.insert("database-available-connector", &["AvailableConnector"][..]);
     aliases.insert("database-connector", &["KafkaConnector"][..]);
     aliases.insert("database-connector-status", &["ConnectorStatus"][..]);
-    aliases.insert("database-connector-status-task", &["ConnectorTaskStatus"][..]);
+    aliases.insert(
+        "database-connector-status-task",
+        &["ConnectorTaskStatus"][..],
+    );
     aliases.insert("database-db", &["LogicalDatabase"][..]);
     aliases.insert("database-latest-backup", &["DatabaseBackup"][..]);
     aliases.insert("database-oldest-backup", &["DatabaseBackup"][..]);
@@ -140,10 +143,7 @@ fn schema_aliases() -> HashMap<&'static str, &'static [&'static str]> {
     aliases.insert("registry-plan", &["RegistryPlan"][..]);
     aliases.insert("registry-region", &["RegistryRegion"][..]);
     aliases.insert("registry-repository", &["RegistryRepository"][..]);
-    aliases.insert(
-        "registry-repository-artifact",
-        &["RegistryArtifact"][..],
-    );
+    aliases.insert("registry-repository-artifact", &["RegistryArtifact"][..]);
     aliases.insert("registry-robot", &["RegistryRobot"][..]);
     aliases.insert("registry-storage", &["RegistryStorage"][..]);
     aliases.insert("registry-user", &["RegistryUser"][..]);
@@ -164,8 +164,7 @@ fn openapi_schema_coverage() {
     let openapi_path = manifest_dir.join("openapi.json");
     let openapi = fs::read_to_string(&openapi_path)
         .unwrap_or_else(|e| panic!("Failed to read {}: {}", openapi_path.display(), e));
-    let doc: Value =
-        serde_json::from_str(&openapi).expect("Failed to parse openapi.json as JSON");
+    let doc: Value = serde_json::from_str(&openapi).expect("Failed to parse openapi.json as JSON");
 
     let schemas = doc
         .get("components")
@@ -218,14 +217,8 @@ fn openapi_schema_coverage() {
         .map(|name| name.to_string())
         .collect();
 
-    let new_missing: Vec<_> = missing
-        .difference(&expected_missing)
-        .cloned()
-        .collect();
-    let resolved_missing: Vec<_> = expected_missing
-        .difference(&missing)
-        .cloned()
-        .collect();
+    let new_missing: Vec<_> = missing.difference(&expected_missing).cloned().collect();
+    let resolved_missing: Vec<_> = expected_missing.difference(&missing).cloned().collect();
 
     assert!(
         new_missing.is_empty() && resolved_missing.is_empty(),

@@ -29,9 +29,7 @@ pub async fn handle_inference(
             print_output(&sub, output);
         }
         InferenceCommands::Update { id, label } => {
-            let request = UpdateInferenceRequest {
-                label: Some(label),
-            };
+            let request = UpdateInferenceRequest { label: Some(label) };
             let sub = client.update_inference(&id, request).await?;
             print_output(&sub, output);
         }

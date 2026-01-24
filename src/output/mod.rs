@@ -1560,12 +1560,7 @@ impl TableDisplay for Vec<Os> {
         let mut uniform_arch: Option<String> = None;
         let mut all_same = true;
         for os in &sorted {
-            let value = os
-                .arch
-                .as_deref()
-                .unwrap_or("")
-                .trim()
-                .to_ascii_lowercase();
+            let value = os.arch.as_deref().unwrap_or("").trim().to_ascii_lowercase();
             match &uniform_arch {
                 None => uniform_arch = Some(value),
                 Some(existing) if existing == &value => {}
@@ -4788,21 +4783,13 @@ impl TableDisplay for LogsResponse {
             self.meta.total_count
         );
         if self.meta.unreturned_count > 0 {
-            println!(
-                "  {}: {}",
-                "Remaining".green(),
-                self.meta.unreturned_count
-            );
+            println!("  {}: {}", "Remaining".green(), self.meta.unreturned_count);
         }
         if !self.meta.next_page_url.is_empty() {
             println!("  {}: {}", "Next Page".green(), self.meta.next_page_url);
         }
         if !self.meta.continue_time.is_empty() {
-            println!(
-                "  {}: {}",
-                "Continue Time".green(),
-                self.meta.continue_time
-            );
+            println!("  {}: {}", "Continue Time".green(), self.meta.continue_time);
         }
         println!();
         self.logs.print_table();
@@ -4842,10 +4829,7 @@ impl From<&Subaccount> for SubaccountRow {
                 .activated
                 .map(|v| v.to_string())
                 .unwrap_or_else(|| "-".to_string()),
-            balance: s
-                .balance
-                .map(|v| format!("{:.2}", v))
-                .unwrap_or_default(),
+            balance: s.balance.map(|v| format!("{:.2}", v)).unwrap_or_default(),
             pending_charges: s
                 .pending_charges
                 .map(|v| format!("{:.2}", v))
@@ -4948,7 +4932,11 @@ impl From<&VpcAttachment> for VpcAttachmentRow {
             id: a.id.clone().unwrap_or_default(),
             attachment_type: a.attachment_type.clone().unwrap_or_default(),
             mac_address: a.mac_address.clone().unwrap_or_default(),
-            ipv4: a.ip.as_ref().and_then(|ip| ip.v4.clone()).unwrap_or_default(),
+            ipv4: a
+                .ip
+                .as_ref()
+                .and_then(|ip| ip.v4.clone())
+                .unwrap_or_default(),
             date_added: a.date_added.clone().unwrap_or_default(),
         }
     }
@@ -5215,10 +5203,7 @@ impl From<&VfsAttachment> for VfsAttachmentRow {
         Self {
             target_id: a.target_id.clone().unwrap_or_default(),
             state: a.state.clone().unwrap_or_default(),
-            mount_tag: a
-                .mount_tag
-                .map(|v| v.to_string())
-                .unwrap_or_default(),
+            mount_tag: a.mount_tag.map(|v| v.to_string()).unwrap_or_default(),
         }
     }
 }
@@ -5229,8 +5214,7 @@ impl TableDisplay for Vec<VfsAttachment> {
             println!("{}", "No VFS attachments found.".yellow());
             return;
         }
-        let rows: Vec<VfsAttachmentRow> =
-            self.iter().map(VfsAttachmentRow::from).collect();
+        let rows: Vec<VfsAttachmentRow> = self.iter().map(VfsAttachmentRow::from).collect();
         let table = Table::new(rows).with(Style::rounded()).to_string();
         println!("{}", table);
     }
@@ -5283,8 +5267,7 @@ impl TableDisplay for Vec<DatabaseConnectorConfigurationSchema> {
             println!("{}", "No connector configuration options found.".yellow());
             return;
         }
-        let rows: Vec<ConnectorConfigRow> =
-            self.iter().map(ConnectorConfigRow::from).collect();
+        let rows: Vec<ConnectorConfigRow> = self.iter().map(ConnectorConfigRow::from).collect();
         let table = Table::new(rows).with(Style::rounded()).to_string();
         println!("{}", table);
     }
