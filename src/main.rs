@@ -17,7 +17,7 @@ use crate::output::print_error;
 
 use clap::Parser;
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(

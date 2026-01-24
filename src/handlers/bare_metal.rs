@@ -356,7 +356,7 @@ mod tests {
     use super::*;
     use std::sync::atomic::{AtomicBool, Ordering};
 
-    #[tokio::test]
+    #[tokio::test(flavor = "current_thread")]
     async fn test_delete_bare_metal_wait_calls_wait_fn() {
         let delete_called = AtomicBool::new(false);
         let wait_called = AtomicBool::new(false);
@@ -380,7 +380,7 @@ mod tests {
         assert!(wait_called.load(Ordering::SeqCst));
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "current_thread")]
     async fn test_delete_bare_metal_no_wait_skips_wait_fn() {
         let delete_called = AtomicBool::new(false);
         let wait_called = AtomicBool::new(false);
