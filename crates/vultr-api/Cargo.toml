@@ -1,0 +1,25 @@
+[package]
+name = "vultr-api"
+version = "0.1.0"
+edition = "2021"
+description = "Vultr API client"
+license = "MIT"
+authors = ["Vultr CLI Contributors"]
+repository = "https://github.com/vultr/vultr-cli"
+keywords = ["vultr", "cloud", "api"]
+categories = ["api-bindings"]
+rust-version = "1.75"
+
+[dependencies]
+vultr-models = { path = "../vultr-models" }
+vultr-config = { path = "../vultr-config" }
+
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.35", features = ["rt", "time"] }
+tracing = "0.1"
+rand = "0.8"
+httpdate = "1"
+url = "2.4"
+indicatif = "0.17"

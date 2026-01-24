@@ -1,0 +1,19 @@
+[package]
+name = "vultr-output"
+version = "0.1.0"
+edition = "2021"
+description = "Output formatting for Vultr CLI"
+license = "MIT"
+authors = ["Vultr CLI Contributors"]
+repository = "https://github.com/vultr/vultr-cli"
+keywords = ["vultr", "cloud", "output"]
+categories = ["command-line-utilities"]
+rust-version = "1.75"
+
+[dependencies]
+vultr-models = { path = "../vultr-models" }
+vultr-config = { path = "../vultr-config" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tabled = "0.14"
+colored = "2.1"

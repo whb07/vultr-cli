@@ -1,0 +1,21 @@
+[package]
+name = "vultr-config"
+version = "0.1.0"
+edition = "2021"
+description = "Configuration and error types for Vultr CLI"
+license = "MIT"
+authors = ["Vultr CLI Contributors"]
+repository = "https://github.com/vultr/vultr-cli"
+keywords = ["vultr", "cloud", "config"]
+categories = ["command-line-utilities", "api-bindings"]
+rust-version = "1.75"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+directories = "5.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+dialoguer = "0.11"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+keyring = { version = "3.6.3", features = ["apple-native","windows-native","linux-native-sync-persistent","crypto-rust","vendored"] }

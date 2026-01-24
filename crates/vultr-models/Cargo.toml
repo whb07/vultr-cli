@@ -1,0 +1,20 @@
+[package]
+name = "vultr-models"
+version = "0.1.0"
+edition = "2021"
+description = "Vultr API data models"
+license = "MIT"
+authors = ["Vultr CLI Contributors"]
+repository = "https://github.com/vultr/vultr-cli"
+keywords = ["vultr", "cloud", "models"]
+categories = ["api-bindings"]
+rust-version = "1.75"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+base64 = "0.21"
+
+[dev-dependencies]
+syn = { version = "2", features = ["full"] }
+walkdir = "2"

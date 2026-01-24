@@ -1,0 +1,26 @@
+[package]
+name = "vultr-cli"
+version = "0.1.0"
+edition = "2021"
+description = "A production-ready CLI for managing Vultr cloud resources"
+license = "MIT"
+authors = ["Vultr CLI Contributors"]
+repository = "https://github.com/vultr/vultr-cli"
+keywords = ["vultr", "cloud", "cli", "api"]
+categories = ["command-line-utilities", "api-bindings"]
+rust-version = "1.75"
+
+[dependencies]
+vultr-api = { path = "../vultr-api" }
+vultr-config = { path = "../vultr-config" }
+vultr-models = { path = "../vultr-models" }
+vultr-output = { path = "../vultr-output" }
+
+clap = { version = "4.4", features = ["derive", "env", "string"] }
+clap_complete = "4.4"
+tokio = { version = "1.35", features = ["rt", "macros", "time"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+dialoguer = "0.11"
+base64 = "0.21"
+serde_json = "1.0"
