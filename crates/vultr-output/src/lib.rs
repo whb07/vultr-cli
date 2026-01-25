@@ -1,9 +1,9 @@
 //! Output formatting for CLI responses
 
-use vultr_config::OutputFormat;
-use vultr_models::*;
 use colored::Colorize;
 use tabled::{settings::Style, Table, Tabled};
+use vultr_config::OutputFormat;
+use vultr_models::*;
 
 /// Format and print output based on the selected format
 pub fn print_output<T: serde::Serialize + TableDisplay>(data: &T, format: OutputFormat) {

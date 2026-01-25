@@ -1,10 +1,10 @@
 //! Wait/polling functionality for async operations
 
 use crate::VultrClient;
-use vultr_config::{VultrError, VultrResult};
-use vultr_models::*;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::time::Duration;
+use vultr_config::{VultrError, VultrResult};
+use vultr_models::*;
 
 /// Default wait timeout in seconds
 pub const DEFAULT_TIMEOUT: u64 = 600;

@@ -1,10 +1,10 @@
 //! VFS command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{VfsArgs, VfsAttachmentCommands, VfsCommands, VfsCreateArgs, VfsUpdateArgs};
+use crate::handlers::confirm_delete;
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{CreateVfsRequest, UpdateVfsRequest, VfsStorageSizeRequest};
 use vultr_output::{print_output, print_success};
 

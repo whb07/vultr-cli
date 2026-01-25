@@ -1,7 +1,7 @@
 //! Reference data command handlers (regions, plans, OS)
 
-use vultr_api::VultrClient;
 use crate::commands::{OsArgs, PriceMode};
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::VultrResult;
 use vultr_output::{print_bare_metal_plans, print_output};

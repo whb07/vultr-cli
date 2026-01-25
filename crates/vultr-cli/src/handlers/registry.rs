@@ -1,14 +1,15 @@
 //! Container Registry command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{
     RegistryArgs, RegistryArtifactCommands, RegistryCommands, RegistryReplicationCommands,
     RegistryRepositoryCommands, RegistryRetentionCommands, RegistryRetentionRuleCommands,
     RegistryRetentionScheduleCommands, RegistryRobotCommands,
 };
+use crate::handlers::confirm_delete;
+use std::collections::HashMap;
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{
     CreateRegistryRequest, CreateReplicationRequest, CreateRetentionRuleRequest,
     CreateRetentionScopeSelectors, CreateRetentionTagSelector, CreateRobotRequest,
@@ -16,7 +17,6 @@ use vultr_models::{
     UpdateRobotRequest, UpdateUserPasswordRequest,
 };
 use vultr_output::{print_info, print_output, print_success};
-use std::collections::HashMap;
 
 pub async fn handle_registry(
     args: RegistryArgs,

@@ -2,14 +2,14 @@
 
 use dialoguer::Confirm;
 
-use vultr_api::{self as api, VultrClient, WaitOptions};
 use crate::commands::{
     FirewallArgs, FirewallCommands, FirewallGroupArgs, FirewallGroupCommands, FirewallRuleArgs,
     FirewallRuleCommands,
 };
+use crate::handlers::confirm_delete;
+use vultr_api::{self as api, VultrClient, WaitOptions};
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{
     CreateFirewallGroupRequest, CreateFirewallRuleRequest, UpdateFirewallGroupRequest,
 };

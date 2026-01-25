@@ -1,10 +1,10 @@
 //! Snapshot command handlers
 
-use vultr_api::{self as api, VultrClient, WaitOptions};
 use crate::commands::{SnapshotArgs, SnapshotCommands};
+use crate::handlers::confirm_delete;
+use vultr_api::{self as api, VultrClient, WaitOptions};
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{CreateSnapshotFromUrlRequest, CreateSnapshotRequest, UpdateSnapshotRequest};
 use vultr_output::{print_output, print_success};
 

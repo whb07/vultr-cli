@@ -1,10 +1,10 @@
 //! Reserved IP command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{ReservedIpArgs, ReservedIpCommands};
+use crate::handlers::confirm_delete;
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{
     AttachReservedIpRequest, ConvertReservedIpRequest, CreateReservedIpRequest,
     UpdateReservedIpRequest,

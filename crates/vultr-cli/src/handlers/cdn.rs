@@ -1,13 +1,13 @@
 //! CDN command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{
     CdnArgs, CdnCommands, CdnPullZoneArgs, CdnPullZoneCommands, CdnPushZoneArgs,
     CdnPushZoneCommands, CdnPushZoneFileArgs, CdnPushZoneFileCommands,
 };
+use crate::handlers::confirm_delete;
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{
     CreateFileEndpointRequest, CreatePullZoneRequest, CreatePushZoneRequest, UpdatePullZoneRequest,
     UpdatePushZoneRequest,

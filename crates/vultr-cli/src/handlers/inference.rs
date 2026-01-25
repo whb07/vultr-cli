@@ -1,10 +1,10 @@
 //! Inference command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{InferenceArgs, InferenceCommands};
+use crate::handlers::confirm_delete;
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::VultrResult;
-use crate::handlers::confirm_delete;
 use vultr_models::{CreateInferenceRequest, UpdateInferenceRequest};
 use vultr_output::{print_output, print_success};
 

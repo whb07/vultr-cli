@@ -1,7 +1,7 @@
 //! Backup command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{BackupArgs, BackupCommands};
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::VultrResult;
 use vultr_output::print_output;

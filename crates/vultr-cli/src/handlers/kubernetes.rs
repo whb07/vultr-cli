@@ -2,13 +2,13 @@
 
 use base64::Engine;
 
-use vultr_api::VultrClient;
 use crate::commands::{
     KubernetesArgs, KubernetesCommands, KubernetesNodeCommands, KubernetesNodePoolCommands,
 };
+use crate::handlers::confirm_delete;
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{
     CreateClusterRequest, CreateNodePoolRequest, UpdateClusterRequest, UpdateNodePoolRequest,
     UpgradeClusterRequest,

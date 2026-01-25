@@ -1,10 +1,10 @@
 //! Block storage command handlers
 
-use vultr_api::{self as api, VultrClient, WaitOptions};
 use crate::commands::{BlockStorageArgs, BlockStorageCommands};
+use crate::handlers::confirm_delete;
+use vultr_api::{self as api, VultrClient, WaitOptions};
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{
     AttachBlockStorageRequest, CreateBlockStorageRequest, DetachBlockStorageRequest,
     UpdateBlockStorageRequest,

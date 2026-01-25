@@ -1,10 +1,10 @@
 //! DNS command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{DnsArgs, DnsCommands, DnsRecordCommands};
+use crate::handlers::confirm_delete;
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{
     CreateDomainRequest, CreateRecordRequest, UpdateDomainRequest, UpdateRecordRequest,
     UpdateSoaRequest,

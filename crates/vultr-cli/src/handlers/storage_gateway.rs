@@ -1,13 +1,13 @@
 //! Storage gateway command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{
     StorageGatewayArgs, StorageGatewayCommands, StorageGatewayCreateArgs,
     StorageGatewayExportCommands,
 };
+use crate::handlers::confirm_delete;
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::confirm_delete;
 use vultr_models::{
     CreateStorageGatewayRequest, StorageGatewayExport, StorageGatewayNetwork,
     StorageGatewayNetworkPrimary, StorageGatewayVpc, UpdateStorageGatewayRequest,

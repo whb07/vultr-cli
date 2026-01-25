@@ -1,7 +1,7 @@
 //! Subaccount command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{SubaccountArgs, SubaccountCommands};
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::VultrResult;
 use vultr_models::CreateSubaccountRequest;

@@ -3,15 +3,15 @@
 use base64::Engine;
 use dialoguer::Confirm;
 
-use vultr_api::{self as api, VultrClient, WaitOptions};
 use crate::commands::{
     InstanceArgs, InstanceBackupCommands, InstanceBulkCommands, InstanceCommands,
     InstanceIpv4Commands, InstanceIpv6Commands, InstanceIsoCommands, InstanceVpc2Commands,
     InstanceVpcCommands,
 };
+use crate::handlers::{confirm_delete, read_file_or_bytes};
+use vultr_api::{self as api, VultrClient, WaitOptions};
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::{confirm_delete, read_file_or_bytes};
 use vultr_models::{
     AttachIsoRequest, AttachVpc2Request, AttachVpcRequest, BulkInstancesRequest,
     CreateInstanceRequest, CreateIpv4Request, DetachVpc2Request, DetachVpcRequest,

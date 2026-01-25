@@ -72,10 +72,10 @@ pub use vpc2::handle_vpc2;
 pub(crate) use common::*;
 
 mod common {
-    use vultr_config::{VultrError, VultrResult};
     use dialoguer::Confirm;
     use std::io::Read;
     use std::path::PathBuf;
+    use vultr_config::{VultrError, VultrResult};
 
     /// Read file contents if input starts with '@', otherwise return input as-is
     pub fn read_file_or_string(input: &str) -> VultrResult<String> {

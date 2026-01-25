@@ -1,7 +1,7 @@
 //! Database command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::*;
+use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::VultrResult;
 use vultr_models::*;

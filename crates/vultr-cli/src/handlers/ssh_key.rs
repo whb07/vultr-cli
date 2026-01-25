@@ -1,10 +1,10 @@
 //! SSH key command handlers
 
-use vultr_api::{VultrClient, WaitOptions};
 use crate::commands::{SshKeyArgs, SshKeyCommands};
+use crate::handlers::{confirm_delete, read_file_or_string};
+use vultr_api::{VultrClient, WaitOptions};
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::{confirm_delete, read_file_or_string};
 use vultr_models::{CreateSshKeyRequest, UpdateSshKeyRequest};
 use vultr_output::{print_output, print_success};
 

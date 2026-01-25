@@ -2,15 +2,16 @@
 
 use base64::Engine;
 
-use vultr_api::VultrClient;
-use vultr_api::{self as api, WaitOptions};
 use crate::commands::{
     BareMetalArgs, BareMetalBulkCommands, BareMetalCommands, BareMetalIpv4Commands,
     BareMetalIpv6Commands, BareMetalVpc2Commands, BareMetalVpcCommands,
 };
+use crate::handlers::{confirm_delete, read_file_or_bytes};
+use std::future::Future;
+use vultr_api::VultrClient;
+use vultr_api::{self as api, WaitOptions};
 use vultr_config::OutputFormat;
 use vultr_config::{VultrError, VultrResult};
-use crate::handlers::{confirm_delete, read_file_or_bytes};
 use vultr_models::{
     AttachBareMetalVpc2Request, AttachBareMetalVpcRequest, BulkBareMetalRequest,
     CreateBareMetalRequest, DetachBareMetalVpc2Request, DetachBareMetalVpcRequest,
@@ -18,7 +19,6 @@ use vultr_models::{
     SetBareMetalReverseIpv4Request, SetBareMetalReverseIpv6Request, UpdateBareMetalRequest,
 };
 use vultr_output::{print_output, print_success};
-use std::future::Future;
 
 pub async fn handle_bare_metal(
     args: BareMetalArgs,
