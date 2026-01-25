@@ -28,19 +28,19 @@ cargo build --release
 
 ```bash
 # Interactive login (stores key securely in system keyring)
-vultr-cli auth login
+vultr auth login
 
 # Or use environment variable
 export VULTR_API_KEY="your-api-key"
 
 # Or pass directly (not recommended for scripts)
-vultr-cli --api-key "your-key" instance list
+vultr --api-key "your-key" instance list
 
 # Check auth status
-vultr-cli auth status
+vultr auth status
 
 # Logout (remove stored key)
-vultr-cli auth logout
+vultr auth logout
 ```
 
 ## Usage Examples
@@ -49,10 +49,10 @@ vultr-cli auth logout
 
 ```bash
 # List all instances
-vultr-cli instance list
+vultr instance list
 
 # Create an instance
-vultr-cli instance create \
+vultr instance create \
   --region ewr \
   --plan vc2-1c-1gb \
   --os-id 387 \
@@ -65,95 +65,95 @@ vultr-cli instance create \
 # - Optional: --disable-public-ipv4, --activation-email, --reserved-ipv4, --user-scheme
 
 # Get instance details
-vultr-cli instance get <instance-id>
+vultr instance get <instance-id>
 
 # Start/stop/reboot
-vultr-cli instance start <instance-id> --wait
-vultr-cli instance stop <instance-id> --wait
-vultr-cli instance reboot <instance-id>
+vultr instance start <instance-id> --wait
+vultr instance stop <instance-id> --wait
+vultr instance reboot <instance-id>
 
 # Delete (with confirmation)
-vultr-cli instance delete <instance-id>
+vultr instance delete <instance-id>
 
 # Delete without confirmation, wait for deletion
-vultr-cli instance delete <instance-id> -y --wait
+vultr instance delete <instance-id> -y --wait
 ```
 
 ### SSH Keys
 
 ```bash
 # List SSH keys
-vultr-cli ssh-key list
+vultr ssh-key list
 
 # Create from string
-vultr-cli ssh-key create --name "my-key" --key "ssh-rsa AAAA..."
+vultr ssh-key create --name "my-key" --key "ssh-rsa AAAA..."
 
 # Create from file
-vultr-cli ssh-key create --name "my-key" --key @~/.ssh/id_rsa.pub
+vultr ssh-key create --name "my-key" --key @~/.ssh/id_rsa.pub
 
 # Delete
-vultr-cli ssh-key delete <key-id>
+vultr ssh-key delete <key-id>
 ```
 
 ### Startup Scripts
 
 ```bash
 # List scripts
-vultr-cli startup-script list
+vultr startup-script list
 
 # Create from file
-vultr-cli startup-script create --name "setup" --script @./setup.sh --script-type boot
+vultr startup-script create --name "setup" --script @./setup.sh --script-type boot
 
 # Get script (shows decoded content)
-vultr-cli startup-script get <script-id>
+vultr startup-script get <script-id>
 ```
 
 ### Snapshots
 
 ```bash
 # List snapshots
-vultr-cli snapshot list
+vultr snapshot list
 
 # Create from instance
-vultr-cli snapshot create --instance-id <id> --description "Before upgrade" --wait
+vultr snapshot create --instance-id <id> --description "Before upgrade" --wait
 
 # Create from URL
-vultr-cli snapshot create-from-url --url "https://..." --description "Custom image"
+vultr snapshot create-from-url --url "https://..." --description "Custom image"
 
 # Delete
-vultr-cli snapshot delete <snapshot-id> --wait
+vultr snapshot delete <snapshot-id> --wait
 ```
 
 ### Block Storage
 
 ```bash
 # List volumes
-vultr-cli block-storage list
+vultr block-storage list
 
 # Create
-vultr-cli block-storage create --region ewr --size 100 --label "data-vol" --wait
+vultr block-storage create --region ewr --size 100 --label "data-vol" --wait
 
 # Attach to instance (live)
-vultr-cli block-storage attach <block-id> --instance-id <instance-id> --live
+vultr block-storage attach <block-id> --instance-id <instance-id> --live
 
 # Detach
-vultr-cli block-storage detach <block-id> --live
+vultr block-storage detach <block-id> --live
 
 # Delete
-vultr-cli block-storage delete <block-id> --wait
+vultr block-storage delete <block-id> --wait
 ```
 
 ### Firewalls
 
 ```bash
 # List firewall groups
-vultr-cli firewall group list
+vultr firewall group list
 
 # Create group
-vultr-cli firewall group create --description "Web servers"
+vultr firewall group create --description "Web servers"
 
 # Add rule (allow SSH from anywhere)
-vultr-cli firewall rule create \
+vultr firewall rule create \
   --group-id <group-id> \
   --ip-type v4 \
   --protocol TCP \
@@ -163,7 +163,7 @@ vultr-cli firewall rule create \
   --notes "SSH access"
 
 # Add rule (allow HTTP)
-vultr-cli firewall rule create \
+vultr firewall rule create \
   --group-id <group-id> \
   --ip-type v4 \
   --protocol TCP \
@@ -173,88 +173,88 @@ vultr-cli firewall rule create \
   --notes "HTTP"
 
 # List rules
-vultr-cli firewall rule list --group-id <group-id>
+vultr firewall rule list --group-id <group-id>
 ```
 
 ### VPCs
 
 ```bash
 # List VPCs
-vultr-cli vpc list
+vultr vpc list
 
 # Create
-vultr-cli vpc create --region ewr --description "Production" --subnet 10.0.0.0 --subnet-mask 24
+vultr vpc create --region ewr --description "Production" --subnet 10.0.0.0 --subnet-mask 24
 
 # Delete
-vultr-cli vpc delete <vpc-id>
+vultr vpc delete <vpc-id>
 
 # List VPC attachments
-vultr-cli vpc attachments <vpc-id>
+vultr vpc attachments <vpc-id>
 ```
 
 ### Private Networks (Legacy)
 
 ```bash
 # List private networks
-vultr-cli private-network list
-vultr-cli pnet list
-vultr-cli privnet list
+vultr private-network list
+vultr pnet list
+vultr privnet list
 
 # Create
-vultr-cli private-network create --region ewr --description "Legacy net" --subnet 10.10.0.0 --subnet-mask 24
+vultr private-network create --region ewr --description "Legacy net" --subnet 10.10.0.0 --subnet-mask 24
 ```
 
 ### Applications (Marketplace Variables)
 
 ```bash
 # List applications
-vultr-cli applications list
+vultr applications list
 
 # Show required variables for a marketplace app
-vultr-cli applications variables --image-id <image-id>
+vultr applications variables --image-id <image-id>
 ```
 
 ### Inference
 
 ```bash
 # List subscriptions
-vultr-cli inference list
+vultr inference list
 
 # Create a subscription
-vultr-cli inference create --label "prod"
+vultr inference create --label "prod"
 
 # Usage
-vultr-cli inference usage <subscription-id>
+vultr inference usage <subscription-id>
 ```
 
 ### Logs
 
 ```bash
 # Filter logs by time window and resource
-vultr-cli logs --start-time 2024-01-01T00:00:00Z --end-time 2024-01-01T01:00:00Z --resource-type instance
+vultr logs --start-time 2024-01-01T00:00:00Z --end-time 2024-01-01T01:00:00Z --resource-type instance
 
 # Continue from a prior response
-vultr-cli logs --continue-time 2024-01-01T01:00:00Z
+vultr logs --continue-time 2024-01-01T01:00:00Z
 ```
 
 ### Subaccounts
 
 ```bash
 # List subaccounts
-vultr-cli subaccount list
+vultr subaccount list
 
 # Create a subaccount
-vultr-cli subaccount create --email "sub@acme.co" --name "Acme Widgets LLC"
+vultr subaccount create --email "sub@acme.co" --name "Acme Widgets LLC"
 ```
 
 ### Storage Gateways
 
 ```bash
 # List storage gateways
-vultr-cli storage-gateway list
+vultr storage-gateway list
 
 # Create a storage gateway
-vultr-cli storage-gateway create \
+vultr storage-gateway create \
   --label "my_storage_gateway" \
   --type nfs4 \
   --region ewr \
@@ -265,56 +265,56 @@ vultr-cli storage-gateway create \
   --ipv4-public-enabled true
 
 # Add an export
-vultr-cli storage-gateway export add --gateway-id <id> --label "export2" --vfs-uuid <vfs-uuid>
+vultr storage-gateway export add --gateway-id <id> --label "export2" --vfs-uuid <vfs-uuid>
 ```
 
 ### VFS
 
 ```bash
 # List VFS
-vultr-cli vfs list
+vultr vfs list
 
 # Create VFS
-vultr-cli vfs create --region ewr --label "prod-vfs" --size-gb 100 --disk-type nvme
+vultr vfs create --region ewr --label "prod-vfs" --size-gb 100 --disk-type nvme
 
 # Attach a VPS to VFS
-vultr-cli vfs attachment attach --vfs-id <vfs-id> --vps-id <instance-id>
+vultr vfs attachment attach --vfs-id <vfs-id> --vps-id <instance-id>
 ```
 
 ### Databases (Advanced Options / Kafka)
 
 ```bash
 # Get advanced options
-vultr-cli database advanced-options <db-id>
+vultr database advanced-options <db-id>
 
 # Set Kafka REST advanced options
-vultr-cli database set-advanced-options-kafka-rest --database-id <db-id> --options '{"producer_acks":"1"}'
+vultr database set-advanced-options-kafka-rest --database-id <db-id> --options '{"producer_acks":"1"}'
 
 # Kafka user permissions
-vultr-cli database user permissions --database-id <db-id> --username <user> --permission read
+vultr database user permissions --database-id <db-id> --username <user> --permission read
 
 # Connector configuration schema
-vultr-cli database connector config-schema --database-id <db-id> --connector-class <class>
+vultr database connector config-schema --database-id <db-id> --connector-class <class>
 ```
 
 ### Reference Data
 
 ```bash
 # List regions
-vultr-cli regions
+vultr regions
 
 # List plans (optionally filter by type)
-vultr-cli plans
-vultr-cli plans --plan-type vc2
-vultr-cli plans --region ewr
-vultr-cli plans --bare-metal
-vultr-cli plans --bare-metal --price monthly
-vultr-cli plans --bare-metal --region ewr
+vultr plans
+vultr plans --plan-type vc2
+vultr plans --region ewr
+vultr plans --bare-metal
+vultr plans --bare-metal --price monthly
+vultr plans --bare-metal --region ewr
 
 # List operating systems
-vultr-cli os
-vultr-cli os --family ubuntu
-vultr-cli os --name "Ubuntu 22.04"
+vultr os
+vultr os --family ubuntu
+vultr os --name "Ubuntu 22.04"
 ```
 
 ## Global Options
@@ -332,16 +332,16 @@ vultr-cli os --name "Ubuntu 22.04"
 
 ```bash
 # Bash
-vultr-cli completions bash > /etc/bash_completion.d/vultr-cli
+vultr completions bash > /etc/bash_completion.d/vultr
 
 # Zsh
-vultr-cli completions zsh > ~/.zfunc/_vultr-cli
+vultr completions zsh > ~/.zfunc/_vultr
 
 # Fish
-vultr-cli completions fish > ~/.config/fish/completions/vultr-cli.fish
+vultr completions fish > ~/.config/fish/completions/vultr.fish
 
 # PowerShell
-vultr-cli completions powershell > vultr-cli.ps1
+vultr completions powershell > vultr.ps1
 ```
 
 ## Exit Codes
@@ -362,9 +362,9 @@ vultr-cli completions powershell > vultr-cli.ps1
 ## Configuration
 
 Config file location:
-- Linux: `~/.config/vultr-cli/config.json`
-- macOS: `~/Library/Application Support/com.vultr.vultr-cli/config.json`
-- Windows: `%APPDATA%\vultr\vultr-cli\config.json`
+- Linux: `~/.config/vultr/config.json`
+- macOS: `~/Library/Application Support/com.vultr.vultr/config.json`
+- Windows: `%APPDATA%\vultr\vultr\config.json`
 
 ```json
 {
@@ -405,7 +405,7 @@ MIT. See `LICENSE`.
 
 ## Secrets storage
 
-By default, `vultr-cli` stores your API token in the operating system keyring (macOS Keychain, Windows Credential Manager, Linux Secret Service).
+By default, `vultr` stores your API token in the operating system keyring (macOS Keychain, Windows Credential Manager, Linux Secret Service).
 
 If you are in an environment where the keyring is unavailable (some CI runners), you can enable an explicit fallback to a local `credentials.json` file by setting:
 

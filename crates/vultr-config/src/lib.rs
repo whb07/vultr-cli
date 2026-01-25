@@ -2,13 +2,13 @@
 
 mod error;
 
-pub use error::{ApiErrorResponse, VultrError, VultrResult};
 use directories::ProjectDirs;
+pub use error::{ApiErrorResponse, VultrError, VultrResult};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 /// Application name for config directories
-const APP_NAME: &str = "vultr-cli";
+const APP_NAME: &str = "vultr";
 
 /// CLI Configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -231,7 +231,7 @@ impl Config {
 pub struct SecureStorage;
 
 impl SecureStorage {
-    const SERVICE: &'static str = "vultr-cli";
+    const SERVICE: &'static str = "vultr";
 
     fn file_fallback_enabled() -> bool {
         std::env::var("VULTR_CLI_INSECURE_FILE_SECRETS")
@@ -565,7 +565,7 @@ mod tests {
 
     #[test]
     fn test_secure_storage_service_name() {
-        assert_eq!(SecureStorage::SERVICE, "vultr-cli");
+        assert_eq!(SecureStorage::SERVICE, "vultr");
     }
 
     #[test]

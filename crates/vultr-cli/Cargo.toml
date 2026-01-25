@@ -10,6 +10,10 @@ keywords = ["vultr", "cloud", "cli", "api"]
 categories = ["command-line-utilities", "api-bindings"]
 rust-version = "1.75"
 
+[[bin]]
+name = "vultr"
+path = "src/main.rs"
+
 [dependencies]
 vultr-api = { path = "../vultr-api" }
 vultr-config = { path = "../vultr-config" }

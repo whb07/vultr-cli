@@ -1,11 +1,11 @@
 //! CLI command definitions and handlers
 
-use vultr_config::OutputFormat;
 use clap::{Parser, Subcommand, ValueEnum};
+use vultr_config::OutputFormat;
 
 /// Vultr CLI - Manage your Vultr cloud resources
 #[derive(Parser, Debug, Clone)]
-#[command(name = "vultr-cli")]
+#[command(name = "vultr")]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 pub struct Cli {
@@ -5263,34 +5263,34 @@ mod tests {
 
     #[test]
     fn test_cli_api_key_before_subcommand() {
-        let cli = Cli::try_parse_from(["vultr-cli", "--api-key", "test123", "regions"]).unwrap();
+        let cli = Cli::try_parse_from(["vultr", "--api-key", "test123", "regions"]).unwrap();
         assert_eq!(cli.api_key, Some("test123".to_string()));
     }
 
     #[test]
     fn test_cli_api_key_after_subcommand() {
-        let cli = Cli::try_parse_from(["vultr-cli", "regions", "--api-key", "test456"]).unwrap();
+        let cli = Cli::try_parse_from(["vultr", "regions", "--api-key", "test456"]).unwrap();
         assert_eq!(cli.api_key, Some("test456".to_string()));
     }
 
     #[test]
     fn test_cli_api_key_with_nested_subcommand() {
         let cli =
-            Cli::try_parse_from(["vultr-cli", "instance", "list", "--api-key", "test789"]).unwrap();
+            Cli::try_parse_from(["vultr", "instance", "list", "--api-key", "test789"]).unwrap();
         assert_eq!(cli.api_key, Some("test789".to_string()));
     }
 
     #[test]
     fn test_cli_api_key_between_subcommands() {
         let cli =
-            Cli::try_parse_from(["vultr-cli", "instance", "--api-key", "testabc", "list"]).unwrap();
+            Cli::try_parse_from(["vultr", "instance", "--api-key", "testabc", "list"]).unwrap();
         assert_eq!(cli.api_key, Some("testabc".to_string()));
     }
 
     #[test]
     fn test_cli_all_global_flags() {
         let cli = Cli::try_parse_from([
-            "vultr-cli",
+            "vultr",
             "--api-key",
             "mykey",
             "--profile",

@@ -1,7 +1,7 @@
 //! Authentication command handlers
 
-use vultr_api::VultrClient;
 use crate::commands::{AuthArgs, AuthCommands};
+use vultr_api::VultrClient;
 use vultr_config::SecureStorage;
 use vultr_config::{VultrError, VultrResult};
 use vultr_output::{print_info, print_success, print_warning};
@@ -56,9 +56,7 @@ pub async fn handle_auth(args: AuthArgs, profile: &str) -> VultrResult<()> {
                     if std::env::var("VULTR_API_KEY").is_ok() {
                         print_info("Using API key from VULTR_API_KEY environment variable");
                     } else {
-                        print_warning(
-                            "Not authenticated. Run 'vultr-cli auth login' to authenticate.",
-                        );
+                        print_warning("Not authenticated. Run 'vultr auth login' to authenticate.");
                     }
                 }
             }

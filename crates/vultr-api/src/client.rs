@@ -1,10 +1,10 @@
 //! HTTP client for the Vultr API
 
-use vultr_config::{ApiErrorResponse, VultrError, VultrResult};
-use vultr_models::*;
 use reqwest::{header::RETRY_AFTER, Client, Method, RequestBuilder, Response, StatusCode};
 use serde::{de::DeserializeOwned, Serialize};
 use std::time::Duration;
+use vultr_config::{ApiErrorResponse, VultrError, VultrResult};
+use vultr_models::*;
 
 use rand::Rng;
 
@@ -32,7 +32,7 @@ impl VultrClient {
     ) -> VultrResult<Self> {
         let client = Client::builder()
             .timeout(Duration::from_secs(http_timeout_seconds.max(1)))
-            .user_agent(format!("vultr-cli/{}", env!("CARGO_PKG_VERSION")))
+            .user_agent(format!("vultr/{}", env!("CARGO_PKG_VERSION")))
             .build()?;
 
         Ok(Self {

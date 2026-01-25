@@ -8,7 +8,7 @@ pub enum VultrError {
     #[error("API error: {status} - {message}")]
     ApiError { status: u16, message: String },
 
-    #[error("Authentication required. Run 'vultr-cli auth login' or set VULTR_API_KEY")]
+    #[error("Authentication required. Run 'vultr auth login' or set VULTR_API_KEY")]
     AuthenticationRequired,
 
     #[error("Invalid or expired API key. Please check your API key and try again.")]

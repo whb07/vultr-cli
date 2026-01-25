@@ -203,10 +203,5 @@ fn is_public_command(command: &Commands) -> bool {
 fn generate_completions(shell: Shell) {
     use clap::CommandFactory;
     let shell: clap_complete::Shell = shell.into();
-    clap_complete::generate(
-        shell,
-        &mut Cli::command(),
-        "vultr-cli",
-        &mut std::io::stdout(),
-    );
+    clap_complete::generate(shell, &mut Cli::command(), "vultr", &mut std::io::stdout());
 }
