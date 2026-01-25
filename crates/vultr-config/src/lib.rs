@@ -173,7 +173,7 @@ impl std::fmt::Display for OutputFormat {
 impl Config {
     /// Get the config directory path
     pub fn config_dir() -> VultrResult<PathBuf> {
-        ProjectDirs::from("com", "vultr", APP_NAME)
+        ProjectDirs::from("com", "vultr-cli", APP_NAME)
             .map(|dirs| dirs.config_dir().to_path_buf())
             .ok_or_else(|| VultrError::ConfigError("Could not determine config directory".into()))
     }

@@ -362,9 +362,9 @@ vultr completions powershell > vultr.ps1
 ## Configuration
 
 Config file location:
-- Linux: `~/.config/vultr/config.json`
-- macOS: `~/Library/Application Support/com.vultr.vultr/config.json`
-- Windows: `%APPDATA%\vultr\vultr\config.json`
+- Linux: `~/.config/vultr-cli/vultr/config.json`
+- macOS: `~/Library/Application Support/com.vultr-cli.vultr/config.json`
+- Windows: `%APPDATA%\vultr-cli\vultr\config.json`
 
 ```json
 {
