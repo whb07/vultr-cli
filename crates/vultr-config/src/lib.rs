@@ -2,14 +2,12 @@
 
 mod error;
 
-use directories::ProjectDirs;
+use directories::BaseDirs;
 pub use error::{ApiErrorResponse, VultrError, VultrResult};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 /// Application name for config directories
-const APP_NAME: &str = "vultr";
-
 /// CLI Configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -173,9 +171,9 @@ impl std::fmt::Display for OutputFormat {
 impl Config {
     /// Get the config directory path
     pub fn config_dir() -> VultrResult<PathBuf> {
-        ProjectDirs::from("com", "vultr-cli", APP_NAME)
-            .map(|dirs| dirs.config_dir().to_path_buf())
-            .ok_or_else(|| VultrError::ConfigError("Could not determine config directory".into()))
+        BaseDirs::new()
+            .map(|dirs| dirs.home_dir().join(".vultr-cli"))
+            .ok_or_else(|| VultrError::ConfigError("Could not determine home directory".into()))
     }
 
     /// Get the config file path

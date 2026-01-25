@@ -27,10 +27,13 @@ cargo build --release
 ## Authentication
 
 ```bash
-# Interactive login (stores key securely in system keyring)
+# Interactive login (prompts for your API key)
 vultr auth login
 
-# Or use environment variable
+# Non-interactive login (pass key directly)
+vultr auth login --api-key "your-api-key"
+
+# Or use environment variable for this shell/session
 export VULTR_API_KEY="your-api-key"
 
 # Or pass directly (not recommended for scripts)
@@ -42,6 +45,20 @@ vultr auth status
 # Logout (remove stored key)
 vultr auth logout
 ```
+
+Where the API key is stored (after `vultr auth login`):
+
+- macOS: **Keychain** (service: `vultr`, account: your profile name)
+- Windows: **Credential Manager** (service: `vultr`, account: your profile name)
+- Linux: **Secret Service** (libsecret / GNOME Keyring / KWallet via Secret Service)
+
+If the OS keyring is unavailable (some CI runners), you can opt into a file fallback by setting:
+
+```
+VULTR_CLI_INSECURE_FILE_SECRETS=1
+```
+
+This writes `credentials.json` under `~/.vultr-cli/` and is less secure; use only when necessary.
 
 ## Usage Examples
 
@@ -362,9 +379,9 @@ vultr completions powershell > vultr.ps1
 ## Configuration
 
 Config file location:
-- Linux: `~/.config/vultr-cli/vultr/config.json`
-- macOS: `~/Library/Application Support/com.vultr-cli.vultr/config.json`
-- Windows: `%APPDATA%\vultr-cli\vultr\config.json`
+- Linux: `~/.vultr-cli/config.json`
+- macOS: `~/.vultr-cli/config.json`
+- Windows: `~/.vultr-cli/config.json`
 
 ```json
 {
@@ -405,10 +422,16 @@ MIT. See `LICENSE`.
 
 ## Secrets storage
 
-By default, `vultr` stores your API token in the operating system keyring (macOS Keychain, Windows Credential Manager, Linux Secret Service).
+By default, `vultr` stores your API token in the operating system keyring:
+
+- macOS: Keychain
+- Windows: Credential Manager
+- Linux: Secret Service (libsecret / GNOME Keyring / KWallet)
 
 If you are in an environment where the keyring is unavailable (some CI runners), you can enable an explicit fallback to a local `credentials.json` file by setting:
 
 - `VULTR_CLI_INSECURE_FILE_SECRETS=1`
+
+The fallback file is written to `~/.vultr-cli/credentials.json` (all platforms) and is less secure; use only when necessary.
 
 This fallback is less secure and should be used only when necessary.
