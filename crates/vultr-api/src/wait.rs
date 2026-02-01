@@ -10,6 +10,27 @@ use vultr_models::*;
 pub const DEFAULT_TIMEOUT: u64 = 600;
 /// Default poll interval in seconds
 pub const DEFAULT_POLL_INTERVAL: u64 = 5;
+/// Number of consecutive not-found responses required to confirm deletion
+const MIN_NOTFOUND_CONFIRMATIONS: u8 = 2;
+
+fn not_found_confirmed(
+    pb: &Option<ProgressBar>,
+    not_found_count: &mut u8,
+    ok_msg: &str,
+    confirming_msg: impl Fn(u8) -> String,
+) -> bool {
+    *not_found_count = not_found_count.saturating_add(1);
+    if *not_found_count >= MIN_NOTFOUND_CONFIRMATIONS {
+        if let Some(pb) = pb {
+            pb.finish_with_message(ok_msg.to_string());
+        }
+        return true;
+    }
+    if let Some(ref pb) = pb {
+        pb.set_message(confirming_msg(*not_found_count));
+    }
+    false
+}
 
 /// Wait options for async operations
 #[derive(Debug, Clone)]
@@ -262,58 +283,13 @@ pub async fn verify_instance_deleted(
     instance_id: &str,
     options: &WaitOptions,
 ) -> VultrResult<()> {
-    let pb = if options.show_progress {
-        let pb = ProgressBar::new_spinner();
-        pb.set_style(
-            ProgressStyle::default_spinner()
-                .template("{spinner:.red} {msg}")
-                .unwrap(),
-        );
-        pb.set_message(format!("Verifying instance {} was deleted...", instance_id));
-        pb.enable_steady_tick(Duration::from_millis(100));
-        Some(pb)
-    } else {
-        None
-    };
-
-    let start = std::time::Instant::now();
-
-    loop {
-        match client.get_instance(instance_id).await {
-            Ok(_) => {
-                // Instance still exists, keep waiting
-                if let Some(ref pb) = pb {
-                    pb.set_message(format!("Instance {} still exists, waiting...", instance_id));
-                }
-            }
-            Err(VultrError::ApiError { status: 404, .. }) | Err(VultrError::NotFound { .. }) => {
-                if let Some(pb) = pb {
-                    pb.finish_with_message(format!("✓ Instance {} has been deleted", instance_id));
-                }
-                return Ok(());
-            }
-            Err(e) => {
-                if let Some(pb) = pb {
-                    pb.finish_with_message(format!("Error checking instance: {}", e));
-                }
-                return Err(e);
-            }
-        }
-
-        if start.elapsed().as_secs() > options.timeout {
-            if let Some(pb) = pb {
-                pb.finish_with_message(format!(
-                    "Timeout verifying deletion of instance {}",
-                    instance_id
-                ));
-            }
-            return Err(VultrError::Timeout {
-                seconds: options.timeout,
-            });
-        }
-
-        tokio::time::sleep(Duration::from_secs(options.poll_interval)).await;
-    }
+    verify_deleted_generic(
+        options,
+        format!("Verifying instance {} was deleted...", instance_id),
+        format!("✓ Instance {} has been deleted", instance_id),
+        || async { client.get_instance(instance_id).await.map(|_| ()) },
+    )
+    .await
 }
 
 /// Verify a snapshot was deleted
@@ -337,10 +313,12 @@ pub async fn verify_snapshot_deleted(
     };
 
     let start = std::time::Instant::now();
+    let mut not_found_count: u8 = 0;
 
     loop {
         match client.get_snapshot(snapshot_id).await {
             Ok(snapshot) => {
+                not_found_count = 0;
                 if snapshot.status == Some(SnapshotStatus::Deleted) {
                     if let Some(pb) = pb {
                         pb.finish_with_message(format!(
@@ -355,10 +333,16 @@ pub async fn verify_snapshot_deleted(
                 }
             }
             Err(VultrError::ApiError { status: 404, .. }) | Err(VultrError::NotFound { .. }) => {
-                if let Some(pb) = pb {
-                    pb.finish_with_message(format!("✓ Snapshot {} has been deleted", snapshot_id));
+                let ok_msg = format!("✓ Snapshot {} has been deleted", snapshot_id);
+                let confirmed = not_found_confirmed(&pb, &mut not_found_count, &ok_msg, |count| {
+                    format!(
+                        "Snapshot {} not found ({} of {}), confirming...",
+                        snapshot_id, count, MIN_NOTFOUND_CONFIRMATIONS
+                    )
+                });
+                if confirmed {
+                    return Ok(());
                 }
-                return Ok(());
             }
             Err(e) => {
                 if let Some(pb) = pb {
@@ -390,66 +374,13 @@ pub async fn verify_block_storage_deleted(
     block_id: &str,
     options: &WaitOptions,
 ) -> VultrResult<()> {
-    let pb = if options.show_progress {
-        let pb = ProgressBar::new_spinner();
-        pb.set_style(
-            ProgressStyle::default_spinner()
-                .template("{spinner:.red} {msg}")
-                .unwrap(),
-        );
-        pb.set_message(format!(
-            "Verifying block storage {} was deleted...",
-            block_id
-        ));
-        pb.enable_steady_tick(Duration::from_millis(100));
-        Some(pb)
-    } else {
-        None
-    };
-
-    let start = std::time::Instant::now();
-
-    loop {
-        match client.get_block_storage(block_id).await {
-            Ok(_) => {
-                if let Some(ref pb) = pb {
-                    pb.set_message(format!(
-                        "Block storage {} still exists, waiting...",
-                        block_id
-                    ));
-                }
-            }
-            Err(VultrError::ApiError { status: 404, .. }) | Err(VultrError::NotFound { .. }) => {
-                if let Some(pb) = pb {
-                    pb.finish_with_message(format!(
-                        "✓ Block storage {} has been deleted",
-                        block_id
-                    ));
-                }
-                return Ok(());
-            }
-            Err(e) => {
-                if let Some(pb) = pb {
-                    pb.finish_with_message(format!("Error checking block storage: {}", e));
-                }
-                return Err(e);
-            }
-        }
-
-        if start.elapsed().as_secs() > options.timeout {
-            if let Some(pb) = pb {
-                pb.finish_with_message(format!(
-                    "Timeout verifying deletion of block storage {}",
-                    block_id
-                ));
-            }
-            return Err(VultrError::Timeout {
-                seconds: options.timeout,
-            });
-        }
-
-        tokio::time::sleep(Duration::from_secs(options.poll_interval)).await;
-    }
+    verify_deleted_generic(
+        options,
+        format!("Verifying block storage {} was deleted...", block_id),
+        format!("✓ Block storage {} has been deleted", block_id),
+        || async { client.get_block_storage(block_id).await.map(|_| ()) },
+    )
+    .await
 }
 
 /// Verify a bare metal server was deleted
@@ -568,18 +499,25 @@ where
     };
 
     let start = std::time::Instant::now();
+    let mut not_found_count: u8 = 0;
     loop {
         match getter().await {
             Ok(_) => {
+                not_found_count = 0;
                 if let Some(ref pb) = pb {
                     pb.set_message("Resource still exists, waiting...".to_string());
                 }
             }
             Err(VultrError::ApiError { status: 404, .. }) | Err(VultrError::NotFound { .. }) => {
-                if let Some(pb) = pb {
-                    pb.finish_with_message(ok_msg);
+                let confirmed = not_found_confirmed(&pb, &mut not_found_count, &ok_msg, |count| {
+                    format!(
+                        "Resource not found ({} of {}), confirming...",
+                        count, MIN_NOTFOUND_CONFIRMATIONS
+                    )
+                });
+                if confirmed {
+                    return Ok(());
                 }
-                return Ok(());
             }
             Err(e) => {
                 if let Some(pb) = pb {
