@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::Meta;
 
 /// User account
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct User {
     /// User ID
     pub id: String,
@@ -21,13 +21,13 @@ pub struct User {
 }
 
 /// Response wrapper for user
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserResponse {
     pub user: User,
 }
 
 /// Response wrapper for user list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UsersResponse {
     pub users: Vec<User>,
     #[serde(default)]
@@ -35,7 +35,7 @@ pub struct UsersResponse {
 }
 
 /// Request to create a user
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateUserRequest {
     /// User email
     pub email: String,
@@ -52,7 +52,7 @@ pub struct CreateUserRequest {
 }
 
 /// Request to update a user
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateUserRequest {
     /// User name
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -72,7 +72,7 @@ pub struct UpdateUserRequest {
 }
 
 /// API key
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ApiKey {
     /// API key ID
     pub id: Option<String>,
@@ -85,13 +85,13 @@ pub struct ApiKey {
 }
 
 /// Response wrapper for API key
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ApiKeyResponse {
     pub api_key: ApiKey,
 }
 
 /// Response wrapper for API key list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ApiKeysResponse {
     pub api_keys: Vec<ApiKey>,
     #[serde(default)]
@@ -99,14 +99,14 @@ pub struct ApiKeysResponse {
 }
 
 /// Request to create an API key
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateApiKeyRequest {
     /// API key name
     pub name: String,
 }
 
 /// IP whitelist entry
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct IpWhitelistEntry {
     /// Subnet (IP address)
     pub subnet: Option<String>,
@@ -119,13 +119,13 @@ pub struct IpWhitelistEntry {
 }
 
 /// Response wrapper for IP whitelist entry
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct IpWhitelistEntryResponse {
     pub ip_whitelist_entry: IpWhitelistEntry,
 }
 
 /// Response wrapper for IP whitelist list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct IpWhitelistResponse {
     pub ip_whitelist: Vec<IpWhitelistEntry>,
     #[serde(default)]
@@ -133,7 +133,7 @@ pub struct IpWhitelistResponse {
 }
 
 /// Request to add an IP to whitelist
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AddIpWhitelistRequest {
     /// Subnet (IP address)
     pub subnet: String,
@@ -142,7 +142,7 @@ pub struct AddIpWhitelistRequest {
 }
 
 /// Request to delete an IP from whitelist
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DeleteIpWhitelistRequest {
     /// Subnet (IP address)
     pub subnet: String,

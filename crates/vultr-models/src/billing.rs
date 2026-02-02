@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::Meta;
 
 /// Billing history entry
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BillingHistory {
     /// History entry ID
     pub id: Option<i64>,
@@ -23,7 +23,7 @@ pub struct BillingHistory {
 }
 
 /// Response wrapper for billing history list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BillingHistoryResponse {
     pub billing_history: Vec<BillingHistory>,
     #[serde(default)]
@@ -31,7 +31,7 @@ pub struct BillingHistoryResponse {
 }
 
 /// Invoice information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Invoice {
     /// Invoice ID
     pub id: Option<i64>,
@@ -46,7 +46,7 @@ pub struct Invoice {
 }
 
 /// Response wrapper for invoice list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InvoicesResponse {
     pub billing_invoices: Vec<Invoice>,
     #[serde(default)]
@@ -54,13 +54,13 @@ pub struct InvoicesResponse {
 }
 
 /// Response wrapper for single invoice
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InvoiceResponse {
     pub billing_invoice: Invoice,
 }
 
 /// Invoice item (line item on an invoice)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InvoiceItem {
     /// Item description
     pub description: Option<String>,
@@ -81,7 +81,7 @@ pub struct InvoiceItem {
 }
 
 /// Response wrapper for invoice items
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InvoiceItemsResponse {
     pub invoice_items: Vec<InvoiceItem>,
     #[serde(default)]
@@ -89,7 +89,7 @@ pub struct InvoiceItemsResponse {
 }
 
 /// Pending charge
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PendingCharge {
     /// Description
     pub description: Option<String>,
@@ -100,7 +100,7 @@ pub struct PendingCharge {
 }
 
 /// Response wrapper for pending charges
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PendingChargesResponse {
     pub pending_charges: Vec<PendingCharge>,
     #[serde(default)]

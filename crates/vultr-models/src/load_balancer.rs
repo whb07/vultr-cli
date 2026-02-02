@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Load Balancer information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LoadBalancer {
     /// A unique ID for the Load Balancer
     pub id: String,
@@ -98,7 +98,7 @@ pub struct LoadBalancer {
 }
 
 /// Generic configuration options for a Load Balancer
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct GenericInfo {
     /// The balancing algorithm (roundrobin, leastconn)
     #[serde(default)]
@@ -130,7 +130,7 @@ pub struct GenericInfo {
 }
 
 /// Sticky session configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StickySessions {
     /// The cookie name for sticky sessions
     #[serde(default)]
@@ -138,7 +138,7 @@ pub struct StickySessions {
 }
 
 /// Health check configuration for a Load Balancer
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct HealthCheck {
     /// The protocol for health checks (HTTP, HTTPS, TCP)
     #[serde(default)]
@@ -170,7 +170,7 @@ pub struct HealthCheck {
 }
 
 /// Forwarding rule for a Load Balancer
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ForwardingRule {
     /// A unique ID for the forwarding rule
     #[serde(default)]
@@ -194,7 +194,7 @@ pub struct ForwardingRule {
 }
 
 /// Firewall rule for a Load Balancer
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LBFirewallRule {
     /// A unique ID for the firewall rule
     #[serde(default)]
@@ -214,7 +214,7 @@ pub struct LBFirewallRule {
 }
 
 /// Node IP addresses for a Load Balancer
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NodeIps {
     /// IPv4 addresses of the load balancer nodes
     #[serde(default)]
@@ -226,7 +226,7 @@ pub struct NodeIps {
 }
 
 /// Auto SSL configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AutoSSL {
     /// The domain zone (example.com)
     #[serde(default)]
@@ -242,7 +242,7 @@ pub struct AutoSSL {
 }
 
 /// SSL certificate configuration for requests
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SSLConfig {
     /// The private key
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -270,7 +270,7 @@ pub struct SSLConfig {
 }
 
 /// Global region configuration for multi-region load balancers
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct GlobalRegion {
     /// The region ID
     pub region_id: String,
@@ -281,7 +281,7 @@ pub struct GlobalRegion {
 }
 
 /// Reverse DNS information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ReverseDNS {
     /// IPv4 reverse DNS
     #[serde(default)]
@@ -293,7 +293,7 @@ pub struct ReverseDNS {
 }
 
 /// IPv6 Reverse DNS entry for create/update
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ReverseIPv6Entry {
     /// The IPv6 IP address
     pub ip: String,
@@ -307,7 +307,7 @@ pub struct ReverseIPv6Entry {
 // =====================
 
 /// Request to create a new Load Balancer
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct CreateLoadBalancerRequest {
     /// The region ID to create this Load Balancer in
     pub region: String,
@@ -382,7 +382,7 @@ pub struct CreateLoadBalancerRequest {
 }
 
 /// Request to update a Load Balancer
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct UpdateLoadBalancerRequest {
     /// SSL certificate configuration
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -454,7 +454,7 @@ pub struct UpdateLoadBalancerRequest {
 }
 
 /// Request to create a forwarding rule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateForwardingRuleRequest {
     /// The frontend protocol (HTTP, HTTPS, TCP)
     pub frontend_protocol: String,
@@ -470,7 +470,7 @@ pub struct CreateForwardingRuleRequest {
 }
 
 /// Request to create a firewall rule for a Load Balancer
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateLBFirewallRuleRequest {
     /// Port for this rule
     pub port: i32,
@@ -483,14 +483,14 @@ pub struct CreateLBFirewallRuleRequest {
 }
 
 /// Request to update IPv4 reverse DNS
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateReverseDNSv4Request {
     /// The domain for reverse DNS
     pub v4: String,
 }
 
 /// Request to create IPv6 reverse DNS entries
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateReverseDNSv6Request {
     /// Array of IPv6 reverse DNS entries
     pub v6: Vec<ReverseIPv6Entry>,
@@ -501,37 +501,37 @@ pub struct CreateReverseDNSv6Request {
 // =====================
 
 /// Response containing a single Load Balancer
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LoadBalancerResponse {
     pub load_balancer: LoadBalancer,
 }
 
 /// Response containing a list of Load Balancers
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LoadBalancersResponse {
     pub load_balancers: Vec<LoadBalancer>,
 }
 
 /// Response containing a single forwarding rule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ForwardingRuleResponse {
     pub forwarding_rule: ForwardingRule,
 }
 
 /// Response containing a list of forwarding rules
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ForwardingRulesResponse {
     pub forwarding_rules: Vec<ForwardingRule>,
 }
 
 /// Response containing a single firewall rule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LBFirewallRuleResponse {
     pub firewall_rule: LBFirewallRule,
 }
 
 /// Response containing a list of firewall rules
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LBFirewallRulesResponse {
     pub firewall_rules: Vec<LBFirewallRule>,
 }

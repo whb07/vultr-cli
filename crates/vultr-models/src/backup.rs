@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Backup status
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum BackupStatus {
     Pending,
@@ -23,7 +23,7 @@ impl std::fmt::Display for BackupStatus {
 }
 
 /// Backup
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Backup {
     /// Unique ID for the backup
     pub id: String,
@@ -66,13 +66,13 @@ impl Backup {
 }
 
 /// Response wrapper for backup operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BackupResponse {
     pub backup: Backup,
 }
 
 /// Response wrapper for backup list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BackupsResponse {
     pub backups: Vec<Backup>,
 }

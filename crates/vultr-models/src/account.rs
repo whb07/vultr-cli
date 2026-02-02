@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Account information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Account {
     /// Account name
     pub name: Option<String>,
@@ -23,13 +23,13 @@ pub struct Account {
 }
 
 /// Response wrapper for account
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AccountResponse {
     pub account: Account,
 }
 
 /// BGP information for the account
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BgpInfo {
     /// BGP enabled status
     pub enabled: Option<bool>,
@@ -44,7 +44,7 @@ pub struct BgpInfo {
 }
 
 /// BGP prefix information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BgpPrefix {
     /// IP prefix
     pub prefix: Option<String>,
@@ -53,13 +53,13 @@ pub struct BgpPrefix {
 }
 
 /// Response wrapper for BGP info
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BgpResponse {
     pub bgp_info: BgpInfo,
 }
 
 /// Account bandwidth information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AccountBandwidth {
     /// Current month bandwidth usage
     pub current_month_to_date: Option<BandwidthUsage>,
@@ -68,7 +68,7 @@ pub struct AccountBandwidth {
 }
 
 /// Bandwidth usage details
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BandwidthUsage {
     /// Timestamp
     pub timestamp: Option<String>,
@@ -87,7 +87,7 @@ pub struct BandwidthUsage {
 }
 
 /// Response wrapper for account bandwidth
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AccountBandwidthResponse {
     pub bandwidth: AccountBandwidth,
 }

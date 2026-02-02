@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Instance status values
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum InstanceStatus {
     Active,
@@ -27,7 +27,7 @@ impl std::fmt::Display for InstanceStatus {
 }
 
 /// Instance power status
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum PowerStatus {
     Running,
@@ -47,7 +47,7 @@ impl std::fmt::Display for PowerStatus {
 }
 
 /// Instance server status
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum ServerStatus {
     None,
@@ -71,7 +71,7 @@ impl std::fmt::Display for ServerStatus {
 }
 
 /// IPv6 network information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Ipv6Network {
     /// IPv6 subnet
     pub network: Option<String>,
@@ -82,7 +82,7 @@ pub struct Ipv6Network {
 }
 
 /// VPS Instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Instance {
     /// Unique instance ID
     pub id: String,
@@ -155,7 +155,7 @@ impl Instance {
 }
 
 /// Request to create a new instance
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct CreateInstanceRequest {
     /// Region ID (required)
     pub region: String,
@@ -227,7 +227,7 @@ pub struct CreateInstanceRequest {
 }
 
 /// Request to update an instance
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct UpdateInstanceRequest {
     /// Application ID
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -265,7 +265,7 @@ pub struct UpdateInstanceRequest {
 }
 
 /// Request to reinstall an instance
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct ReinstallInstanceRequest {
     /// Hostname
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -273,19 +273,19 @@ pub struct ReinstallInstanceRequest {
 }
 
 /// Response wrapper for instance operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InstanceResponse {
     pub instance: Instance,
 }
 
 /// Response wrapper for instance list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InstancesResponse {
     pub instances: Vec<Instance>,
 }
 
 /// Instance bandwidth data
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BandwidthData {
     /// Incoming bytes
     pub incoming_bytes: Option<i64>,
@@ -294,13 +294,13 @@ pub struct BandwidthData {
 }
 
 /// Instance bandwidth response
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BandwidthResponse {
     pub bandwidth: std::collections::HashMap<String, BandwidthData>,
 }
 
 /// Instance IPv4 information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Ipv4Info {
     pub ip: String,
     pub netmask: Option<String>,
@@ -311,13 +311,13 @@ pub struct Ipv4Info {
 }
 
 /// Response for instance IPv4 list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Ipv4Response {
     pub ipv4s: Vec<Ipv4Info>,
 }
 
 /// Instance IPv6 information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Ipv6Info {
     pub ip: String,
     pub network: Option<String>,
@@ -327,26 +327,26 @@ pub struct Ipv6Info {
 }
 
 /// Response for instance IPv6 list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Ipv6Response {
     pub ipv6s: Vec<Ipv6Info>,
 }
 
 /// Reverse DNS entry for IPv6
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ReverseIpv6 {
     pub ip: String,
     pub reverse: String,
 }
 
 /// Response for instance IPv6 reverse DNS list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ReverseIpv6Response {
     pub reverse_ipv6s: Vec<ReverseIpv6>,
 }
 
 /// Backup schedule type
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum BackupScheduleType {
     Daily,
@@ -372,7 +372,7 @@ impl std::fmt::Display for BackupScheduleType {
 }
 
 /// Backup schedule for an instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BackupSchedule {
     pub enabled: bool,
     #[serde(rename = "type")]
@@ -387,13 +387,13 @@ pub struct BackupSchedule {
 }
 
 /// Response for backup schedule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BackupScheduleResponse {
     pub backup_schedule: BackupSchedule,
 }
 
 /// Request to set backup schedule
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct SetBackupScheduleRequest {
     #[serde(rename = "type")]
     pub schedule_type: String,
@@ -406,26 +406,26 @@ pub struct SetBackupScheduleRequest {
 }
 
 /// ISO attachment status
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct IsoStatus {
     pub iso_id: Option<String>,
     pub state: Option<String>,
 }
 
 /// Response for ISO status
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct IsoStatusResponse {
     pub iso_status: IsoStatus,
 }
 
 /// Request to attach ISO
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AttachIsoRequest {
     pub iso_id: String,
 }
 
 /// Available upgrades for an instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AvailableUpgrades {
     #[serde(default)]
     pub applications: Vec<UpgradeApplication>,
@@ -436,7 +436,7 @@ pub struct AvailableUpgrades {
 }
 
 /// Application upgrade option
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UpgradeApplication {
     pub id: i32,
     pub name: String,
@@ -445,7 +445,7 @@ pub struct UpgradeApplication {
 }
 
 /// OS upgrade option
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UpgradeOs {
     pub id: i32,
     pub name: String,
@@ -454,31 +454,31 @@ pub struct UpgradeOs {
 }
 
 /// Response for available upgrades
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AvailableUpgradesResponse {
     pub upgrades: AvailableUpgrades,
 }
 
 /// User data response
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserDataResponse {
     pub user_data: UserData,
 }
 
 /// User data
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserData {
     pub data: String,
 }
 
 /// Instance neighbors (instances sharing the same host)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NeighborsResponse {
     pub neighbors: Vec<String>,
 }
 
 /// VPC attached to an instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InstanceVpc {
     pub id: String,
     pub mac_address: Option<String>,
@@ -486,13 +486,13 @@ pub struct InstanceVpc {
 }
 
 /// Response for instance VPCs list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InstanceVpcsResponse {
     pub vpcs: Vec<InstanceVpc>,
 }
 
 /// VPC2 attached to an instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InstanceVpc2 {
     pub id: String,
     pub mac_address: Option<String>,
@@ -500,40 +500,40 @@ pub struct InstanceVpc2 {
 }
 
 /// Response for instance VPC2s list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InstanceVpc2sResponse {
     pub vpcs: Vec<InstanceVpc2>,
 }
 
 /// Request to create an additional IPv4 address
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateIpv4Request {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reboot: Option<bool>,
 }
 
 /// Request to set reverse DNS for IPv4
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SetReverseIpv4Request {
     pub ip: String,
     pub reverse: String,
 }
 
 /// Request to set reverse DNS for IPv6
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SetReverseIpv6Request {
     pub ip: String,
     pub reverse: String,
 }
 
 /// Request to set default reverse DNS for IPv4
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SetDefaultReverseIpv4Request {
     pub ip: String,
 }
 
 /// Request to restore an instance from backup or snapshot
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct RestoreInstanceRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub backup_id: Option<String>,
@@ -542,13 +542,13 @@ pub struct RestoreInstanceRequest {
 }
 
 /// Restore status response
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RestoreStatusResponse {
     pub status: RestoreStatus,
 }
 
 /// Restore status
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RestoreStatus {
     pub restore_type: Option<String>,
     pub restore_id: Option<String>,
@@ -556,19 +556,19 @@ pub struct RestoreStatus {
 }
 
 /// Request to attach a VPC to an instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AttachVpcRequest {
     pub vpc_id: String,
 }
 
 /// Request to detach a VPC from an instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DetachVpcRequest {
     pub vpc_id: String,
 }
 
 /// Request to attach a VPC2 to an instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AttachVpc2Request {
     pub vpc_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -576,13 +576,13 @@ pub struct AttachVpc2Request {
 }
 
 /// Request to detach a VPC2 from an instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DetachVpc2Request {
     pub vpc_id: String,
 }
 
 /// Request for bulk instance operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BulkInstancesRequest {
     pub instance_ids: Vec<String>,
 }

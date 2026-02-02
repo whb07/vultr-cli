@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Object Storage status
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ObjectStorageStatus {
     Active,
@@ -23,7 +23,7 @@ impl std::fmt::Display for ObjectStorageStatus {
 }
 
 /// Tier information embedded in Object Storage response
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ObjectStorageTierInfo {
     /// Tier ID
     #[serde(rename = "OBJSTORETIERID")]
@@ -49,7 +49,7 @@ pub struct ObjectStorageTierInfo {
 }
 
 /// Object Storage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ObjectStorage {
     /// Unique ID for the Object Storage
     pub id: String,
@@ -74,7 +74,7 @@ pub struct ObjectStorage {
 }
 
 /// Object Storage Cluster
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ObjectStorageCluster {
     /// A unique ID for the Object Storage cluster
     pub id: i32,
@@ -87,7 +87,7 @@ pub struct ObjectStorageCluster {
 }
 
 /// Tier location information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct TierLocation {
     /// Cluster hostname
     pub hostname: Option<String>,
@@ -100,7 +100,7 @@ pub struct TierLocation {
 }
 
 /// Object Storage Tier
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ObjectStorageTier {
     /// Object Storage Tier ID
     pub id: i32,
@@ -128,7 +128,7 @@ pub struct ObjectStorageTier {
 }
 
 /// Cluster-specific tier (no locations field)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ClusterTier {
     /// Object Storage Tier ID
     pub id: i32,
@@ -153,7 +153,7 @@ pub struct ClusterTier {
 }
 
 /// S3 Credentials (returned from regenerate-keys)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct S3Credentials {
     /// The Cluster hostname for this Object Storage
     pub s3_hostname: Option<String>,
@@ -164,7 +164,7 @@ pub struct S3Credentials {
 }
 
 /// Request to create Object Storage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateObjectStorageRequest {
     /// The Cluster ID where the Object Storage will be created
     pub cluster_id: i32,
@@ -176,7 +176,7 @@ pub struct CreateObjectStorageRequest {
 }
 
 /// Request to update Object Storage
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateObjectStorageRequest {
     /// The user-supplied label for this Object Storage
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -184,37 +184,37 @@ pub struct UpdateObjectStorageRequest {
 }
 
 /// Response wrapper for single object storage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ObjectStorageResponse {
     pub object_storage: ObjectStorage,
 }
 
 /// Response wrapper for object storage list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ObjectStoragesResponse {
     pub object_storages: Vec<ObjectStorage>,
 }
 
 /// Response wrapper for object storage clusters list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ObjectStorageClustersResponse {
     pub clusters: Vec<ObjectStorageCluster>,
 }
 
 /// Response wrapper for tiers list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct TiersResponse {
     pub tiers: Vec<ObjectStorageTier>,
 }
 
 /// Response wrapper for cluster tiers list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ClusterTiersResponse {
     pub tiers: Vec<ClusterTier>,
 }
 
 /// Response wrapper for regenerate keys
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegenerateKeysResponse {
     pub s3_credentials: S3Credentials,
 }

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Managed Database
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Database {
     /// Unique ID for the database
     pub id: String,
@@ -106,7 +106,7 @@ pub struct Database {
 }
 
 /// Database user
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseUser {
     /// Username
     pub username: Option<String>,
@@ -125,7 +125,7 @@ pub struct DatabaseUser {
 }
 
 /// User access control settings (Valkey)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserAccessControl {
     /// ACL categories
     #[serde(default)]
@@ -142,14 +142,14 @@ pub struct UserAccessControl {
 }
 
 /// Logical database
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LogicalDatabase {
     /// Database name
     pub name: Option<String>,
 }
 
 /// Connection pool (PostgreSQL)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ConnectionPool {
     /// Pool name
     pub name: Option<String>,
@@ -164,7 +164,7 @@ pub struct ConnectionPool {
 }
 
 /// Database connection counts
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseConnections {
     /// Used connections
     pub used: Option<i32>,
@@ -175,7 +175,7 @@ pub struct DatabaseConnections {
 }
 
 /// Kafka topic
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct KafkaTopic {
     /// Topic name
     pub name: Option<String>,
@@ -190,7 +190,7 @@ pub struct KafkaTopic {
 }
 
 /// Kafka connector
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct KafkaConnector {
     /// Connector name
     pub name: Option<String>,
@@ -203,14 +203,14 @@ pub struct KafkaConnector {
 }
 
 /// Kafka user permissions
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct KafkaPermissions {
     /// Permission level (admin, read, write, readwrite)
     pub permission: Option<String>,
 }
 
 /// Connector status
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ConnectorStatus {
     /// Connector status details
     pub connector: Option<ConnectorStatusDetails>,
@@ -220,14 +220,14 @@ pub struct ConnectorStatus {
 }
 
 /// Connector status details
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ConnectorStatusDetails {
     /// State (running, paused, etc.)
     pub state: Option<String>,
 }
 
 /// Connector task status
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ConnectorTaskStatus {
     /// Task ID
     pub id: Option<i32>,
@@ -238,7 +238,7 @@ pub struct ConnectorTaskStatus {
 }
 
 /// Available connector
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AvailableConnector {
     /// Connector class name
     pub class: Option<String>,
@@ -250,7 +250,7 @@ pub struct AvailableConnector {
 }
 
 /// Connector configuration schema entry
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseConnectorConfigurationSchema {
     /// Option name
     pub name: Option<String>,
@@ -266,7 +266,7 @@ pub struct DatabaseConnectorConfigurationSchema {
 }
 
 /// Available advanced option descriptor
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseAvailableOption {
     /// Option name
     pub name: Option<String>,
@@ -289,14 +289,14 @@ pub struct DatabaseAvailableOption {
 pub type DbaasAvailableOptions = DatabaseAvailableOption;
 
 /// DBaaS meta wrapper (total only)
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct DbaasMeta {
     /// Total objects available
     pub total: Option<i32>,
 }
 
 /// Database plan
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabasePlan {
     /// Plan ID
     pub id: Option<String>,
@@ -323,49 +323,49 @@ pub struct DatabasePlan {
 }
 
 /// PostgreSQL advanced options
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct PgAdvancedOptions {
     #[serde(flatten)]
     pub options: HashMap<String, serde_json::Value>,
 }
 
 /// MySQL advanced options
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct MysqlAdvancedOptions {
     #[serde(flatten)]
     pub options: HashMap<String, serde_json::Value>,
 }
 
 /// Kafka advanced options
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct KafkaAdvancedOptions {
     #[serde(flatten)]
     pub options: HashMap<String, serde_json::Value>,
 }
 
 /// Kafka REST advanced options
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct KafkaRestAdvancedOptions {
     #[serde(flatten)]
     pub options: HashMap<String, serde_json::Value>,
 }
 
 /// Schema registry advanced options
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct SchemaRegistryAdvancedOptions {
     #[serde(flatten)]
     pub options: HashMap<String, serde_json::Value>,
 }
 
 /// Kafka Connect advanced options
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct KafkaConnectAdvancedOptions {
     #[serde(flatten)]
     pub options: HashMap<String, serde_json::Value>,
 }
 
 /// Advanced options response wrapper
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseAdvancedOptionsResponse {
     pub configured_options: serde_json::Value,
     #[serde(default)]
@@ -373,7 +373,7 @@ pub struct DatabaseAdvancedOptionsResponse {
 }
 
 /// Database alert
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseAlert {
     /// Alert timestamp
     pub timestamp: Option<String>,
@@ -392,7 +392,7 @@ pub struct DatabaseAlert {
 }
 
 /// Database migration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseMigration {
     /// Migration status
     pub status: Option<String>,
@@ -405,7 +405,7 @@ pub struct DatabaseMigration {
 }
 
 /// Migration source credentials
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct MigrationCredentials {
     /// Source host
     pub host: Option<String>,
@@ -425,7 +425,7 @@ pub struct MigrationCredentials {
 }
 
 /// Database usage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseUsage {
     /// Disk usage
     pub disk: Option<UsageMetric>,
@@ -436,7 +436,7 @@ pub struct DatabaseUsage {
 }
 
 /// Usage metric (disk/memory)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UsageMetric {
     /// Current usage (GB for disk, MB for memory)
     pub current_gb: Option<String>,
@@ -449,14 +449,14 @@ pub struct UsageMetric {
 }
 
 /// CPU usage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CpuUsage {
     /// Percentage used
     pub percentage: Option<String>,
 }
 
 /// Database quota (Kafka)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseQuota {
     /// Client ID
     pub client_id: Option<String>,
@@ -471,7 +471,7 @@ pub struct DatabaseQuota {
 }
 
 /// Database backup
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseBackup {
     /// Backup date
     pub date: Option<String>,
@@ -480,7 +480,7 @@ pub struct DatabaseBackup {
 }
 
 /// Maintenance schedule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct MaintenanceSchedule {
     /// Day of week
     pub day: Option<String>,
@@ -491,52 +491,52 @@ pub struct MaintenanceSchedule {
 // Response types
 
 /// Response wrapper for list of databases
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabasesResponse {
     pub databases: Vec<Database>,
     pub meta: Option<DbaasMeta>,
 }
 
 /// Response wrapper for single database
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabaseResponse {
     pub database: Database,
 }
 
 /// Response for database plans
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabasePlansResponse {
     pub plans: Vec<DatabasePlan>,
 }
 
 /// Response for database users
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabaseUsersResponse {
     pub users: Vec<DatabaseUser>,
     pub meta: Option<DbaasMeta>,
 }
 
 /// Response for single database user
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabaseUserResponse {
     pub user: DatabaseUser,
 }
 
 /// Response for logical databases
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct LogicalDatabasesResponse {
     pub dbs: Vec<LogicalDatabase>,
     pub meta: Option<DbaasMeta>,
 }
 
 /// Response for single logical database
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct LogicalDatabaseResponse {
     pub db: LogicalDatabase,
 }
 
 /// Response for connection pools
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ConnectionPoolsResponse {
     pub connections: Option<DatabaseConnections>,
     pub connection_pools: Vec<ConnectionPool>,
@@ -544,97 +544,97 @@ pub struct ConnectionPoolsResponse {
 }
 
 /// Response for single connection pool
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct ConnectionPoolResponse {
     pub connection_pool: ConnectionPool,
 }
 
 /// Response for Kafka topics
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct KafkaTopicsResponse {
     pub topics: Vec<KafkaTopic>,
     pub meta: Option<DbaasMeta>,
 }
 
 /// Response for single Kafka topic
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct KafkaTopicResponse {
     pub topic: KafkaTopic,
 }
 
 /// Response for Kafka connectors
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct KafkaConnectorsResponse {
     pub connectors: Vec<KafkaConnector>,
     pub meta: Option<DbaasMeta>,
 }
 
 /// Response for single Kafka connector
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct KafkaConnectorResponse {
     pub connector: KafkaConnector,
 }
 
 /// Response for connector status
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct ConnectorStatusResponse {
     pub status: ConnectorStatus,
 }
 
 /// Response for available connectors
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct AvailableConnectorsResponse {
     pub available_connectors: Vec<AvailableConnector>,
     pub meta: Option<DbaasMeta>,
 }
 
 /// Response for database alerts
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabaseAlertsResponse {
     pub alerts: Vec<DatabaseAlert>,
     pub meta: Option<DbaasMeta>,
 }
 
 /// Response for database migration
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabaseMigrationResponse {
     pub migration: DatabaseMigration,
 }
 
 /// Response for database usage
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabaseUsageResponse {
     pub usage: DatabaseUsage,
 }
 
 /// Response for database quotas
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabaseQuotasResponse {
     pub quotas: Vec<DatabaseQuota>,
     pub meta: Option<DbaasMeta>,
 }
 
 /// Response for database backups
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DatabaseBackupsResponse {
     pub latest_backup: Option<DatabaseBackup>,
     pub oldest_backup: Option<DatabaseBackup>,
 }
 
 /// Response for maintenance
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct MaintenanceResponse {
     pub maintenance: MaintenanceSchedule,
 }
 
 /// Response for available versions
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabaseVersionsResponse {
     pub available_versions: Vec<String>,
 }
 
 /// Response for connector configuration schema
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DatabaseConnectorConfigurationSchemaResponse {
     pub configuration_schema: Vec<DatabaseConnectorConfigurationSchema>,
 }
@@ -642,7 +642,7 @@ pub struct DatabaseConnectorConfigurationSchemaResponse {
 // Request types
 
 /// Request to create a database
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize, Default)]
 pub struct CreateDatabaseRequest {
     /// Database engine (mysql, pg, valkey, kafka)
     pub database_engine: String,
@@ -694,7 +694,7 @@ pub struct CreateDatabaseRequest {
 }
 
 /// Request to update a database
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize, Default)]
 pub struct UpdateDatabaseRequest {
     /// Plan name
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -744,7 +744,7 @@ pub struct UpdateDatabaseRequest {
 }
 
 /// Request to create a database user
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateDatabaseUserRequest {
     /// Username
     pub username: String,
@@ -760,7 +760,7 @@ pub struct CreateDatabaseUserRequest {
 }
 
 /// Request to update a database user
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct UpdateDatabaseUserRequest {
     /// New password
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -768,7 +768,7 @@ pub struct UpdateDatabaseUserRequest {
 }
 
 /// Request for user access control (Valkey)
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct UpdateUserAccessControlRequest {
     /// ACL categories
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -785,14 +785,14 @@ pub struct UpdateUserAccessControlRequest {
 }
 
 /// Request to create a logical database
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateLogicalDatabaseRequest {
     /// Database name
     pub name: String,
 }
 
 /// Request to create a connection pool
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateConnectionPoolRequest {
     /// Pool name
     pub name: String,
@@ -807,7 +807,7 @@ pub struct CreateConnectionPoolRequest {
 }
 
 /// Request to update a connection pool
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct UpdateConnectionPoolRequest {
     /// Database name
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -824,7 +824,7 @@ pub struct UpdateConnectionPoolRequest {
 }
 
 /// Request to create a Kafka topic
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateKafkaTopicRequest {
     /// Topic name
     pub name: String,
@@ -841,7 +841,7 @@ pub struct CreateKafkaTopicRequest {
 }
 
 /// Request to update a Kafka topic
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct UpdateKafkaTopicRequest {
     /// Number of partitions
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -855,7 +855,7 @@ pub struct UpdateKafkaTopicRequest {
 }
 
 /// Request to create a Kafka connector
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateKafkaConnectorRequest {
     /// Connector name
     pub name: String,
@@ -870,7 +870,7 @@ pub struct CreateKafkaConnectorRequest {
 }
 
 /// Request to start migration
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct StartMigrationRequest {
     /// Source host
     pub host: String,
@@ -892,7 +892,7 @@ pub struct StartMigrationRequest {
 }
 
 /// Request to restore database from backup
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct RestoreDatabaseRequest {
     /// Label for restored database
     pub label: String,
@@ -908,7 +908,7 @@ pub struct RestoreDatabaseRequest {
 }
 
 /// Request to fork database
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct ForkDatabaseRequest {
     /// Label for forked database
     pub label: String,
@@ -933,7 +933,7 @@ pub struct ForkDatabaseRequest {
 }
 
 /// Request to create read replica
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateReadReplicaRequest {
     /// Label for replica
     pub label: String,
@@ -943,7 +943,7 @@ pub struct CreateReadReplicaRequest {
 }
 
 /// Request to update maintenance schedule
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct UpdateMaintenanceRequest {
     /// Day of week
     pub day: String,
@@ -952,7 +952,7 @@ pub struct UpdateMaintenanceRequest {
 }
 
 /// Request to create quota
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateDatabaseQuotaRequest {
     /// Client ID
     pub client_id: String,
@@ -968,7 +968,7 @@ pub struct CreateDatabaseQuotaRequest {
 }
 
 /// Request to upgrade database version
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct UpgradeDatabaseVersionRequest {
     /// Target version
     pub version: String,

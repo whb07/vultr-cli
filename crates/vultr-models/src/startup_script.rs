@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Startup script type
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum ScriptType {
     #[default]
@@ -36,7 +36,7 @@ impl std::str::FromStr for ScriptType {
 }
 
 /// Startup Script
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StartupScript {
     /// Unique ID for the startup script
     pub id: String,
@@ -67,7 +67,7 @@ impl StartupScript {
 }
 
 /// Request to create a startup script
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateStartupScriptRequest {
     /// Name for the script
     pub name: String,
@@ -92,7 +92,7 @@ impl CreateStartupScriptRequest {
 }
 
 /// Request to update a startup script
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct UpdateStartupScriptRequest {
     /// New name for the script
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -115,13 +115,13 @@ impl UpdateStartupScriptRequest {
 }
 
 /// Response wrapper for startup script operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StartupScriptResponse {
     pub startup_script: StartupScript,
 }
 
 /// Response wrapper for startup script list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StartupScriptsResponse {
     pub startup_scripts: Vec<StartupScript>,
 }

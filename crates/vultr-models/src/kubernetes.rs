@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Kubernetes cluster (VKE)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct KubernetesCluster {
     /// Unique identifier for the cluster
     pub id: String,
@@ -43,7 +43,7 @@ pub struct KubernetesCluster {
 }
 
 /// OIDC configuration for Kubernetes cluster
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct OidcConfig {
     /// OIDC provider URL
     pub issuer_url: Option<String>,
@@ -56,7 +56,7 @@ pub struct OidcConfig {
 }
 
 /// VPC attached to a cluster
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AttachedVpc {
     /// VPC ID
     pub id: Option<String>,
@@ -68,7 +68,7 @@ pub struct AttachedVpc {
 }
 
 /// Node pool in a Kubernetes cluster
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NodePool {
     /// Node pool ID
     pub id: String,
@@ -106,7 +106,7 @@ pub struct NodePool {
 }
 
 /// Taint for a node pool
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NodePoolTaint {
     /// Taint key
     pub key: Option<String>,
@@ -117,7 +117,7 @@ pub struct NodePoolTaint {
 }
 
 /// Node in a Kubernetes cluster
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct KubeNode {
     /// Node ID
     pub id: String,
@@ -130,7 +130,7 @@ pub struct KubeNode {
 }
 
 /// Label for a node pool
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NodePoolLabel {
     /// Label ID
     pub id: Option<String>,
@@ -143,68 +143,68 @@ pub struct NodePoolLabel {
 // Response types
 
 /// Response wrapper for list of clusters
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct ClustersResponse {
     pub vke_clusters: Vec<KubernetesCluster>,
 }
 
 /// Response wrapper for single cluster
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct ClusterResponse {
     pub vke_cluster: KubernetesCluster,
 }
 
 /// Response wrapper for node pool
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct NodePoolResponse {
     pub node_pool: NodePool,
 }
 
 /// Response wrapper for list of node pools
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct NodePoolsResponse {
     pub node_pools: Vec<NodePool>,
 }
 
 /// Response wrapper for nodes
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct NodesResponse {
     pub nodes: Vec<KubeNode>,
 }
 
 /// Response wrapper for single node
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct NodeResponse {
     pub node: KubeNode,
 }
 
 /// Response for kubeconfig
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct KubeconfigResponse {
     /// Base64-encoded kubeconfig
     pub kube_config: String,
 }
 
 /// Response for available Kubernetes versions
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct VersionsResponse {
     pub versions: Vec<String>,
 }
 
 /// Response for available upgrades
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct KubernetesUpgradesResponse {
     pub available_upgrades: Vec<String>,
 }
 
 /// Resources deployed by a cluster
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ClusterResources {
     pub resources: ClusterResourcesInner,
 }
 
 /// Inner resources structure
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ClusterResourcesInner {
     #[serde(default)]
     pub block_storage: Vec<ClusterResource>,
@@ -213,7 +213,7 @@ pub struct ClusterResourcesInner {
 }
 
 /// A resource deployed by the cluster
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ClusterResource {
     pub id: Option<String>,
     pub label: Option<String>,
@@ -222,13 +222,13 @@ pub struct ClusterResource {
 }
 
 /// Response for node pool labels
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct NodePoolLabelsResponse {
     pub labels: Vec<NodePoolLabel>,
 }
 
 /// Response for node pool taints
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct NodePoolTaintsResponse {
     pub taints: Vec<NodePoolTaint>,
 }
@@ -236,7 +236,7 @@ pub struct NodePoolTaintsResponse {
 // Request types
 
 /// Request to create a Kubernetes cluster
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct CreateClusterRequest {
     /// Region ID (required)
     pub region: String,
@@ -260,7 +260,7 @@ pub struct CreateClusterRequest {
 }
 
 /// OIDC configuration for cluster creation
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateOidcRequest {
     /// OIDC provider URL (required)
     pub issuer_url: String,
@@ -275,7 +275,7 @@ pub struct CreateOidcRequest {
 }
 
 /// Request to create a node pool
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateNodePoolRequest {
     /// Number of nodes (required)
     pub node_quantity: i32,
@@ -307,7 +307,7 @@ pub struct CreateNodePoolRequest {
 }
 
 /// Taint request for node pool
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NodePoolTaintRequest {
     /// Taint key
     pub key: String,
@@ -318,7 +318,7 @@ pub struct NodePoolTaintRequest {
 }
 
 /// Request to update a Kubernetes cluster
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct UpdateClusterRequest {
     /// New label
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -326,7 +326,7 @@ pub struct UpdateClusterRequest {
 }
 
 /// Request to update a node pool
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct UpdateNodePoolRequest {
     /// New node count
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -352,14 +352,14 @@ pub struct UpdateNodePoolRequest {
 }
 
 /// Request to upgrade a cluster
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct UpgradeClusterRequest {
     /// Target version
     pub upgrade_version: String,
 }
 
 /// Request to create a node pool label
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateNodePoolLabelRequest {
     /// Label key
     pub key: String,

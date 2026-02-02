@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// IP type for firewall rules
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum IpType {
     V4,
@@ -35,7 +35,7 @@ impl std::str::FromStr for IpType {
 }
 
 /// Protocol for firewall rules
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Protocol {
     Tcp,
@@ -79,7 +79,7 @@ impl std::str::FromStr for Protocol {
 }
 
 /// Firewall Group
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct FirewallGroup {
     /// Unique ID for the firewall group
     pub id: String,
@@ -98,7 +98,7 @@ pub struct FirewallGroup {
 }
 
 /// Firewall Rule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct FirewallRule {
     /// Unique ID for the rule
     pub id: i32,
@@ -131,7 +131,7 @@ impl FirewallRule {
 }
 
 /// Request to create a firewall group
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateFirewallGroupRequest {
     /// Description for the firewall group
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -139,7 +139,7 @@ pub struct CreateFirewallGroupRequest {
 }
 
 /// Request to update a firewall group
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateFirewallGroupRequest {
     /// New description
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -147,7 +147,7 @@ pub struct UpdateFirewallGroupRequest {
 }
 
 /// Request to create a firewall rule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateFirewallRuleRequest {
     /// IP type (v4 or v6)
     pub ip_type: String,
@@ -169,25 +169,25 @@ pub struct CreateFirewallRuleRequest {
 }
 
 /// Response wrapper for firewall group operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct FirewallGroupResponse {
     pub firewall_group: FirewallGroup,
 }
 
 /// Response wrapper for firewall group list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct FirewallGroupsResponse {
     pub firewall_groups: Vec<FirewallGroup>,
 }
 
 /// Response wrapper for firewall rule operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct FirewallRuleResponse {
     pub firewall_rule: FirewallRule,
 }
 
 /// Response wrapper for firewall rule list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct FirewallRulesResponse {
     pub firewall_rules: Vec<FirewallRule>,
 }

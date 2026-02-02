@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Bare Metal server information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetal {
     /// A unique ID for the Bare Metal instance
     pub id: String,
@@ -85,7 +85,7 @@ pub struct BareMetal {
 }
 
 /// Bare Metal VPC attachment
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalVpc {
     /// VPC ID
     pub id: String,
@@ -98,7 +98,7 @@ pub struct BareMetalVpc {
 }
 
 /// Bare Metal IPv4 information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalIpv4 {
     /// The IPv4 address
     pub ip: String,
@@ -120,7 +120,7 @@ pub struct BareMetalIpv4 {
 }
 
 /// Bare Metal IPv6 information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalIpv6 {
     /// A unique ID for the IPv6 address
     pub ip: String,
@@ -136,7 +136,7 @@ pub struct BareMetalIpv6 {
 }
 
 /// Available upgrades for Bare Metal
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalUpgrades {
     /// Available operating systems
     #[serde(default)]
@@ -147,7 +147,7 @@ pub struct BareMetalUpgrades {
 }
 
 /// OS upgrade option
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalUpgradeOs {
     /// OS ID
     pub id: i32,
@@ -162,7 +162,7 @@ pub struct BareMetalUpgradeOs {
 }
 
 /// Application upgrade option
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalUpgradeApp {
     /// Application ID
     pub id: i32,
@@ -177,14 +177,14 @@ pub struct BareMetalUpgradeApp {
 }
 
 /// VNC URL information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalVnc {
     /// VNC URL
     pub url: String,
 }
 
 /// User data response
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalUserData {
     /// Base64 encoded user data
     pub data: String,
@@ -195,7 +195,7 @@ pub struct BareMetalUserData {
 // ==================
 
 /// Request to create a Bare Metal server
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateBareMetalRequest {
     /// Region ID
     pub region: String,
@@ -258,7 +258,7 @@ pub struct CreateBareMetalRequest {
 }
 
 /// Request to update a Bare Metal server
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateBareMetalRequest {
     /// User-supplied label
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -287,7 +287,7 @@ pub struct UpdateBareMetalRequest {
 }
 
 /// Request to reinstall a Bare Metal server
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct ReinstallBareMetalRequest {
     /// Hostname
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -295,7 +295,7 @@ pub struct ReinstallBareMetalRequest {
 }
 
 /// Request to set reverse DNS for IPv4
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SetBareMetalReverseIpv4Request {
     /// IPv4 address
     pub ip: String,
@@ -304,14 +304,14 @@ pub struct SetBareMetalReverseIpv4Request {
 }
 
 /// Request to set default reverse DNS for IPv4
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SetBareMetalDefaultReverseIpv4Request {
     /// IPv4 address
     pub ip: String,
 }
 
 /// Request to set reverse DNS for IPv6
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SetBareMetalReverseIpv6Request {
     /// IPv6 address
     pub ip: String,
@@ -320,28 +320,28 @@ pub struct SetBareMetalReverseIpv6Request {
 }
 
 /// Request for bulk operations on Bare Metal servers
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BulkBareMetalRequest {
     /// Bare Metal IDs
     pub baremetal_ids: Vec<String>,
 }
 
 /// Request to attach VPC to Bare Metal
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AttachBareMetalVpcRequest {
     /// VPC ID
     pub vpc_id: String,
 }
 
 /// Request to detach VPC from Bare Metal
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DetachBareMetalVpcRequest {
     /// VPC ID
     pub vpc_id: String,
 }
 
 /// Request to attach VPC2 to Bare Metal
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AttachBareMetalVpc2Request {
     /// VPC2 ID
     pub vpc_id: String,
@@ -351,7 +351,7 @@ pub struct AttachBareMetalVpc2Request {
 }
 
 /// Request to detach VPC2 from Bare Metal
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DetachBareMetalVpc2Request {
     /// VPC2 ID
     pub vpc_id: String,
@@ -362,63 +362,63 @@ pub struct DetachBareMetalVpc2Request {
 // ==================
 
 /// Response wrapper for a single Bare Metal server
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalResponse {
     /// The Bare Metal server
     pub bare_metal: BareMetal,
 }
 
 /// Response wrapper for list of Bare Metal servers
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalsResponse {
     /// List of Bare Metal servers
     pub bare_metals: Vec<BareMetal>,
 }
 
 /// Response wrapper for Bare Metal IPv4 addresses
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalIpv4Response {
     /// List of IPv4 addresses
     pub ipv4s: Vec<BareMetalIpv4>,
 }
 
 /// Response wrapper for Bare Metal IPv6 addresses
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalIpv6Response {
     /// List of IPv6 addresses
     pub ipv6s: Vec<BareMetalIpv6>,
 }
 
 /// Response wrapper for Bare Metal upgrades
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalUpgradesResponse {
     /// Available upgrades
     pub upgrades: BareMetalUpgrades,
 }
 
 /// Response wrapper for Bare Metal VNC
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalVncResponse {
     /// VNC information
     pub vnc: BareMetalVnc,
 }
 
 /// Response wrapper for Bare Metal user data
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalUserDataResponse {
     /// User data
     pub user_data: BareMetalUserData,
 }
 
 /// Response wrapper for Bare Metal VPCs
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalVpcsResponse {
     /// List of VPCs
     pub vpcs: Vec<BareMetalVpc>,
 }
 
 /// Bare Metal VPC2 attachment
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalVpc2 {
     /// VPC2 ID
     pub id: String,
@@ -431,14 +431,14 @@ pub struct BareMetalVpc2 {
 }
 
 /// Response wrapper for Bare Metal VPC2s
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalVpc2sResponse {
     /// List of VPC2s
     pub vpcs: Vec<BareMetalVpc2>,
 }
 
 /// Response wrapper for Bare Metal bandwidth
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct BareMetalBandwidthResponse {
     /// Bandwidth data by date
     pub bandwidth: std::collections::HashMap<String, crate::BandwidthData>,

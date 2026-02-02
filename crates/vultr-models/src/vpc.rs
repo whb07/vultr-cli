@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// VPC (Virtual Private Cloud)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Vpc {
     /// Unique ID for the VPC
     pub id: String,
@@ -32,7 +32,7 @@ impl Vpc {
 }
 
 /// VPC internet connectivity details
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VpcInternet {
     /// Whether internet connectivity is enabled
     pub connectivity: Option<bool>,
@@ -42,7 +42,7 @@ pub struct VpcInternet {
 }
 
 /// VPC 2.0 (newer VPC version)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Vpc2 {
     /// Unique ID for the VPC
     pub id: String,
@@ -59,14 +59,14 @@ pub struct Vpc2 {
 }
 
 /// VPC attachment IP information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VpcAttachmentIp {
     /// IPv4 address
     pub v4: Option<String>,
 }
 
 /// VPC attachment linked subscription
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VpcAttachmentLinkedSubscription {
     /// Subscription ID
     pub id: Option<String>,
@@ -76,7 +76,7 @@ pub struct VpcAttachmentLinkedSubscription {
 }
 
 /// VPC attachment information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VpcAttachment {
     /// Attachment ID
     pub id: Option<String>,
@@ -94,7 +94,7 @@ pub struct VpcAttachment {
 }
 
 /// Response wrapper for VPC attachments
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VpcAttachmentsResponse {
     pub attachments: Vec<VpcAttachment>,
     pub meta: Option<crate::Meta>,
@@ -111,7 +111,7 @@ impl Vpc2 {
 }
 
 /// Node attached to a VPC 2.0
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Vpc2Node {
     /// Node ID (instance ID)
     pub id: Option<String>,
@@ -127,7 +127,7 @@ pub struct Vpc2Node {
 }
 
 /// Request to create a VPC
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateVpcRequest {
     /// Region ID
     pub region: String,
@@ -143,7 +143,7 @@ pub struct CreateVpcRequest {
 }
 
 /// Request to create a VPC 2.0
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateVpc2Request {
     /// Region ID
     pub region: String,
@@ -162,7 +162,7 @@ pub struct CreateVpc2Request {
 }
 
 /// Request to update a VPC
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateVpcRequest {
     /// New description
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -170,14 +170,14 @@ pub struct UpdateVpcRequest {
 }
 
 /// Request to attach nodes to VPC 2.0
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AttachVpc2NodesRequest {
     /// List of nodes to attach
     pub nodes: Vec<Vpc2NodeAttachment>,
 }
 
 /// Node attachment for VPC 2.0
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Vpc2NodeAttachment {
     /// Instance ID
     pub id: String,
@@ -187,38 +187,38 @@ pub struct Vpc2NodeAttachment {
 }
 
 /// Request to detach nodes from VPC 2.0
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DetachVpc2NodesRequest {
     /// List of instance IDs to detach
     pub nodes: Vec<String>,
 }
 
 /// Response wrapper for VPC operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VpcResponse {
     pub vpc: Vpc,
 }
 
 /// Response wrapper for VPC list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VpcsResponse {
     pub vpcs: Vec<Vpc>,
 }
 
 /// Response wrapper for VPC 2.0 operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Vpc2Response {
     pub vpc: Vpc2,
 }
 
 /// Response wrapper for VPC 2.0 list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Vpcs2Response {
     pub vpcs: Vec<Vpc2>,
 }
 
 /// Response wrapper for VPC 2.0 nodes
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Vpc2NodesResponse {
     pub nodes: Vec<Vpc2Node>,
 }

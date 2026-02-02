@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// SSH Key
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SshKey {
     /// Unique ID for the SSH key
     pub id: String,
@@ -16,7 +16,7 @@ pub struct SshKey {
 }
 
 /// Request to create an SSH key
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateSshKeyRequest {
     /// Name for the SSH key
     pub name: String,
@@ -25,7 +25,7 @@ pub struct CreateSshKeyRequest {
 }
 
 /// Request to update an SSH key
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateSshKeyRequest {
     /// New name for the SSH key
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -36,13 +36,13 @@ pub struct UpdateSshKeyRequest {
 }
 
 /// Response wrapper for SSH key operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SshKeyResponse {
     pub ssh_key: SshKey,
 }
 
 /// Response wrapper for SSH key list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SshKeysResponse {
     pub ssh_keys: Vec<SshKey>,
 }

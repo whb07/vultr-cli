@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Reserved IP information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ReservedIp {
     /// Unique ID for the Reserved IP
     pub id: String,
@@ -37,7 +37,7 @@ impl ReservedIp {
 }
 
 /// Request to create a Reserved IP
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateReservedIpRequest {
     /// Region ID
     pub region: String,
@@ -49,21 +49,21 @@ pub struct CreateReservedIpRequest {
 }
 
 /// Request to update a Reserved IP
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateReservedIpRequest {
     /// New label
     pub label: String,
 }
 
 /// Request to attach a Reserved IP to an instance
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AttachReservedIpRequest {
     /// Instance ID to attach to
     pub instance_id: String,
 }
 
 /// Request to convert an instance IP to a Reserved IP
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ConvertReservedIpRequest {
     /// The IP address to convert
     pub ip_address: String,
@@ -73,13 +73,13 @@ pub struct ConvertReservedIpRequest {
 }
 
 /// Response wrapper for a single Reserved IP
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ReservedIpResponse {
     pub reserved_ip: ReservedIp,
 }
 
 /// Response wrapper for Reserved IP list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ReservedIpsResponse {
     pub reserved_ips: Vec<ReservedIp>,
 }

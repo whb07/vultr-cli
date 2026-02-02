@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 /// Application name for config directories
 /// CLI Configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Config {
     /// Default profile to use
     #[serde(default = "default_profile")]
@@ -23,14 +23,14 @@ pub struct Config {
 }
 
 /// Profile configuration
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct Profile {
     /// Default output format
     pub output_format: Option<OutputFormat>,
 }
 
 /// Global settings
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Settings {
     /// Default output format
     #[serde(default)]
@@ -54,7 +54,7 @@ pub struct Settings {
 ///
 /// These defaults are intentionally conservative: fast retry for transient errors,
 /// and bounded exponential backoff.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct HttpSettings {
     /// Request timeout in seconds
     #[serde(default = "default_http_timeout")]
@@ -136,7 +136,7 @@ impl Default for Config {
 }
 
 /// Output format options
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default, clap::ValueEnum)]
+#[derive(Serialize, Deserialize, Default, PartialEq, Clone, Debug, clap::ValueEnum)]
 #[serde(rename_all = "lowercase")]
 pub enum OutputFormat {
     #[default]

@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Private network (deprecated)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Network {
     /// Network ID
     pub id: String,
@@ -30,7 +30,7 @@ impl Network {
 }
 
 /// Response wrapper for networks list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NetworksResponse {
     pub networks: Vec<Network>,
     #[serde(default)]
@@ -38,13 +38,13 @@ pub struct NetworksResponse {
 }
 
 /// Response wrapper for network
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct NetworkResponse {
     pub network: Network,
 }
 
 /// Request to create a private network
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateNetworkRequest {
     pub region: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -56,7 +56,7 @@ pub struct CreateNetworkRequest {
 }
 
 /// Request to update a private network
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateNetworkRequest {
     pub description: String,
 }

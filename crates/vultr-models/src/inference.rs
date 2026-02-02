@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Serverless inference subscription
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InferenceSubscription {
     /// A unique ID for the subscription
     pub id: Option<String>,
@@ -16,7 +16,7 @@ pub struct InferenceSubscription {
 }
 
 /// Usage metrics for chat completions
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InferenceChatUsage {
     /// Tokens used in current period
     pub current_tokens: Option<String>,
@@ -27,7 +27,7 @@ pub struct InferenceChatUsage {
 }
 
 /// Usage metrics for audio generation
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InferenceAudioUsage {
     /// Characters used for HD TTS
     pub tts_characters: Option<String>,
@@ -36,7 +36,7 @@ pub struct InferenceAudioUsage {
 }
 
 /// Serverless inference usage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InferenceUsage {
     /// Chat usage metrics
     pub chat: Option<InferenceChatUsage>,
@@ -45,32 +45,32 @@ pub struct InferenceUsage {
 }
 
 /// Response wrapper for inference list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InferenceListResponse {
     pub subscriptions: Vec<InferenceSubscription>,
 }
 
 /// Response wrapper for single inference subscription
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InferenceResponse {
     pub subscription: InferenceSubscription,
 }
 
 /// Response wrapper for inference usage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InferenceUsageResponse {
     pub usage: InferenceUsage,
 }
 
 /// Request to create inference subscription
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateInferenceRequest {
     /// User-supplied label
     pub label: String,
 }
 
 /// Request to update inference subscription
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateInferenceRequest {
     /// New label
     #[serde(skip_serializing_if = "Option::is_none")]

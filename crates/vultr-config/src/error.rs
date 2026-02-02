@@ -55,7 +55,7 @@ impl From<dialoguer::Error> for VultrError {
 pub type VultrResult<T> = Result<T, VultrError>;
 
 /// API error response from Vultr
-#[derive(Debug, serde::Deserialize)]
+#[derive(serde::Deserialize)]
 pub struct ApiErrorResponse {
     pub error: String,
     #[serde(default)]

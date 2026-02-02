@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Snapshot status
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum SnapshotStatus {
     Pending,
@@ -25,7 +25,7 @@ impl std::fmt::Display for SnapshotStatus {
 }
 
 /// Snapshot
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Snapshot {
     /// Unique ID for the snapshot
     pub id: String,
@@ -68,7 +68,7 @@ impl Snapshot {
 }
 
 /// Request to create a snapshot
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateSnapshotRequest {
     /// Instance ID to snapshot
     pub instance_id: String,
@@ -78,7 +78,7 @@ pub struct CreateSnapshotRequest {
 }
 
 /// Request to create a snapshot from URL
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateSnapshotFromUrlRequest {
     /// URL of the raw image
     pub url: String,
@@ -88,7 +88,7 @@ pub struct CreateSnapshotFromUrlRequest {
 }
 
 /// Request to update a snapshot
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateSnapshotRequest {
     /// New description
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -96,13 +96,13 @@ pub struct UpdateSnapshotRequest {
 }
 
 /// Response wrapper for snapshot operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SnapshotResponse {
     pub snapshot: Snapshot,
 }
 
 /// Response wrapper for snapshot list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SnapshotsResponse {
     pub snapshots: Vec<Snapshot>,
 }

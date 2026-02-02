@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Block storage status
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum BlockStorageStatus {
     Active,
@@ -23,7 +23,7 @@ impl std::fmt::Display for BlockStorageStatus {
 }
 
 /// Block storage type
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum BlockType {
     HighPerf,
@@ -55,7 +55,7 @@ impl std::str::FromStr for BlockType {
 }
 
 /// Block Storage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BlockStorage {
     /// Unique ID for the block storage
     pub id: String,
@@ -88,7 +88,7 @@ impl BlockStorage {
 }
 
 /// Request to create block storage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateBlockStorageRequest {
     /// Region ID
     pub region: String,
@@ -103,7 +103,7 @@ pub struct CreateBlockStorageRequest {
 }
 
 /// Request to update block storage
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateBlockStorageRequest {
     /// New label
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -114,7 +114,7 @@ pub struct UpdateBlockStorageRequest {
 }
 
 /// Request to attach block storage
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AttachBlockStorageRequest {
     /// Instance ID to attach to
     pub instance_id: String,
@@ -124,7 +124,7 @@ pub struct AttachBlockStorageRequest {
 }
 
 /// Request to detach block storage
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct DetachBlockStorageRequest {
     /// Whether to live detach (without reboot)
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -132,13 +132,13 @@ pub struct DetachBlockStorageRequest {
 }
 
 /// Response wrapper for block storage operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BlockStorageResponse {
     pub block: BlockStorage,
 }
 
 /// Response wrapper for block storage list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BlockStoragesResponse {
     pub blocks: Vec<BlockStorage>,
 }

@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use vultr_config::OutputFormat;
 
 /// Vultr CLI - Manage your Vultr cloud resources
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 #[command(name = "vultr")]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
@@ -41,7 +41,7 @@ pub struct Cli {
     pub command: Commands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum Commands {
     /// Authentication management
     Auth(AuthArgs),
@@ -170,13 +170,13 @@ pub enum Commands {
 // Config Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct ConfigArgs {
     #[command(subcommand)]
     pub command: ConfigCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum ConfigCommands {
     /// Show current configuration
     Show,
@@ -200,13 +200,13 @@ pub enum ConfigCommands {
 // Auth Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct AuthArgs {
     #[command(subcommand)]
     pub command: AuthCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum AuthCommands {
     /// Login and store API key securely
     Login(AuthLoginArgs),
@@ -216,7 +216,7 @@ pub enum AuthCommands {
     Status,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct AuthLoginArgs {
     /// API key to store (will prompt if not provided)
     #[arg(long)]
@@ -227,13 +227,13 @@ pub struct AuthLoginArgs {
 // Bare Metal Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BareMetalArgs {
     #[command(subcommand)]
     pub command: BareMetalCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum BareMetalCommands {
     /// List all bare metal servers
     List(ListArgs),
@@ -328,13 +328,13 @@ pub enum BareMetalCommands {
 // Bare Metal IPv4 Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BareMetalIpv4Args {
     #[command(subcommand)]
     pub command: BareMetalIpv4Commands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum BareMetalIpv4Commands {
     /// List IPv4 addresses
     List {
@@ -368,13 +368,13 @@ pub enum BareMetalIpv4Commands {
 // Bare Metal IPv6 Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BareMetalIpv6Args {
     #[command(subcommand)]
     pub command: BareMetalIpv6Commands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum BareMetalIpv6Commands {
     /// List IPv6 addresses
     List {
@@ -408,13 +408,13 @@ pub enum BareMetalIpv6Commands {
 // Bare Metal VPC Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BareMetalVpcArgs {
     #[command(subcommand)]
     pub command: BareMetalVpcCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum BareMetalVpcCommands {
     /// List attached VPCs
     List {
@@ -445,13 +445,13 @@ pub enum BareMetalVpcCommands {
 // Bare Metal VPC2 Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BareMetalVpc2Args {
     #[command(subcommand)]
     pub command: BareMetalVpc2Commands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum BareMetalVpc2Commands {
     /// List attached VPC2s
     List {
@@ -485,13 +485,13 @@ pub enum BareMetalVpc2Commands {
 // Bare Metal Bulk Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BareMetalBulkArgs {
     #[command(subcommand)]
     pub command: BareMetalBulkCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum BareMetalBulkCommands {
     /// Start multiple bare metal servers
     Start {
@@ -520,7 +520,7 @@ pub enum BareMetalBulkCommands {
 // Bare Metal Create Arguments
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BareMetalCreateArgs {
     /// Region ID (e.g., "ewr", "lax")
     #[arg(long)]
@@ -607,7 +607,7 @@ pub struct BareMetalCreateArgs {
 // Bare Metal Update Arguments
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BareMetalUpdateArgs {
     /// Bare metal ID
     pub id: String,
@@ -649,13 +649,13 @@ pub struct BareMetalUpdateArgs {
 // Instance Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceArgs {
     #[command(subcommand)]
     pub command: InstanceCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum InstanceCommands {
     /// List all instances
     List(ListArgs),
@@ -768,13 +768,13 @@ pub enum InstanceCommands {
 // Instance IPv4 Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceIpv4Args {
     #[command(subcommand)]
     pub command: InstanceIpv4Commands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum InstanceIpv4Commands {
     /// List IPv4 addresses
     List {
@@ -826,13 +826,13 @@ pub enum InstanceIpv4Commands {
 // Instance IPv6 Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceIpv6Args {
     #[command(subcommand)]
     pub command: InstanceIpv6Commands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum InstanceIpv6Commands {
     /// List IPv6 addresses
     List {
@@ -872,13 +872,13 @@ pub enum InstanceIpv6Commands {
 // Instance ISO Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceIsoArgs {
     #[command(subcommand)]
     pub command: InstanceIsoCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum InstanceIsoCommands {
     /// Get ISO attachment status
     Status {
@@ -906,13 +906,13 @@ pub enum InstanceIsoCommands {
 // Instance Backup Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceBackupArgs {
     #[command(subcommand)]
     pub command: InstanceBackupCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum InstanceBackupCommands {
     /// Get backup schedule
     Get {
@@ -943,13 +943,13 @@ pub enum InstanceBackupCommands {
 // Instance VPC Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceVpcArgs {
     #[command(subcommand)]
     pub command: InstanceVpcCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum InstanceVpcCommands {
     /// List attached VPCs
     List {
@@ -980,13 +980,13 @@ pub enum InstanceVpcCommands {
 // Instance VPC2 Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceVpc2Args {
     #[command(subcommand)]
     pub command: InstanceVpc2Commands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum InstanceVpc2Commands {
     /// List attached VPC2s
     List {
@@ -1020,13 +1020,13 @@ pub enum InstanceVpc2Commands {
 // Instance Bulk Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceBulkArgs {
     #[command(subcommand)]
     pub command: InstanceBulkCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum InstanceBulkCommands {
     /// Start multiple instances
     Start {
@@ -1051,7 +1051,7 @@ pub enum InstanceBulkCommands {
     },
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct ListArgs {
     /// Number of results per page
     #[arg(long, default_value = "25")]
@@ -1065,7 +1065,7 @@ pub struct ListArgs {
     pub all: bool,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceCreateArgs {
     /// Region ID (e.g., "ewr", "lax")
     #[arg(long)]
@@ -1156,7 +1156,7 @@ pub struct InstanceCreateArgs {
     pub user_scheme: Option<String>,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InstanceUpdateArgs {
     /// Instance ID
     pub id: String,
@@ -1190,13 +1190,13 @@ pub struct InstanceUpdateArgs {
 // SSH Key Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct SshKeyArgs {
     #[command(subcommand)]
     pub command: SshKeyCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum SshKeyCommands {
     /// List all SSH keys
     List(ListArgs),
@@ -1240,13 +1240,13 @@ pub enum SshKeyCommands {
 // Startup Script Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct StartupScriptArgs {
     #[command(subcommand)]
     pub command: StartupScriptCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum StartupScriptCommands {
     /// List all startup scripts
     List(ListArgs),
@@ -1296,13 +1296,13 @@ pub enum StartupScriptCommands {
 // Snapshot Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct SnapshotArgs {
     #[command(subcommand)]
     pub command: SnapshotCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum SnapshotCommands {
     /// List all snapshots
     List(ListArgs),
@@ -1353,13 +1353,13 @@ pub enum SnapshotCommands {
 // Backup Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BackupArgs {
     #[command(subcommand)]
     pub command: BackupCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum BackupCommands {
     /// List all backups
     List(ListArgs),
@@ -1375,13 +1375,13 @@ pub enum BackupCommands {
 // ISO Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct IsoArgs {
     #[command(subcommand)]
     pub command: IsoCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum IsoCommands {
     /// List all ISOs
     List(ListArgs),
@@ -1413,13 +1413,13 @@ pub enum IsoCommands {
 // Block Storage Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BlockStorageArgs {
     #[command(subcommand)]
     pub command: BlockStorageCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum BlockStorageCommands {
     /// List all block storage volumes
     List(ListArgs),
@@ -1490,13 +1490,13 @@ pub enum BlockStorageCommands {
 // Object Storage Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct ObjectStorageArgs {
     #[command(subcommand)]
     pub command: ObjectStorageCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum ObjectStorageCommands {
     /// List all object storages
     List(ListArgs),
@@ -1556,13 +1556,13 @@ pub enum ObjectStorageCommands {
 // Storage Gateway Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct StorageGatewayArgs {
     #[command(subcommand)]
     pub command: StorageGatewayCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum StorageGatewayCommands {
     /// List storage gateways
     List(ListArgs),
@@ -1595,7 +1595,7 @@ pub enum StorageGatewayCommands {
     Export(StorageGatewayExportArgs),
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct StorageGatewayCreateArgs {
     /// Storage gateway label
     #[arg(long)]
@@ -1638,13 +1638,13 @@ pub struct StorageGatewayCreateArgs {
     pub vpc_id: Option<String>,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct StorageGatewayExportArgs {
     #[command(subcommand)]
     pub command: StorageGatewayExportCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum StorageGatewayExportCommands {
     /// Add an export
     Add {
@@ -1680,13 +1680,13 @@ pub enum StorageGatewayExportCommands {
 // VFS Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct VfsArgs {
     #[command(subcommand)]
     pub command: VfsCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum VfsCommands {
     /// List VFS subscriptions
     List,
@@ -1716,7 +1716,7 @@ pub enum VfsCommands {
     Attachment(VfsAttachmentArgs),
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct VfsCreateArgs {
     /// Region ID
     #[arg(long)]
@@ -1739,7 +1739,7 @@ pub struct VfsCreateArgs {
     pub tags: Option<Vec<String>>,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct VfsUpdateArgs {
     /// VFS ID
     pub id: String,
@@ -1753,13 +1753,13 @@ pub struct VfsUpdateArgs {
     pub size_gb: Option<i32>,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct VfsAttachmentArgs {
     #[command(subcommand)]
     pub command: VfsAttachmentCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum VfsAttachmentCommands {
     /// List VFS attachments
     List {
@@ -1803,13 +1803,13 @@ pub enum VfsAttachmentCommands {
 // Firewall Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct FirewallArgs {
     #[command(subcommand)]
     pub command: FirewallCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum FirewallCommands {
     /// Manage firewall groups
     Group(FirewallGroupArgs),
@@ -1818,13 +1818,13 @@ pub enum FirewallCommands {
     Rule(FirewallRuleArgs),
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct FirewallGroupArgs {
     #[command(subcommand)]
     pub command: FirewallGroupCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum FirewallGroupCommands {
     /// List all firewall groups
     List(ListArgs),
@@ -1858,13 +1858,13 @@ pub enum FirewallGroupCommands {
     },
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct FirewallRuleArgs {
     #[command(subcommand)]
     pub command: FirewallRuleCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum FirewallRuleCommands {
     /// List rules in a firewall group
     List {
@@ -1928,13 +1928,13 @@ pub enum FirewallRuleCommands {
 // VPC Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct VpcArgs {
     #[command(subcommand)]
     pub command: VpcCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum VpcCommands {
     /// List all VPCs
     List(ListArgs),
@@ -1989,13 +1989,13 @@ pub enum VpcCommands {
 // VPC 2.0 Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct Vpc2Args {
     #[command(subcommand)]
     pub command: Vpc2Commands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum Vpc2Commands {
     /// List all VPC 2.0 networks
     List(ListArgs),
@@ -2068,13 +2068,13 @@ pub enum Vpc2Commands {
 // Private Network Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct PrivateNetworkArgs {
     #[command(subcommand)]
     pub command: PrivateNetworkCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum PrivateNetworkCommands {
     /// List all private networks
     List(ListArgs),
@@ -2121,13 +2121,13 @@ pub enum PrivateNetworkCommands {
 // Kubernetes Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct KubernetesArgs {
     #[command(subcommand)]
     pub command: KubernetesCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum KubernetesCommands {
     /// List all Kubernetes clusters
     List,
@@ -2200,7 +2200,7 @@ pub enum KubernetesCommands {
     Node(KubernetesNodeArgs),
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct KubernetesCreateArgs {
     /// Region ID
     #[arg(long)]
@@ -2249,13 +2249,13 @@ pub struct KubernetesCreateArgs {
 
 // Node Pool subcommands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct KubernetesNodePoolArgs {
     #[command(subcommand)]
     pub command: KubernetesNodePoolCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum KubernetesNodePoolCommands {
     /// List node pools in a cluster
     List {
@@ -2385,13 +2385,13 @@ pub enum KubernetesNodePoolCommands {
 
 // Node subcommands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct KubernetesNodeArgs {
     #[command(subcommand)]
     pub command: KubernetesNodeCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum KubernetesNodeCommands {
     /// List nodes in a node pool
     List {
@@ -2444,13 +2444,13 @@ pub enum KubernetesNodeCommands {
 // Load Balancer Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct LoadBalancerArgs {
     #[command(subcommand)]
     pub command: LoadBalancerCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum LoadBalancerCommands {
     /// List all load balancers
     List(ListArgs),
@@ -2489,7 +2489,7 @@ pub enum LoadBalancerCommands {
     ReverseDns(LoadBalancerReverseDnsArgs),
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct LoadBalancerCreateArgs {
     /// Region ID
     #[arg(long)]
@@ -2568,7 +2568,7 @@ pub struct LoadBalancerCreateArgs {
     pub instances: Option<Vec<String>>,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct LoadBalancerUpdateArgs {
     /// Load Balancer ID
     #[arg(long)]
@@ -2651,13 +2651,13 @@ pub struct LoadBalancerUpdateArgs {
 // Load Balancer SSL Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct LoadBalancerSslArgs {
     #[command(subcommand)]
     pub command: LoadBalancerSslCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum LoadBalancerSslCommands {
     /// Add SSL certificate
     Add {
@@ -2707,13 +2707,13 @@ pub enum LoadBalancerSslCommands {
 // Load Balancer Forwarding Rule Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct LoadBalancerForwardingRuleArgs {
     #[command(subcommand)]
     pub command: LoadBalancerForwardingRuleCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum LoadBalancerForwardingRuleCommands {
     /// List forwarding rules
     List {
@@ -2765,13 +2765,13 @@ pub enum LoadBalancerForwardingRuleCommands {
 // Load Balancer Firewall Rule Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct LoadBalancerFirewallRuleArgs {
     #[command(subcommand)]
     pub command: LoadBalancerFirewallRuleCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum LoadBalancerFirewallRuleCommands {
     /// List firewall rules
     List {
@@ -2820,13 +2820,13 @@ pub enum LoadBalancerFirewallRuleCommands {
 // Load Balancer Reverse DNS Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct LoadBalancerReverseDnsArgs {
     #[command(subcommand)]
     pub command: LoadBalancerReverseDnsCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum LoadBalancerReverseDnsCommands {
     /// Get reverse DNS
     Get {
@@ -2862,13 +2862,13 @@ pub enum LoadBalancerReverseDnsCommands {
 // Database Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseArgs {
     #[command(subcommand)]
     pub command: DatabaseCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DatabaseCommands {
     /// List all databases
     List,
@@ -3068,7 +3068,7 @@ pub enum DatabaseCommands {
     Quota(DatabaseQuotaArgs),
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseCreateArgs {
     /// Database engine (mysql, pg, valkey, kafka)
     #[arg(long)]
@@ -3131,7 +3131,7 @@ pub struct DatabaseCreateArgs {
     pub eviction_policy: Option<String>,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseUpdateArgs {
     /// Database ID
     pub id: String,
@@ -3181,7 +3181,7 @@ pub struct DatabaseUpdateArgs {
     pub eviction_policy: Option<String>,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseRestoreArgs {
     /// Database ID to restore from
     #[arg(long)]
@@ -3204,7 +3204,7 @@ pub struct DatabaseRestoreArgs {
     pub restore_type: Option<String>,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseForkArgs {
     /// Database ID to fork from
     #[arg(long)]
@@ -3241,13 +3241,13 @@ pub struct DatabaseForkArgs {
 
 // Database User Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseUserArgs {
     #[command(subcommand)]
     pub command: DatabaseUserCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DatabaseUserCommands {
     /// List database users
     List {
@@ -3343,13 +3343,13 @@ pub enum DatabaseUserCommands {
 
 // Logical Database Commands (MySQL/PostgreSQL)
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseDbArgs {
     #[command(subcommand)]
     pub command: DatabaseDbCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DatabaseDbCommands {
     /// List logical databases
     List {
@@ -3389,13 +3389,13 @@ pub enum DatabaseDbCommands {
 
 // Connection Pool Commands (PostgreSQL)
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabasePoolArgs {
     #[command(subcommand)]
     pub command: DatabasePoolCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DatabasePoolCommands {
     /// List connection pools
     List {
@@ -3468,13 +3468,13 @@ pub enum DatabasePoolCommands {
 
 // Kafka Topic Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseTopicArgs {
     #[command(subcommand)]
     pub command: DatabaseTopicCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DatabaseTopicCommands {
     /// List Kafka topics
     List {
@@ -3544,13 +3544,13 @@ pub enum DatabaseTopicCommands {
 
 // Kafka Connector Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseConnectorArgs {
     #[command(subcommand)]
     pub command: DatabaseConnectorCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DatabaseConnectorCommands {
     /// List available connector classes
     Available {
@@ -3661,13 +3661,13 @@ pub enum DatabaseConnectorCommands {
 
 // Database Migration Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseMigrationArgs {
     #[command(subcommand)]
     pub command: DatabaseMigrationCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DatabaseMigrationCommands {
     /// Get migration status
     Status {
@@ -3714,13 +3714,13 @@ pub enum DatabaseMigrationCommands {
 
 // Database Quota Commands (Kafka)
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DatabaseQuotaArgs {
     #[command(subcommand)]
     pub command: DatabaseQuotaCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DatabaseQuotaCommands {
     /// List database quotas
     List {
@@ -3769,13 +3769,13 @@ pub enum DatabaseQuotaCommands {
 // CDN Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct CdnArgs {
     #[command(subcommand)]
     pub command: CdnCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum CdnCommands {
     /// Manage CDN Pull Zones
     #[command(alias = "pull")]
@@ -3788,13 +3788,13 @@ pub enum CdnCommands {
 
 // CDN Pull Zone Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct CdnPullZoneArgs {
     #[command(subcommand)]
     pub command: CdnPullZoneCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum CdnPullZoneCommands {
     /// List all CDN Pull Zones
     List(ListArgs),
@@ -3884,13 +3884,13 @@ pub enum CdnPullZoneCommands {
 
 // CDN Push Zone Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct CdnPushZoneArgs {
     #[command(subcommand)]
     pub command: CdnPushZoneCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum CdnPushZoneCommands {
     /// List all CDN Push Zones
     List(ListArgs),
@@ -3965,13 +3965,13 @@ pub enum CdnPushZoneCommands {
 
 // CDN Push Zone File Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct CdnPushZoneFileArgs {
     #[command(subcommand)]
     pub command: CdnPushZoneFileCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum CdnPushZoneFileCommands {
     /// List files in a CDN Push Zone
     List {
@@ -4018,13 +4018,13 @@ pub enum CdnPushZoneFileCommands {
 // DNS Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DnsArgs {
     #[command(subcommand)]
     pub command: DnsCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DnsCommands {
     /// List all DNS domains
     List(ListArgs),
@@ -4091,13 +4091,13 @@ pub enum DnsCommands {
     Record(DnsRecordArgs),
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct DnsRecordArgs {
     #[command(subcommand)]
     pub command: DnsRecordCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum DnsRecordCommands {
     /// List DNS records for a domain
     List {
@@ -4174,13 +4174,13 @@ pub enum DnsRecordCommands {
 // Container Registry Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct RegistryArgs {
     #[command(subcommand)]
     pub command: RegistryCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum RegistryCommands {
     /// List all container registries
     List,
@@ -4285,13 +4285,13 @@ pub enum RegistryCommands {
 
 // Registry Repository Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct RegistryRepositoryArgs {
     #[command(subcommand)]
     pub command: RegistryRepositoryCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum RegistryRepositoryCommands {
     /// List repositories in a registry
     List {
@@ -4324,13 +4324,13 @@ pub enum RegistryRepositoryCommands {
 
 // Registry Artifact Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct RegistryArtifactArgs {
     #[command(subcommand)]
     pub command: RegistryArtifactCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum RegistryArtifactCommands {
     /// List artifacts in a repository
     List {
@@ -4357,13 +4357,13 @@ pub enum RegistryArtifactCommands {
 
 // Registry Robot Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct RegistryRobotArgs {
     #[command(subcommand)]
     pub command: RegistryRobotCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum RegistryRobotCommands {
     /// List robot accounts
     List {
@@ -4430,13 +4430,13 @@ pub enum RegistryRobotCommands {
 
 // Registry Replication Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct RegistryReplicationArgs {
     #[command(subcommand)]
     pub command: RegistryReplicationCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum RegistryReplicationCommands {
     /// List replications
     List {
@@ -4467,13 +4467,13 @@ pub enum RegistryReplicationCommands {
 
 // Registry Retention Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct RegistryRetentionArgs {
     #[command(subcommand)]
     pub command: RegistryRetentionCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum RegistryRetentionCommands {
     /// Manage retention schedule
     Schedule(RegistryRetentionScheduleArgs),
@@ -4491,13 +4491,13 @@ pub enum RegistryRetentionCommands {
 
 // Registry Retention Schedule Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct RegistryRetentionScheduleArgs {
     #[command(subcommand)]
     pub command: RegistryRetentionScheduleCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum RegistryRetentionScheduleCommands {
     /// Get retention schedule
     Get {
@@ -4522,13 +4522,13 @@ pub enum RegistryRetentionScheduleCommands {
 
 // Registry Retention Rule Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct RegistryRetentionRuleArgs {
     #[command(subcommand)]
     pub command: RegistryRetentionRuleCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum RegistryRetentionRuleCommands {
     /// List retention rules
     List {
@@ -4588,13 +4588,13 @@ pub enum RegistryRetentionRuleCommands {
 // Reserved IP Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct ReservedIpArgs {
     #[command(subcommand)]
     pub command: ReservedIpCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum ReservedIpCommands {
     /// List all reserved IPs
     List(ListArgs),
@@ -4663,7 +4663,7 @@ pub enum ReservedIpCommands {
 // Plans Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct PlansArgs {
     /// Filter by plan type (vc2, vhf, vdc)
     #[arg(long)]
@@ -4686,13 +4686,13 @@ pub struct PlansArgs {
     pub region: Option<String>,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+#[derive(Clone, PartialEq, ValueEnum)]
 pub enum PriceMode {
     Hourly,
     Monthly,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+#[derive(Clone, ValueEnum)]
 pub enum BareMetalPlanSort {
     CpuMemory,
     Cpu,
@@ -4706,7 +4706,7 @@ pub enum BareMetalPlanSort {
 // OS Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct OsArgs {
     /// Filter by OS family (e.g., ubuntu, debian, centos, windows)
     #[arg(long)]
@@ -4729,13 +4729,13 @@ pub struct OsArgs {
 // Applications Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct ApplicationsArgs {
     #[command(subcommand)]
     pub command: Option<ApplicationsCommands>,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum ApplicationsCommands {
     /// List available applications
     List,
@@ -4752,13 +4752,13 @@ pub enum ApplicationsCommands {
 // Inference Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InferenceArgs {
     #[command(subcommand)]
     pub command: InferenceCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum InferenceCommands {
     /// List inference subscriptions
     List,
@@ -4802,7 +4802,7 @@ pub enum InferenceCommands {
 // Logs Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct LogsArgs {
     /// Start time (RFC3339)
     #[arg(long)]
@@ -4833,14 +4833,14 @@ pub struct LogsArgs {
 // Completions Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct CompletionsArgs {
     /// Shell to generate completions for
     #[arg(value_enum)]
     pub shell: Shell,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+#[derive(Clone, PartialEq, Debug, ValueEnum)]
 pub enum Shell {
     Bash,
     Zsh,
@@ -4866,13 +4866,13 @@ impl From<Shell> for clap_complete::Shell {
 // Account Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct AccountArgs {
     #[command(subcommand)]
     pub command: AccountCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum AccountCommands {
     /// Get account information
     Info,
@@ -4888,13 +4888,13 @@ pub enum AccountCommands {
 // Billing Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct BillingArgs {
     #[command(subcommand)]
     pub command: BillingCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum BillingCommands {
     /// List billing history
     History(ListArgs),
@@ -4918,7 +4918,7 @@ pub enum BillingCommands {
     PendingChargesCsv,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct InvoiceItemsArgs {
     /// Invoice ID
     #[arg(long)]
@@ -4932,13 +4932,13 @@ pub struct InvoiceItemsArgs {
 // User Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct UserArgs {
     #[command(subcommand)]
     pub command: UserCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum UserCommands {
     /// List all users
     List(ListArgs),
@@ -5004,13 +5004,13 @@ pub enum UserCommands {
 
 // User API Key Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct UserApiKeyArgs {
     #[command(subcommand)]
     pub command: UserApiKeyCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum UserApiKeyCommands {
     /// List API keys for a user
     List(UserApiKeyListArgs),
@@ -5036,7 +5036,7 @@ pub enum UserApiKeyCommands {
     },
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct UserApiKeyListArgs {
     /// User ID
     #[arg(long)]
@@ -5048,13 +5048,13 @@ pub struct UserApiKeyListArgs {
 
 // User IP Whitelist Commands
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct UserIpWhitelistArgs {
     #[command(subcommand)]
     pub command: UserIpWhitelistCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum UserIpWhitelistCommands {
     /// List IP whitelist entries for a user
     List {
@@ -5107,13 +5107,13 @@ pub enum UserIpWhitelistCommands {
 // Subaccount Commands
 // ==================
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser)]
 pub struct SubaccountArgs {
     #[command(subcommand)]
     pub command: SubaccountCommands,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand)]
 pub enum SubaccountCommands {
     /// List subaccounts
     List(ListArgs),

@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Subaccount information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Subaccount {
     /// Subaccount UUID
     pub id: Option<String>,
@@ -22,20 +22,20 @@ pub struct Subaccount {
 }
 
 /// Response wrapper for subaccounts list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SubaccountsResponse {
     pub subaccounts: Vec<Subaccount>,
     pub meta: Option<crate::Meta>,
 }
 
 /// Response wrapper for subaccount
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SubaccountResponse {
     pub subaccount: Subaccount,
 }
 
 /// Request to create a subaccount
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateSubaccountRequest {
     pub email: String,
     #[serde(skip_serializing_if = "Option::is_none")]

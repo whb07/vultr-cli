@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// CDN Zone status
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum CdnZoneStatus {
     Active,
@@ -23,7 +23,7 @@ impl std::fmt::Display for CdnZoneStatus {
 }
 
 /// CDN origin scheme
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum OriginScheme {
     Http,
@@ -43,7 +43,7 @@ impl std::fmt::Display for OriginScheme {
 }
 
 /// CDN Pull Zone
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CdnPullZone {
     /// Unique ID for the CDN Pull Zone
     pub id: String,
@@ -94,7 +94,7 @@ impl CdnPullZone {
 }
 
 /// CDN Push Zone
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CdnPushZone {
     /// Unique ID for the CDN Push Zone
     pub id: String,
@@ -139,7 +139,7 @@ impl CdnPushZone {
 }
 
 /// CDN Push Zone File
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CdnPushZoneFile {
     /// File name
     pub name: Option<String>,
@@ -154,7 +154,7 @@ pub struct CdnPushZoneFile {
 }
 
 /// CDN Push Zone File Meta (for list operations)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CdnPushZoneFileMeta {
     /// File name
     pub name: Option<String>,
@@ -165,7 +165,7 @@ pub struct CdnPushZoneFileMeta {
 }
 
 /// CDN Upload Endpoint inputs
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CdnUploadEndpointInputs {
     /// Access control list
     pub acl: Option<String>,
@@ -189,7 +189,7 @@ pub struct CdnUploadEndpointInputs {
 }
 
 /// CDN Upload Endpoint
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CdnUploadEndpoint {
     /// Upload URL
     #[serde(rename = "URL")]
@@ -203,7 +203,7 @@ pub struct CdnUploadEndpoint {
 // =====================
 
 /// Request to create a CDN Pull Zone
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreatePullZoneRequest {
     /// Label for the pull zone
     pub label: String,
@@ -239,7 +239,7 @@ pub struct CreatePullZoneRequest {
 }
 
 /// Request to update a CDN Pull Zone
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdatePullZoneRequest {
     /// New label
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -277,7 +277,7 @@ pub struct UpdatePullZoneRequest {
 }
 
 /// Request to create a CDN Push Zone
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreatePushZoneRequest {
     /// Label for the push zone
     pub label: String,
@@ -308,7 +308,7 @@ pub struct CreatePushZoneRequest {
 }
 
 /// Request to update a CDN Push Zone
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdatePushZoneRequest {
     /// New label
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -340,7 +340,7 @@ pub struct UpdatePushZoneRequest {
 }
 
 /// Request to create a file upload endpoint
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateFileEndpointRequest {
     /// File name
     pub name: String,
@@ -353,43 +353,43 @@ pub struct CreateFileEndpointRequest {
 // =====================
 
 /// Response wrapper for pull zone operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PullZoneResponse {
     pub pull_zone: CdnPullZone,
 }
 
 /// Response wrapper for pull zone list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PullZonesResponse {
     pub pull_zones: Vec<CdnPullZone>,
 }
 
 /// Response wrapper for push zone operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PushZoneResponse {
     pub push_zone: CdnPushZone,
 }
 
 /// Response wrapper for push zone list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PushZonesResponse {
     pub push_zones: Vec<CdnPushZone>,
 }
 
 /// Response wrapper for push zone file operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PushZoneFileResponse {
     pub file: CdnPushZoneFile,
 }
 
 /// Response wrapper for push zone file list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PushZoneFilesResponse {
     pub files: Vec<CdnPushZoneFileMeta>,
 }
 
 /// Response wrapper for upload endpoint
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UploadEndpointResponse {
     pub upload_endpoint: CdnUploadEndpoint,
 }

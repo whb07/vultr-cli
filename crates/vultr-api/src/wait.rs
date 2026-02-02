@@ -33,7 +33,6 @@ fn not_found_confirmed(
 }
 
 /// Wait options for async operations
-#[derive(Debug, Clone)]
 pub struct WaitOptions {
     /// Maximum time to wait (seconds)
     pub timeout: u64,

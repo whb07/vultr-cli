@@ -12,7 +12,6 @@ use rand::Rng;
 const API_BASE_URL: &str = "https://api.vultr.com/v2";
 
 /// HTTP client for making Vultr API requests
-#[derive(Debug, Clone)]
 pub struct VultrClient {
     client: Client,
     api_key: String,

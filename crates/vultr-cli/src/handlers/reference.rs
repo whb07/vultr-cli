@@ -34,7 +34,7 @@ pub async fn handle_plans(
             });
         }
         if output == OutputFormat::Table {
-            sort_bare_metal_plans(&mut plans, sort, price);
+            sort_bare_metal_plans(&mut plans, sort, &price);
         }
         print_bare_metal_plans(&plans, output, price == PriceMode::Monthly);
     } else {
@@ -51,7 +51,7 @@ pub async fn handle_plans(
     Ok(())
 }
 
-fn sort_bare_metal_plans(plans: &mut [BareMetalPlan], sort: BareMetalPlanSort, price: PriceMode) {
+fn sort_bare_metal_plans(plans: &mut [BareMetalPlan], sort: BareMetalPlanSort, price: &PriceMode) {
     match sort {
         BareMetalPlanSort::CpuMemory => {
             plans.sort_by(|a, b| {
@@ -160,7 +160,7 @@ fn disk_count_key(plan: &BareMetalPlan) -> i32 {
     plan.disk_count.unwrap_or(0)
 }
 
-fn price_key(plan: &BareMetalPlan, price: PriceMode) -> f64 {
+fn price_key(plan: &BareMetalPlan, price: &PriceMode) -> f64 {
     match price {
         PriceMode::Monthly => plan.monthly_cost.unwrap_or(0.0),
         PriceMode::Hourly => plan.hourly_cost.unwrap_or(0.0),
@@ -482,7 +482,7 @@ mod tests {
     #[test]
     fn test_sort_cpu_memory_default() {
         let mut plans = sample_plans();
-        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::CpuMemory, PriceMode::Hourly);
+        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::CpuMemory, &PriceMode::Hourly);
 
         assert_eq!(plans[0].id, "vbm-256c-3072gb-8-b200-gpu");
         assert_eq!(plans[1].id, "vbm-256c-3072gb-8-mi325x-gpu");
@@ -493,7 +493,7 @@ mod tests {
     #[test]
     fn test_sort_cpu_descending() {
         let mut plans = sample_plans();
-        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::Cpu, PriceMode::Hourly);
+        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::Cpu, &PriceMode::Hourly);
 
         assert_eq!(plans[0].id, "vbm-256c-3072gb-8-b200-gpu");
         assert_eq!(plans[plans.len() - 1].id, "vbm-4c-32gb");
@@ -509,7 +509,7 @@ mod tests {
     #[test]
     fn test_sort_memory_descending() {
         let mut plans = sample_plans();
-        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::Memory, PriceMode::Hourly);
+        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::Memory, &PriceMode::Hourly);
 
         assert_eq!(plans[0].id, "vbm-256c-3072gb-8-b200-gpu");
         let tail: Vec<&str> = plans[plans.len() - 3..]
@@ -522,7 +522,7 @@ mod tests {
     #[test]
     fn test_sort_price_hourly_descending() {
         let mut plans = sample_plans();
-        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::Price, PriceMode::Hourly);
+        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::Price, &PriceMode::Hourly);
 
         assert_eq!(plans[0].id, "vbm-256c-3072gb-8-b200-gpu");
         assert_eq!(plans[plans.len() - 1].id, "vbm-4c-32gb");
@@ -531,7 +531,7 @@ mod tests {
     #[test]
     fn test_sort_disk_descending() {
         let mut plans = sample_plans();
-        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::Disk, PriceMode::Hourly);
+        sort_bare_metal_plans(&mut plans, BareMetalPlanSort::Disk, &PriceMode::Hourly);
 
         assert_eq!(plans[0].id, "vbm-256c-3072gb-8-b200-gpu");
         assert_eq!(plans[plans.len() - 1].id, "vbm-4c-32gb");

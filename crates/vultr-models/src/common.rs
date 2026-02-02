@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Pagination metadata
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct Meta {
     /// Total number of objects available
     pub total: Option<i32>,
@@ -12,7 +12,7 @@ pub struct Meta {
 }
 
 /// Cursor-based pagination links
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct PaginationLinks {
     /// Cursor for the next page
     pub next: Option<String>,
@@ -21,7 +21,7 @@ pub struct PaginationLinks {
 }
 
 /// Generic list response wrapper
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ListResponse<T> {
     #[serde(flatten)]
     pub data: T,
@@ -30,7 +30,7 @@ pub struct ListResponse<T> {
 }
 
 /// Region information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Region {
     /// Unique ID for the region (e.g., "ewr", "lax")
     pub id: String,
@@ -46,7 +46,7 @@ pub struct Region {
 }
 
 /// Operating System information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Os {
     /// Operating System ID
     pub id: i32,
@@ -59,7 +59,7 @@ pub struct Os {
 }
 
 /// Compute plan information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Plan {
     /// Unique plan ID (e.g., "vc2-1c-1gb")
     pub id: String,
@@ -88,7 +88,7 @@ pub struct Plan {
 }
 
 /// Bare metal plan information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalPlan {
     /// Unique plan ID (e.g., "vbm-4c-32gb")
     pub id: String,
@@ -155,25 +155,25 @@ pub struct BareMetalPlan {
 }
 
 /// Response wrapper for regions list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegionsResponse {
     pub regions: Vec<Region>,
 }
 
 /// Response wrapper for OS list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct OsResponse {
     pub os: Vec<Os>,
 }
 
 /// Response wrapper for plans list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PlansResponse {
     pub plans: Vec<Plan>,
 }
 
 /// Response wrapper for bare metal plans list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct BareMetalPlansResponse {
     #[serde(rename = "plans_metal")]
     pub plans: Vec<BareMetalPlan>,

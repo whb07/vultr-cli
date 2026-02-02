@@ -3,21 +3,21 @@
 use serde::{Deserialize, Serialize};
 
 /// VFS region pricing details
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsRegionPrice {
     pub nvme: Option<f64>,
     pub hdd: Option<f64>,
 }
 
 /// VFS region minimum size details
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsRegionMinSize {
     pub nvme: Option<i32>,
     pub hdd: Option<i32>,
 }
 
 /// VFS region information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsRegion {
     pub id: Option<String>,
     pub country: Option<String>,
@@ -28,21 +28,21 @@ pub struct VfsRegion {
 }
 
 /// VFS storage size
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsStorageSize {
     pub bytes: Option<i64>,
     pub gb: Option<i32>,
 }
 
 /// VFS billing
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsBilling {
     pub charges: Option<f64>,
     pub monthly: Option<f64>,
 }
 
 /// VFS subscription
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Vfs {
     pub id: Option<String>,
     pub region: Option<String>,
@@ -58,7 +58,7 @@ pub struct Vfs {
 }
 
 /// VFS attachment
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsAttachment {
     pub state: Option<String>,
     pub vfs_id: Option<String>,
@@ -67,25 +67,25 @@ pub struct VfsAttachment {
 }
 
 /// Response wrapper for VFS list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsListResponse {
     pub vfs: Vec<Vfs>,
 }
 
 /// Response wrapper for VFS regions list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsRegionsResponse {
     pub regions: Vec<VfsRegion>,
 }
 
 /// Response wrapper for VFS attachments list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsAttachmentsResponse {
     pub attachments: Vec<VfsAttachment>,
 }
 
 /// Request to create a VFS subscription
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateVfsRequest {
     pub region: String,
     pub label: String,
@@ -97,7 +97,7 @@ pub struct CreateVfsRequest {
 }
 
 /// Request to update a VFS subscription
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateVfsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
@@ -106,7 +106,7 @@ pub struct UpdateVfsRequest {
 }
 
 /// Storage size request (GB)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct VfsStorageSizeRequest {
     pub gb: i32,
 }

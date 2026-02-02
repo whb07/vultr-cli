@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Container Registry
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Registry {
     /// Unique identifier for the registry
     pub id: String,
@@ -26,7 +26,7 @@ pub struct Registry {
 }
 
 /// Storage information for registry
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryStorageInfo {
     /// Used storage
     pub used: Option<RegistryStorage>,
@@ -35,7 +35,7 @@ pub struct RegistryStorageInfo {
 }
 
 /// Storage details
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryStorage {
     /// Storage in bytes
     pub bytes: Option<f64>,
@@ -50,7 +50,7 @@ pub struct RegistryStorage {
 }
 
 /// Registry metadata
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryMetadata {
     /// Region information
     pub region: Option<RegistryRegion>,
@@ -59,14 +59,14 @@ pub struct RegistryMetadata {
 }
 
 /// Subscription information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistrySubscription {
     /// Billing information
     pub billing: Option<RegistryBilling>,
 }
 
 /// Billing information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryBilling {
     /// Monthly price
     pub monthly_price: Option<f64>,
@@ -75,7 +75,7 @@ pub struct RegistryBilling {
 }
 
 /// Registry user
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryUser {
     /// Numeric ID
     pub id: Option<i64>,
@@ -93,7 +93,7 @@ pub struct RegistryUser {
 }
 
 /// Registry region
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryRegion {
     /// Numeric ID
     pub id: Option<i64>,
@@ -115,7 +115,7 @@ pub struct RegistryRegion {
 }
 
 /// Registry plan
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryPlan {
     /// Plan ID (the key in the plans map)
     #[serde(skip)]
@@ -129,7 +129,7 @@ pub struct RegistryPlan {
 }
 
 /// Repository in a registry
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryRepository {
     /// Full name (registry/image)
     pub name: Option<String>,
@@ -148,7 +148,7 @@ pub struct RegistryRepository {
 }
 
 /// Artifact in a repository
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryArtifact {
     /// Artifact type
     pub artifact_type: Option<String>,
@@ -175,7 +175,7 @@ pub struct RegistryArtifact {
 }
 
 /// Robot account
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryRobot {
     /// Robot name
     pub name: Option<String>,
@@ -195,7 +195,7 @@ pub struct RegistryRobot {
 }
 
 /// Robot permission
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RobotPermission {
     /// Kind of permission
     pub kind: Option<String>,
@@ -206,7 +206,7 @@ pub struct RobotPermission {
 }
 
 /// Robot access rule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RobotAccess {
     /// Action (pull, push, read, delete)
     pub action: Option<String>,
@@ -217,7 +217,7 @@ pub struct RobotAccess {
 }
 
 /// Replication policy
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryReplication {
     /// Region name
     pub region: Option<String>,
@@ -228,7 +228,7 @@ pub struct RegistryReplication {
 }
 
 /// Retention rule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryRetentionRule {
     /// Rule ID
     pub id: Option<i64>,
@@ -249,7 +249,7 @@ pub struct RegistryRetentionRule {
 }
 
 /// Retention scope selectors
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RetentionScopeSelectors {
     /// Repository selectors
     #[serde(default)]
@@ -257,7 +257,7 @@ pub struct RetentionScopeSelectors {
 }
 
 /// Retention repository selector
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RetentionRepositorySelector {
     /// Decoration (repoMatches, repoExcludes)
     pub decoration: Option<String>,
@@ -268,7 +268,7 @@ pub struct RetentionRepositorySelector {
 }
 
 /// Retention tag selector
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RetentionTagSelector {
     /// Decoration (matches, excludes)
     pub decoration: Option<String>,
@@ -281,7 +281,7 @@ pub struct RetentionTagSelector {
 }
 
 /// Retention schedule
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryRetentionSchedule {
     /// Schedule type
     #[serde(rename = "type")]
@@ -291,7 +291,7 @@ pub struct RegistryRetentionSchedule {
 }
 
 /// Retention execution
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryRetentionExecution {
     /// Execution ID
     pub id: Option<i64>,
@@ -306,21 +306,21 @@ pub struct RegistryRetentionExecution {
 }
 
 /// Docker credentials
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryDockerCredentials {
     /// Auth entries
     pub auths: Option<HashMap<String, DockerAuth>>,
 }
 
 /// Docker auth entry
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DockerAuth {
     /// Base64 encoded credentials
     pub auth: Option<String>,
 }
 
 /// Kubernetes docker credentials
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RegistryKubernetesCredentials {
     /// API version
     #[serde(rename = "apiVersion")]
@@ -337,14 +337,14 @@ pub struct RegistryKubernetesCredentials {
 }
 
 /// K8s credentials metadata
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct K8sCredentialsMetadata {
     /// Name
     pub name: Option<String>,
 }
 
 /// K8s credentials data
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct K8sCredentialsData {
     /// Docker config JSON (base64 encoded)
     #[serde(rename = ".dockerconfigjson")]
@@ -356,94 +356,94 @@ pub struct K8sCredentialsData {
 // =====================
 
 /// Response for list of registries
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RegistriesResponse {
     pub registries: Vec<Registry>,
 }
 
 /// Response for single registry
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RegistryResponse {
     pub registry: Registry,
 }
 
 /// Response for repositories
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RepositoriesResponse {
     pub repositories: Vec<RegistryRepository>,
 }
 
 /// Response for single repository
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RepositoryResponse {
     pub repository: RegistryRepository,
 }
 
 /// Response for artifacts
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct ArtifactsResponse {
     pub artifacts: Vec<RegistryArtifact>,
 }
 
 /// Response for robots
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RobotsResponse {
     pub robots: Vec<RegistryRobot>,
 }
 
 /// Response for single robot
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RobotResponse {
     pub robot: RegistryRobot,
 }
 
 /// Response for replications
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct ReplicationsResponse {
     pub replications: Vec<RegistryReplication>,
 }
 
 /// Response for retention rules
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RetentionRulesResponse {
     #[serde(default)]
     pub rules: Vec<RegistryRetentionRule>,
 }
 
 /// Response for retention executions
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RetentionExecutionsResponse {
     #[serde(default)]
     pub executions: Vec<RegistryRetentionExecution>,
 }
 
 /// Response for retention schedule
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RetentionScheduleResponse {
     pub schedule: Option<RegistryRetentionSchedule>,
 }
 
 /// Response for registry regions
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RegistryRegionsResponse {
     pub regions: Vec<RegistryRegion>,
 }
 
 /// Response for registry plans
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RegistryPlansResponse {
     pub plans: HashMap<String, RegistryPlan>,
 }
 
 /// Response for docker credentials
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DockerCredentialsResponse {
     #[serde(flatten)]
     pub credentials: RegistryDockerCredentials,
 }
 
 /// Response for kubernetes credentials
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct KubernetesCredentialsResponse {
     #[serde(flatten)]
     pub credentials: RegistryKubernetesCredentials,
@@ -454,7 +454,7 @@ pub struct KubernetesCredentialsResponse {
 // =====================
 
 /// Request to create a registry
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct CreateRegistryRequest {
     /// Registry name (required)
     pub name: String,
@@ -468,7 +468,7 @@ pub struct CreateRegistryRequest {
 }
 
 /// Request to update a registry
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct UpdateRegistryRequest {
     /// Whether public
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -479,7 +479,7 @@ pub struct UpdateRegistryRequest {
 }
 
 /// Request to create a robot
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateRobotRequest {
     /// Robot name (required)
     pub name: String,
@@ -495,7 +495,7 @@ pub struct CreateRobotRequest {
 }
 
 /// Permission for robot creation
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateRobotPermission {
     /// Permission kind
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -509,7 +509,7 @@ pub struct CreateRobotPermission {
 }
 
 /// Access rule for robot creation
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateRobotAccess {
     /// Action
     pub action: String,
@@ -518,7 +518,7 @@ pub struct CreateRobotAccess {
 }
 
 /// Request to update a robot
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct UpdateRobotRequest {
     /// Description
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -535,14 +535,14 @@ pub struct UpdateRobotRequest {
 }
 
 /// Request to create a replication
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateReplicationRequest {
     /// Region to replicate to
     pub region: String,
 }
 
 /// Request to create a retention rule
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateRetentionRuleRequest {
     /// Action
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -561,7 +561,7 @@ pub struct CreateRetentionRuleRequest {
 }
 
 /// Scope selectors for retention rule creation
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateRetentionScopeSelectors {
     /// Repository selectors
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -569,7 +569,7 @@ pub struct CreateRetentionScopeSelectors {
 }
 
 /// Repository selector for retention rule creation
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateRetentionRepositorySelector {
     /// Decoration
     pub decoration: String,
@@ -580,7 +580,7 @@ pub struct CreateRetentionRepositorySelector {
 }
 
 /// Tag selector for retention rule creation
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct CreateRetentionTagSelector {
     /// Decoration
     pub decoration: String,
@@ -591,7 +591,7 @@ pub struct CreateRetentionTagSelector {
 }
 
 /// Request to update a retention rule
-#[derive(Debug, Clone, Serialize, Default)]
+#[derive(Serialize)]
 pub struct UpdateRetentionRuleRequest {
     /// Action
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -614,7 +614,7 @@ pub struct UpdateRetentionRuleRequest {
 }
 
 /// Request to update retention schedule
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct UpdateRetentionScheduleRequest {
     /// Schedule type (Hourly, Daily, Weekly, Custom)
     #[serde(rename = "type")]
@@ -625,14 +625,14 @@ pub struct UpdateRetentionScheduleRequest {
 }
 
 /// Request to update user password
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 pub struct UpdateUserPasswordRequest {
     /// New password
     pub password: String,
 }
 
 /// Response for updated retention rule
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct RetentionRuleResponse {
     pub rule: RegistryRetentionRule,
 }

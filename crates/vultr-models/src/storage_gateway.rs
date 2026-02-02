@@ -3,14 +3,14 @@
 use serde::{Deserialize, Serialize};
 
 /// Storage gateway network configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StorageGatewayNetwork {
     /// Primary network configuration
     pub primary: Option<StorageGatewayNetworkPrimary>,
 }
 
 /// Primary network configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StorageGatewayNetworkPrimary {
     /// Enable public IPv4
     pub ipv4_public_enabled: Option<bool>,
@@ -21,14 +21,14 @@ pub struct StorageGatewayNetworkPrimary {
 }
 
 /// VPC reference for storage gateway
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StorageGatewayVpc {
     /// VPC UUID
     pub vpc_uuid: Option<String>,
 }
 
 /// Storage gateway export configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StorageGatewayExport {
     /// Export label
     pub label: Option<String>,
@@ -41,7 +41,7 @@ pub struct StorageGatewayExport {
 }
 
 /// Storage gateway
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StorageGateway {
     /// Gateway ID
     pub id: Option<String>,
@@ -68,7 +68,7 @@ pub struct StorageGateway {
 }
 
 /// Response wrapper for storage gateways list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StorageGatewaysResponse {
     pub storage_gateway: Vec<StorageGateway>,
     #[serde(default)]
@@ -76,20 +76,20 @@ pub struct StorageGatewaysResponse {
 }
 
 /// Response wrapper for storage gateway
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StorageGatewayResponse {
     pub storage_gateway: StorageGateway,
 }
 
 /// Response wrapper for add export
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StorageGatewayExportResponse {
     #[serde(rename = "vpc")]
     pub export: StorageGatewayExport,
 }
 
 /// Request to create a storage gateway
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateStorageGatewayRequest {
     pub label: String,
     #[serde(rename = "type")]
@@ -100,7 +100,7 @@ pub struct CreateStorageGatewayRequest {
 }
 
 /// Request to update a storage gateway
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateStorageGatewayRequest {
     pub label: String,
 }

@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Log metadata
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LogMetadata {
     /// UUID for the user that triggered the event
     pub user_id: Option<String>,
@@ -24,7 +24,7 @@ pub struct LogMetadata {
 }
 
 /// Log line information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Log {
     /// Resource UUID
     pub resource_id: Option<String>,
@@ -41,7 +41,7 @@ pub struct Log {
 }
 
 /// Log list metadata
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LogMeta {
     /// URL for next page
     pub next_page_url: String,
@@ -56,7 +56,7 @@ pub struct LogMeta {
 }
 
 /// Response wrapper for logs
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LogsResponse {
     pub logs: Vec<Log>,
     pub meta: LogMeta,

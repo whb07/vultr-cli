@@ -51,7 +51,7 @@ async fn run(cli: Cli) -> VultrResult<()> {
 
             let output = cli
                 .output
-                .or_else(|| profile_cfg.and_then(|p| p.output_format))
+                .or_else(|| profile_cfg.and_then(|p| p.output_format.clone()))
                 .unwrap_or(cfg.settings.output_format);
 
             let wait_timeout = cli.wait_timeout.unwrap_or(cfg.settings.wait_timeout);

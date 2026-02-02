@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Application information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Application {
     /// A unique ID for the application
     pub id: i32,
@@ -23,7 +23,7 @@ pub struct Application {
 }
 
 /// Marketplace app variable information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AppVariable {
     /// Variable name
     pub name: Option<String>,
@@ -34,13 +34,13 @@ pub struct AppVariable {
 }
 
 /// Response wrapper for app variables
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AppVariablesResponse {
     pub variables: Vec<AppVariable>,
 }
 
 /// Response wrapper for applications list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ApplicationsResponse {
     pub applications: Vec<Application>,
 }

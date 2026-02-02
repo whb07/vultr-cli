@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// DNS Domain
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DnsDomain {
     /// Your registered domain name
     pub domain: String,
@@ -14,7 +14,7 @@ pub struct DnsDomain {
 }
 
 /// DNS SOA Record information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DnsSoa {
     /// Primary nameserver for this domain
     pub nsprimary: Option<String>,
@@ -23,7 +23,7 @@ pub struct DnsSoa {
 }
 
 /// DNS Record information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DnsRecord {
     /// A unique ID for the DNS Record
     pub id: String,
@@ -41,14 +41,14 @@ pub struct DnsRecord {
 }
 
 /// DNSSEC information (array of DNSKEY and DS records as strings)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DnsSec {
     /// Array of DNSKEY and DS record strings
     pub dns_sec: Vec<String>,
 }
 
 /// Request to create a DNS domain
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateDomainRequest {
     /// Your registered DNS Domain name
     pub domain: String,
@@ -61,7 +61,7 @@ pub struct CreateDomainRequest {
 }
 
 /// Request to update a DNS domain
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateDomainRequest {
     /// Enable or disable DNSSEC (enabled/disabled)
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -69,7 +69,7 @@ pub struct UpdateDomainRequest {
 }
 
 /// Request to create a DNS record
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateRecordRequest {
     /// The hostname for this DNS record
     pub name: String,
@@ -87,7 +87,7 @@ pub struct CreateRecordRequest {
 }
 
 /// Request to update a DNS record
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateRecordRequest {
     /// The hostname for this DNS record
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -104,7 +104,7 @@ pub struct UpdateRecordRequest {
 }
 
 /// Request to update SOA information
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct UpdateSoaRequest {
     /// Set the primary nameserver
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -115,32 +115,32 @@ pub struct UpdateSoaRequest {
 }
 
 /// Response wrapper for domain operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DomainResponse {
     pub domain: DnsDomain,
 }
 
 /// Response wrapper for record operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RecordResponse {
     pub record: DnsRecord,
 }
 
 /// Response wrapper for SOA
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct SoaResponse {
     pub dns_soa: DnsSoa,
 }
 
 /// Response wrapper for domain list with pagination
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DomainsResponseWithMeta {
     pub domains: Vec<DnsDomain>,
     pub meta: crate::Meta,
 }
 
 /// Response wrapper for record list with pagination
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RecordsResponseWithMeta {
     pub records: Vec<DnsRecord>,
     pub meta: crate::Meta,

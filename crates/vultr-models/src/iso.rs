@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// ISO resource status (different from instance ISO attachment status)
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum IsoResourceStatus {
     Pending,
@@ -23,7 +23,7 @@ impl std::fmt::Display for IsoResourceStatus {
 }
 
 /// ISO information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Iso {
     /// Unique ID for the ISO
     pub id: String,
@@ -66,7 +66,7 @@ impl Iso {
 }
 
 /// Public ISO information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PublicIso {
     /// Unique ID for the public ISO
     pub id: String,
@@ -79,26 +79,26 @@ pub struct PublicIso {
 }
 
 /// Request to create an ISO
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateIsoRequest {
     /// Public URL location of the ISO image to download
     pub url: String,
 }
 
 /// Response wrapper for ISO operations
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct IsoResponse {
     pub iso: Iso,
 }
 
 /// Response wrapper for ISO list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct IsosResponse {
     pub isos: Vec<Iso>,
 }
 
 /// Response wrapper for public ISO list
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PublicIsosResponse {
     pub public_isos: Vec<PublicIso>,
 }
