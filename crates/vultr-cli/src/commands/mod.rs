@@ -4677,6 +4677,10 @@ pub struct PlansArgs {
     #[arg(long, value_enum, default_value = "hourly")]
     pub price: PriceMode,
 
+    /// Sort bare metal table output (cpu-memory, cpu, memory, price, disk, id)
+    #[arg(long, value_enum, default_value = "cpu-memory")]
+    pub sort: BareMetalPlanSort,
+
     /// Filter plans by region (e.g., "ewr")
     #[arg(long)]
     pub region: Option<String>,
@@ -4686,6 +4690,16 @@ pub struct PlansArgs {
 pub enum PriceMode {
     Hourly,
     Monthly,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum BareMetalPlanSort {
+    CpuMemory,
+    Cpu,
+    Memory,
+    Price,
+    Disk,
+    Id,
 }
 
 // ==================
@@ -5194,6 +5208,7 @@ mod tests {
             plan_type: Some("vc2".to_string()),
             bare_metal: false,
             price: PriceMode::Hourly,
+            sort: BareMetalPlanSort::CpuMemory,
             region: None,
         };
         assert_eq!(args.plan_type, Some("vc2".to_string()));
