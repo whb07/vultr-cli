@@ -1277,9 +1277,9 @@ impl TableDisplay for Vec<Region> {
     }
 }
 
-/// Wrapper for displaying plans in a table
+/// Wrapper for displaying plans in a table (monthly pricing)
 #[derive(Tabled)]
-struct PlanRow {
+struct PlanMonthlyRow {
     #[tabled(rename = "ID")]
     id: String,
     #[tabled(rename = "vCPUs")]
@@ -1289,19 +1289,19 @@ struct PlanRow {
     #[tabled(rename = "Disk (GB)")]
     disk: String,
     #[tabled(rename = "$/month")]
-    monthly: String,
+    price: String,
     #[tabled(rename = "Type")]
     plan_type: String,
 }
 
-impl From<&Plan> for PlanRow {
+impl From<&Plan> for PlanMonthlyRow {
     fn from(p: &Plan) -> Self {
         Self {
             id: p.id.clone(),
             vcpus: p.vcpu_count.map(|v| v.to_string()).unwrap_or_default(),
             ram: format_ram_gb(p.ram),
             disk: p.disk.map(|d| d.to_string()).unwrap_or_default(),
-            monthly: p
+            price: p
                 .monthly_cost
                 .map(|c| format!("{:.2}", c))
                 .unwrap_or_default(),
@@ -1314,18 +1314,72 @@ impl From<&Plan> for PlanRow {
     }
 }
 
-impl TableDisplay for Vec<Plan> {
-    fn print_table(&self) {
-        if self.is_empty() {
-            println!("{}", "No plans found.".yellow());
-            return;
+/// Wrapper for displaying plans in a table (hourly pricing)
+#[derive(Tabled)]
+struct PlanHourlyRow {
+    #[tabled(rename = "ID")]
+    id: String,
+    #[tabled(rename = "vCPUs")]
+    vcpus: String,
+    #[tabled(rename = "RAM (GB)")]
+    ram: String,
+    #[tabled(rename = "Disk (GB)")]
+    disk: String,
+    #[tabled(rename = "$/hour")]
+    price: String,
+    #[tabled(rename = "Type")]
+    plan_type: String,
+}
+
+impl From<&Plan> for PlanHourlyRow {
+    fn from(p: &Plan) -> Self {
+        Self {
+            id: p.id.clone(),
+            vcpus: p.vcpu_count.map(|v| v.to_string()).unwrap_or_default(),
+            ram: format_ram_gb(p.ram),
+            disk: p.disk.map(|d| d.to_string()).unwrap_or_default(),
+            price: p
+                .hourly_cost
+                .map(|c| format!("{:.2}", c))
+                .unwrap_or_default(),
+            plan_type: p
+                .plan_type
+                .as_deref()
+                .map(format_plan_type)
+                .unwrap_or_default(),
         }
-        let rows: Vec<PlanRow> = self.iter().map(PlanRow::from).collect();
+    }
+}
+
+fn print_plans_table(plans: &[Plan], monthly: bool) {
+    if plans.is_empty() {
+        println!("{}", "No plans found.".yellow());
+        return;
+    }
+
+    if monthly {
+        let rows: Vec<PlanMonthlyRow> = plans.iter().map(PlanMonthlyRow::from).collect();
+        let table = Table::new(rows).with(Style::rounded()).to_string();
+        println!("{}", table);
+    } else {
+        let rows: Vec<PlanHourlyRow> = plans.iter().map(PlanHourlyRow::from).collect();
         let table = Table::new(rows).with(Style::rounded()).to_string();
         println!("{}", table);
     }
 }
 
+pub fn print_plans(plans: &[Plan], format: OutputFormat, monthly: bool) {
+    match format {
+        OutputFormat::Json => print_json(plans),
+        OutputFormat::Table => print_plans_table(plans, monthly),
+    }
+}
+
+impl TableDisplay for Vec<Plan> {
+    fn print_table(&self) {
+        print_plans_table(self, true);
+    }
+}
 fn format_ram_gb(mb: Option<i32>) -> String {
     let mb = match mb {
         Some(value) => value as f64,
@@ -5560,7 +5614,7 @@ mod tests {
     }
 
     #[test]
-    fn test_plan_row_from() {
+    fn test_plan_monthly_row_from() {
         let plan = Plan {
             id: "vc2-1c-1gb".to_string(),
             name: None,
@@ -5574,11 +5628,34 @@ mod tests {
             plan_type: Some("vc2".to_string()),
             locations: vec![],
         };
-        let row = PlanRow::from(&plan);
+        let row = PlanMonthlyRow::from(&plan);
         assert_eq!(row.id, "vc2-1c-1gb");
         assert_eq!(row.vcpus, "1");
         assert_eq!(row.ram, "1");
-        assert_eq!(row.monthly, "5.00");
+        assert_eq!(row.price, "5.00");
+        assert_eq!(row.plan_type, "Cloud Compute");
+    }
+
+    #[test]
+    fn test_plan_hourly_row_from() {
+        let plan = Plan {
+            id: "vc2-1c-1gb".to_string(),
+            name: None,
+            vcpu_count: Some(1),
+            ram: Some(1024),
+            disk: Some(25),
+            disk_count: Some(1),
+            bandwidth: None,
+            monthly_cost: Some(5.0),
+            hourly_cost: Some(0.007),
+            plan_type: Some("vc2".to_string()),
+            locations: vec![],
+        };
+        let row = PlanHourlyRow::from(&plan);
+        assert_eq!(row.id, "vc2-1c-1gb");
+        assert_eq!(row.vcpus, "1");
+        assert_eq!(row.ram, "1");
+        assert_eq!(row.price, "0.01");
         assert_eq!(row.plan_type, "Cloud Compute");
     }
 

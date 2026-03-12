@@ -4673,7 +4673,7 @@ pub struct PlansArgs {
     #[arg(long, alias = "metal", conflicts_with = "plan_type")]
     pub bare_metal: bool,
 
-    /// Show pricing in hourly or monthly units for bare metal plans (table output only)
+    /// Show pricing in hourly or monthly units for plans (table output only)
     #[arg(long, value_enum, default_value = "hourly")]
     pub price: PriceMode,
 
@@ -5212,6 +5212,22 @@ mod tests {
             region: None,
         };
         assert_eq!(args.plan_type, Some("vc2".to_string()));
+        assert!(matches!(args.price, PriceMode::Hourly));
+    }
+
+    #[test]
+    fn test_plans_args_with_monthly_price() {
+        let args = PlansArgs {
+            plan_type: Some("vc2".to_string()),
+            bare_metal: false,
+            price: PriceMode::Monthly,
+            sort: BareMetalPlanSort::CpuMemory,
+            region: Some("ewr".to_string()),
+        };
+        assert!(matches!(args.price, PriceMode::Monthly));
+        assert_eq!(args.plan_type, Some("vc2".to_string()));
+        assert_eq!(args.region, Some("ewr".to_string()));
+        assert!(!args.bare_metal);
     }
 
     #[test]

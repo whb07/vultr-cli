@@ -5,7 +5,7 @@ use vultr_api::VultrClient;
 use vultr_config::OutputFormat;
 use vultr_config::VultrResult;
 use vultr_models::BareMetalPlan;
-use vultr_output::{print_bare_metal_plans, print_output};
+use vultr_output::{print_bare_metal_plans, print_output, print_plans};
 
 pub async fn handle_regions(client: &VultrClient, output: OutputFormat) -> VultrResult<()> {
     let regions = client.list_regions().await?;
@@ -46,7 +46,7 @@ pub async fn handle_plans(
                     .any(|loc| loc.eq_ignore_ascii_case(region))
             });
         }
-        print_output(&plans, output);
+        print_plans(&plans, output, price == PriceMode::Monthly);
     }
     Ok(())
 }
